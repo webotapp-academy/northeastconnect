@@ -10,30 +10,15 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [wildlife, adventure, culture, news, directory] = await Promise.all([
-      db.wildlife.findMany({
+    const [directory, news, wildlife, adventure, culture] = await Promise.all([
+      db.directory.findMany({
         where: {
           OR: [
-            { name: { contains: term, mode: "insensitive" } },
+            { businessName: { contains: term, mode: "insensitive" } },
+            { category: { contains: term, mode: "insensitive" } },
             { description: { contains: term, mode: "insensitive" } },
-          ],
-        },
-        take: 5,
-      }),
-      db.adventure.findMany({
-        where: {
-          OR: [
-            { name: { contains: term, mode: "insensitive" } },
-            { description: { contains: term, mode: "insensitive" } },
-          ],
-        },
-        take: 5,
-      }),
-      db.culture.findMany({
-        where: {
-          OR: [
-            { name: { contains: term, mode: "insensitive" } },
-            { description: { contains: term, mode: "insensitive" } },
+            { district: { contains: term, mode: "insensitive" } },
+            { address: { contains: term, mode: "insensitive" } },
           ],
         },
         take: 5,
@@ -45,21 +30,53 @@ export async function GET(request: Request) {
             { content: { contains: term, mode: "insensitive" } },
           ],
         },
-        take: 5,
+        take: 4,
       }),
-      db.directory.findMany({
+      db.wildlife.findMany({
         where: {
           OR: [
-            { businessName: { contains: term, mode: "insensitive" } },
-            { category: { contains: term, mode: "insensitive" } },
+            { name: { contains: term, mode: "insensitive" } },
             { description: { contains: term, mode: "insensitive" } },
           ],
         },
-        take: 5,
+        take: 3,
+      }),
+      db.adventure.findMany({
+        where: {
+          OR: [
+            { name: { contains: term, mode: "insensitive" } },
+            { description: { contains: term, mode: "insensitive" } },
+          ],
+        },
+        take: 3,
+      }),
+      db.culture.findMany({
+        where: {
+          OR: [
+            { name: { contains: term, mode: "insensitive" } },
+            { description: { contains: term, mode: "insensitive" } },
+          ],
+        },
+        take: 3,
       }),
     ]);
 
     const results = [
+      ...directory.map((d) => {
+        const slug = d.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+        return {
+          label: d.businessName,
+          type: "directory",
+          id: d.id,
+          url: `/listing/${slug}-${d.id}`,
+        };
+      }),
+      ...news.map((n) => ({
+        label: n.title,
+        type: "news",
+        id: n.id,
+        url: `/news/${encodeURIComponent(n.url || String(n.id))}`,
+      })),
       ...wildlife.map((w) => {
         const slug = w.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
         return {
@@ -85,21 +102,6 @@ export async function GET(request: Request) {
           type: "culture",
           id: c.id,
           url: `/culture/${slug}-${c.id}`,
-        };
-      }),
-      ...news.map((n) => ({
-        label: n.title,
-        type: "news",
-        id: n.id,
-        url: `/news/${encodeURIComponent(n.url || String(n.id))}`,
-      })),
-      ...directory.map((d) => {
-        const slug = d.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-        return {
-          label: d.businessName,
-          type: "directory",
-          id: d.id,
-          url: `/listing/${slug}-${d.id}`,
         };
       }),
     ];

@@ -20,7 +20,28 @@ export default async function SearchPage({ searchParams }: PageProps) {
   let news: any[] = [];
 
   if (query) {
-    [wildlife, adventure, culture, directory, news] = await Promise.all([
+    [directory, news, wildlife, adventure, culture] = await Promise.all([
+      db.directory.findMany({
+        where: {
+          OR: [
+            { businessName: { contains: query, mode: "insensitive" } },
+            { category: { contains: query, mode: "insensitive" } },
+            { description: { contains: query, mode: "insensitive" } },
+            { district: { contains: query, mode: "insensitive" } },
+            { address: { contains: query, mode: "insensitive" } },
+          ],
+        },
+        take: 12,
+      }),
+      db.news.findMany({
+        where: {
+          OR: [
+            { title: { contains: query, mode: "insensitive" } },
+            { content: { contains: query, mode: "insensitive" } },
+          ],
+        },
+        take: 6,
+      }),
       db.wildlife.findMany({
         where: {
           OR: [
@@ -46,26 +67,6 @@ export default async function SearchPage({ searchParams }: PageProps) {
           OR: [
             { name: { contains: query, mode: "insensitive" } },
             { description: { contains: query, mode: "insensitive" } },
-          ],
-        },
-        take: 6,
-      }),
-      db.directory.findMany({
-        where: {
-          OR: [
-            { businessName: { contains: query, mode: "insensitive" } },
-            { category: { contains: query, mode: "insensitive" } },
-            { description: { contains: query, mode: "insensitive" } },
-            { district: { contains: query, mode: "insensitive" } },
-          ],
-        },
-        take: 12,
-      }),
-      db.news.findMany({
-        where: {
-          OR: [
-            { title: { contains: query, mode: "insensitive" } },
-            { content: { contains: query, mode: "insensitive" } },
           ],
         },
         take: 6,
@@ -133,20 +134,21 @@ export default async function SearchPage({ searchParams }: PageProps) {
                   <div className="grid md:grid-cols-3 gap-6">
                     {directory.map((item) => {
                       const slug = item.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+                      const detailUrl = `/listing/${slug}-${item.id}`;
                       return (
                         <div key={item.id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-md space-y-3 flex flex-col justify-between">
                           <div className="space-y-2">
                             <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
-                              {item.category}
+                              {item.category || "Services"}
                             </span>
                             <h3 className="font-bold text-lg text-gray-900">
-                              <Link href={`/directory/${slug}-${item.id}`} className="hover:text-emerald-700">
+                              <Link href={detailUrl} className="hover:text-emerald-700">
                                 {item.businessName}
                               </Link>
                             </h3>
                             <p className="text-gray-600 text-xs line-clamp-2">{item.description}</p>
                           </div>
-                          <Link href={`/directory/${slug}-${item.id}`} className="text-emerald-700 font-bold text-xs inline-block hover:underline">
+                          <Link href={detailUrl} className="text-emerald-700 font-bold text-xs inline-block hover:underline">
                             View Listing &rarr;
                           </Link>
                         </div>
@@ -235,6 +237,36 @@ export default async function SearchPage({ searchParams }: PageProps) {
                           </div>
                           <Link href={`/adventure/${slug}-${item.id}`} className="text-orange-600 font-bold text-xs inline-block hover:underline">
                             View Activity &rarr;
+                          </Link>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Culture Results */}
+              {culture.length > 0 && (
+                <div className="space-y-6">
+                  <h2 className="text-2xl font-bold text-gray-900 border-b pb-3 flex items-center">
+                    🎭 Culture &amp; Heritage ({culture.length})
+                  </h2>
+                  <div className="grid md:grid-cols-3 gap-6">
+                    {culture.map((item) => {
+                      const slug = item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+                      return (
+                        <div key={item.id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-md space-y-3 flex flex-col justify-between">
+                          <div className="space-y-2">
+                            <span className="text-xs text-purple-700 font-bold uppercase">{item.type || "Heritage"}</span>
+                            <h3 className="font-bold text-lg text-gray-900">
+                              <Link href={`/culture/${slug}-${item.id}`} className="hover:text-purple-700">
+                                {item.name}
+                              </Link>
+                            </h3>
+                            <p className="text-gray-600 text-xs line-clamp-2">{item.description}</p>
+                          </div>
+                          <Link href={`/culture/${slug}-${item.id}`} className="text-purple-700 font-bold text-xs inline-block hover:underline">
+                            Explore &rarr;
                           </Link>
                         </div>
                       );

@@ -26,13 +26,8 @@ export default async function DirectoryPage({ searchParams }: PageProps) {
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
   const perPage = 12;
 
-  // Build query filter matching legacy directory.php
-  const where: any = {
-    OR: [
-      { status: { in: ["Active", "active", "Available"] } },
-      { status: { equals: null } },
-    ],
-  };
+  // Build query filter matching directory listings
+  const where: any = {};
 
   if (category) {
     where.category = category;

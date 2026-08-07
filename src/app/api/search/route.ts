@@ -78,12 +78,15 @@ export async function GET(request: Request) {
           url: `/adventure/${slug}-${a.id}`,
         };
       }),
-      ...culture.map((c) => ({
-        label: c.name,
-        type: "culture",
-        id: c.id,
-        url: `/culture`,
-      })),
+      ...culture.map((c) => {
+        const slug = c.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+        return {
+          label: c.name,
+          type: "culture",
+          id: c.id,
+          url: `/culture/${slug}-${c.id}`,
+        };
+      }),
       ...news.map((n) => ({
         label: n.title,
         type: "news",

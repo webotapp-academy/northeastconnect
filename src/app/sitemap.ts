@@ -25,7 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Fetch dynamic routes from database
   try {
-    const [news, directory, wildlife, adventure] = await Promise.all([
+    const [news, directory, wildlife, adventure, culture] = await Promise.all([
       db.news.findMany({
         where: { status: "Published" },
         select: { id: true, url: true, publishedDate: true },
@@ -33,7 +33,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         take: 1000,
       }),
       db.directory.findMany({
-        where: { status: "Active" },
         select: { id: true, businessName: true, createdAt: true },
         take: 1000,
       }),
@@ -41,6 +40,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         select: { id: true, name: true, createdAt: true },
       }),
       db.adventure.findMany({
+        select: { id: true, name: true, createdAt: true },
+      }),
+      db.culture.findMany({
         select: { id: true, name: true, createdAt: true },
       }),
     ]);
@@ -85,12 +87,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
 
+    const cultureRoutes: MetadataRoute.Sitemap = culture.map((item) => {
+      const slug = item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      return {
+        url: `${baseUrl}/culture/${slug}-${item.id}`,
+        lastModified: item.createdAt ? new Date(item.createdAt) : new Date(),
+        changeFrequency: "monthly",
+        priority: 0.7,
+      };
+    });
+
     return [
       ...staticRoutes,
       ...newsRoutes,
       ...directoryRoutes,
       ...wildlifeRoutes,
       ...adventureRoutes,
+      ...cultureRoutes,
     ];
   } catch (error) {
     console.error("Error generating dynamic sitemap:", error);

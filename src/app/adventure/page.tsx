@@ -11,14 +11,7 @@ interface PageProps {
 export default async function AdventurePage({ searchParams }: PageProps) {
   const { district = "", type = "", term = "" } = await searchParams;
 
-  const where: any = {
-    OR: [
-      { status: "active" },
-      { status: "Active" },
-      { status: "Available" },
-      { status: null },
-    ],
-  };
+  const where: any = {};
 
   if (district) {
     where.district = district;

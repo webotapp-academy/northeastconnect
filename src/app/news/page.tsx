@@ -15,6 +15,18 @@ function formatImageSrc(imgStr: string): string {
   return `/assets/images/${trimmed}`;
 }
 
+function stripHtml(htmlStr: string | null | undefined): string {
+  if (!htmlStr) return "";
+  return htmlStr
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export default async function NewsPage({ searchParams }: PageProps) {
   const { page = "1" } = await searchParams;
 
@@ -108,7 +120,7 @@ export default async function NewsPage({ searchParams }: PageProps) {
                         </Link>
                       </h3>
                       <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
-                        {n.content}
+                        {stripHtml(n.content)}
                       </p>
                     </div>
                   </div>

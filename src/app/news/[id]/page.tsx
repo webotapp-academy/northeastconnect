@@ -14,6 +14,18 @@ function formatImageSrc(imgStr: string): string {
   return `/assets/images/${trimmed}`;
 }
 
+function stripHtml(htmlStr: string | null | undefined): string {
+  if (!htmlStr) return "";
+  return htmlStr
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export default async function NewsDetailPage({ params }: PageProps) {
   const { id } = await params;
   const decodedParam = decodeURIComponent(id);
@@ -256,7 +268,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
                             {item.title}
                           </Link>
                         </h3>
-                        <p className="text-gray-600 text-xs line-clamp-2">{item.content}</p>
+                        <p className="text-gray-600 text-xs line-clamp-2">{stripHtml(item.content)}</p>
                       </div>
                     </div>
                     <div className="p-4 pt-0">

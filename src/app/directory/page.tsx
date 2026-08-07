@@ -8,7 +8,7 @@ interface PageProps {
   searchParams: Promise<{ category?: string; district?: string; term?: string; page?: string }>;
 }
 
-function stripHtml(htmlStr: string): string {
+function stripHtml(htmlStr: string | null | undefined): string {
   if (!htmlStr) return "";
   return htmlStr
     .replace(/<[^>]*>/g, " ")

@@ -29,10 +29,8 @@ export default async function DirectoryPage({ searchParams }: PageProps) {
   // Build query filter matching legacy directory.php
   const where: any = {
     OR: [
-      { status: "Active" },
-      { status: "active" },
-      { status: "Available" },
-      { status: null },
+      { status: { in: ["Active", "active", "Available"] } },
+      { status: { equals: null } },
     ],
   };
 

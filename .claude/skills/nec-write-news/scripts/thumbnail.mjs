@@ -10,7 +10,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
-import fontkit from "fontkit";
+import * as fontkitNs from "fontkit";
+const fontkit = fontkitNs.default ?? fontkitNs;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const FONT_PATH = path.join(__dirname, "..", "assets", "Poppins-SemiBold.ttf");
@@ -129,7 +130,7 @@ async function generateThumbnail(title, slug, outDir) {
   </svg>`;
 
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-  const filename = `${slug}-v${Date.now()}.jpg`;
+  const filename = `${slug}-v${Math.floor(Date.now() / 1000)}.jpg`;
   const absPath = path.join(outDir, filename);
 
   await sharp(Buffer.from(svg)).jpeg({ quality: 92 }).toFile(absPath);

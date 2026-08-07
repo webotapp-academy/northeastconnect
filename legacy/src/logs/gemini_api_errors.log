@@ -1,0 +1,15 @@
+[2025-10-08 06:08:45] HTTP Code: 404
+CURL Error: 
+Raw Response: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+
+[2025-10-08 06:08:45] Exception: Gemini API request failed. HTTP Code: 404, CURL Error: 
+Trace: #0 /home/u638938569/domains/northeastconnect.in/public_html/admin/news.php(206): gemini_rewrite()
+#1 {main}
+

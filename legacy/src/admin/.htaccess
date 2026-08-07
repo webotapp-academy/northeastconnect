@@ -1,0 +1,16 @@
+# Admin Panel - Disable parent .htaccess rules
+# Allow .php extensions in admin area
+
+RewriteEngine On
+
+# Serve all files as-is (including .php files)
+# This prevents the parent .htaccess from stripping .php extensions
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# If someone tries to access without .php, add it back
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+)$ $1.php [L,QSA]

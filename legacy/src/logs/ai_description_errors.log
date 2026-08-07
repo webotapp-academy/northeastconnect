@@ -1,0 +1,2 @@
+[2025-12-05 08:15:29] openrouter: API Call Details
+Context: {"HTTP Code":404,"cURL Error":"","Full Response":"{\"error\":{\"message\":\"No endpoints found for tencent\/hunyuan-a13b-instruct:free.\",\"code\":404},\"user_id\":\"user_30KBI5meEnaBiDKHmCOVMMIHK3M\"}"}

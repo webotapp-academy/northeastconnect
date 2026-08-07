@@ -1,0 +1,69 @@
+/* Search Suggestions Styling */
+#search-suggestions {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: white;
+    z-index: 50;
+    text-align: left; /* Ensure left alignment */
+}
+
+#search-suggestions div {
+    transition: all 0.2s ease;
+    text-align: left; /* Left-align suggestion items */
+}
+
+#search-suggestions div:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Suggestion Item Styling */
+#search-suggestions .suggestion-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.75rem 1rem;
+}
+
+#search-suggestions .suggestion-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #2d3748;
+    margin-bottom: 0.25rem;
+}
+
+#search-suggestions .suggestion-tags {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* Tag Styling */
+.suggestion-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+/* Scrollbar Styling */
+#search-suggestions::-webkit-scrollbar {
+    width: 8px;
+}
+
+#search-suggestions::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+#search-suggestions::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+#search-suggestions::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}

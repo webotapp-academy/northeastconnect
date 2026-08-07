@@ -1,0 +1,324 @@
+// Prisma schema file for North East Connect matching u638938569_northeast.sql
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model AdminUser {
+  id            Int       @id @default(autoincrement())
+  name          String
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  role          String    @default("editor")
+  status        String    @default("active")
+  avatarUrl     String?   @map("avatar_url")
+  lastLoginAt   DateTime? @map("last_login_at")
+  rememberToken String?   @map("remember_token")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@map("admin_users")
+}
+
+model User {
+  id                Int       @id @default(autoincrement())
+  username          String    @unique
+  email             String    @unique
+  passwordHash      String    @map("password_hash")
+  fullName          String?   @map("full_name")
+  mobileNumber      String?   @map("mobile_number")
+  profileImageUrl   String?   @map("profile_image_url")
+  role              String    @default("User")
+  lastLogin         DateTime? @map("last_login")
+  isVerified        Boolean   @default(false) @map("is_verified")
+  verificationToken String?   @map("verification_token")
+  resetToken        String?   @map("reset_token")
+  resetTokenExpiry  DateTime? @map("reset_token_expiry")
+  status            String    @default("Active")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  reviews  Review[]
+  bookings Booking[]
+
+  @@map("users")
+}
+
+model Blog {
+  id              Int       @id @default(autoincrement())
+  title           String
+  slug            String    @unique
+  content         String    @db.Text
+  excerpt         String?
+  author          String?   @default("Admin")
+  featuredImage   String?   @map("featured_image")
+  category        String?
+  status          String?   @default("Draft")
+  views           Int?      @default(0)
+  createdAt       DateTime? @default(now()) @map("created_at")
+  updatedAt       DateTime? @updatedAt @map("updated_at")
+  publishedAt     DateTime? @map("published_at")
+  metaDescription String?   @map("meta_description")
+  metaKeywords    String?   @map("meta_keywords")
+
+  @@map("blogs")
+}
+
+model Search {
+  id             Int      @id @default(autoincrement())
+  searchTerm     String   @map("search_term")
+  searchCatId    String?  @map("search_cat_id")
+  searchCategory String   @map("search_category")
+  searchLocation String?  @map("search_location")
+  searchDate     DateTime @default(now()) @map("search_date")
+  searchCount    Int      @default(1) @map("search_count")
+
+  @@index([searchTerm])
+  @@index([searchCategory])
+  @@index([searchTerm, searchCategory])
+  @@map("searches")
+}
+
+model Wildlife {
+  id                 Int      @id @default(autoincrement())
+  name               String
+  description        String?  @db.Text
+  location           String?
+  district           String?
+  latitude           Decimal? @db.Decimal(10, 8)
+  longitude          Decimal? @db.Decimal(11, 8)
+  bestSeason         String?  @map("best_season")
+  entryFee           Decimal? @map("entry_fee") @db.Decimal(10, 2)
+  openingHours       String?  @map("opening_hours")
+  animalSpecies      String?  @map("animal_species") @db.Text
+  conservationStatus String?  @map("conservation_status")
+  imageUrls          String?  @map("image_urls") @db.Text
+  contactInfo        String?  @map("contact_info")
+  status             String?  @default("Active")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@index([name])
+  @@index([location])
+  @@index([district])
+  @@map("wildlife")
+}
+
+model Culture {
+  id                     Int       @id @default(autoincrement())
+  name                   String
+  type                   String?   @db.Text
+  description            String?   @db.Text
+  location               String?
+  district               String?
+  startDate              DateTime? @map("start_date")
+  endDate                DateTime? @map("end_date")
+  historicalSignificance String?   @map("historical_significance") @db.Text
+  culturalImportance     String?   @map("cultural_importance") @db.Text
+  imageUrls              String?   @map("image_urls") @db.Text
+  contactInfo            String?   @map("contact_info")
+  status                 String?   @default("Active")
+  createdAt              DateTime  @default(now()) @map("created_at")
+
+  @@index([name])
+  @@index([location])
+  @@map("culture")
+}
+
+model Adventure {
+  id              Int      @id @default(autoincrement())
+  name            String
+  type            String?  @db.Text
+  description     String?  @db.Text
+  location        String?
+  district        String?
+  difficultyLevel String?  @map("difficulty_level") @db.Text
+  duration        String?
+  price           Decimal? @db.Decimal(10, 2)
+  includes        String?  @db.Text
+  excludes        String?  @db.Text
+  ageRestrictions String?  @map("age_restrictions")
+  fitnessLevel    String?  @map("fitness_level")
+  bestSeason      String?  @map("best_season")
+  imageUrls       String?  @map("image_urls") @db.Text
+  contactInfo     String?  @map("contact_info")
+  status          String?  @default("Available")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([name])
+  @@index([location])
+  @@map("adventure")
+}
+
+model Package {
+  id                 Int      @id @default(autoincrement())
+  title              String
+  type               String?  @db.Text
+  description        String?  @db.Text
+  duration           String?
+  originalPrice      Decimal? @map("original_price") @db.Decimal(10, 2)
+  discountedPrice    Decimal? @map("discounted_price") @db.Decimal(10, 2)
+  discountPercentage Int?     @map("discount_percentage")
+  includes           String?  @db.Text
+  excludes           String?  @db.Text
+  itinerary          String?  @db.Text
+  locationsCovered   String?  @map("locations_covered") @db.Text
+  bestTimeToVisit    String?  @map("best_time_to_visit")
+  groupSize          String?  @map("group_size")
+  imageUrls          String?  @map("image_urls") @db.Text
+  status             String?  @default("Active")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@index([title])
+  @@index([discountedPrice])
+  @@map("packages")
+}
+
+model News {
+  id            Int       @id @default(autoincrement())
+  title         String
+  url           String?   @db.Text
+  category      String?   @db.Text
+  content       String?   @db.Text
+  author        String?
+  source        String?
+  publishedDate DateTime? @default(now()) @map("published_date")
+  imageUrls     String?   @map("image_urls") @db.Text
+  tags          String?   @db.Text
+  viewsCount    Int?      @default(0) @map("views_count")
+  status        String?   @default("Published")
+  createdAt     DateTime? @default(now()) @map("created_at")
+
+  @@index([title])
+  @@map("news")
+}
+
+model Directory {
+  id            Int       @id @default(autoincrement())
+  businessName  String    @map("business_name")
+  category      String?   @db.Text
+  subcategory   String?
+  description   String?   @db.Text
+  address       String?
+  district      String?
+  city          String?   @db.Text
+  contactNumber String?   @map("contact_number")
+  email         String?
+  website       String?
+  latitude      Decimal?  @db.Decimal(10, 8)
+  longitude     Decimal?  @db.Decimal(11, 8)
+  workingHours  String?   @map("working_hours")
+  imageUrls     String?   @map("image_urls") @db.Text
+  rating        Decimal?  @db.Decimal(3, 2)
+  reviewsCount  Int?      @default(0) @map("reviews_count")
+  updatedAt     DateTime? @updatedAt @map("updated_at")
+  status        String?   @default("Active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  facebookPostId String?  @map("facebook_post_id")
+
+  @@index([businessName])
+  @@index([district])
+  @@index([rating])
+  @@map("directory")
+}
+
+model Job {
+  id                  Int       @id @default(autoincrement())
+  title               String
+  company             String?
+  category            String
+  type                String
+  location            String?
+  district            String?
+  salaryMin           Decimal?  @map("salary_min") @db.Decimal(10, 2)
+  salaryMax           Decimal?  @map("salary_max") @db.Decimal(10, 2)
+  experienceMin       Int?      @map("experience_min")
+  experienceMax       Int?      @map("experience_max")
+  skillsRequired      String?   @map("skills_required") @db.Text
+  jobDescription      String?   @map("job_description") @db.Text
+  responsibilities    String?   @db.Text
+  qualifications      String?   @db.Text
+  applicationDeadline DateTime? @map("application_deadline")
+  contactEmail        String?   @map("contact_email")
+  viewsCount          Int?      @default(0) @map("views_count")
+  applicationsCount   Int?      @default(0) @map("applications_count")
+  status              String?   @default("Open")
+  createdAt           DateTime? @default(now()) @map("created_at")
+
+  @@index([title])
+  @@index([location])
+  @@map("jobs")
+}
+
+model Lead {
+  id        Int       @id @default(autoincrement())
+  name      String?   @db.Text
+  mobile    String?   @db.Text
+  listingId String?   @map("listing_id") @db.Text
+  timestamp String?   @db.Text
+  status    String?   @default("pending")
+  notes     String?   @db.Text
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  @@map("leads")
+}
+
+model PageView {
+  id         Int       @id @default(autoincrement())
+  pageName   String    @map("page_name")
+  views      Int?      @default(0)
+  lastViewed DateTime? @default(now()) @map("last_viewed")
+
+  @@map("page_views")
+}
+
+model Review {
+  id         Int       @id @default(autoincrement())
+  entityType String    @map("entity_type")
+  entityId   Int       @map("entity_id")
+  userId     Int?      @map("user_id")
+  rating     Decimal   @db.Decimal(3, 2)
+  reviewText String?   @map("review_text") @db.Text
+  status     String?   @default("Pending")
+  createdAt  DateTime? @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@map("reviews")
+}
+
+model Booking {
+  id              Int       @id @default(autoincrement())
+  entityType      String    @map("entity_type")
+  entityId        Int       @map("entity_id")
+  userId          Int?      @map("user_id")
+  fullName        String?   @map("full_name")
+  email           String?
+  mobileNumber    String?   @map("mobile_number")
+  bookingDate     DateTime? @map("booking_date")
+  numberOfPersons Int?      @map("number_of_persons")
+  totalPrice      Decimal?  @map("total_price") @db.Decimal(10, 2)
+  paymentStatus   String?   @default("Pending") @map("payment_status")
+  bookingStatus   String?   @default("Confirmed") @map("booking_status")
+  specialRequests String?   @map("special_requests") @db.Text
+  createdAt       DateTime? @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@map("bookings")
+}
+
+model SystemHealth {
+  id        String   @id @default(cuid())
+  status    String   @default("OK")
+  checkedAt DateTime @default(now()) @map("checked_at")
+
+  @@map("system_health")
+}

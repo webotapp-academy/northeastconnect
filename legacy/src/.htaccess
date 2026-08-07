@@ -1,0 +1,49 @@
+RewriteEngine On
+
+# 0) Serve existing files and directories as-is
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# 1) Canonical: redirect direct .php requests to extensionless
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.php[\s?] [NC]
+RewriteRule ^ %1 [R=301,NE,L]
+
+# 1b) Canonical: redirect old article.php?news=slug to /news/slug
+RewriteCond %{THE_REQUEST} \s/+article\.php\?news=([A-Za-z0-9_-]+) [NC]
+RewriteRule ^ news/%1 [R=301,L]
+
+# 1c) Canonical: redirect old details.php?id=123 to /culture-details/123
+RewriteCond %{THE_REQUEST} \s/+details\.php\?id=([0-9]+) [NC]
+RewriteRule ^ culture-details/%1 [R=301,L]
+
+# 2) Map top-level pages without .php
+RewriteRule ^(index|culture|news|wildlife|adventure|directory|post-ads|search-results|details|privacy|terms|contact|blogs)$ $1.php [L,QSA]
+
+# 3) Pretty details route: /details/123 -> details.php?id=123
+RewriteRule ^details/([0-9]+)/?$ details.php?id=$1 [L,QSA]
+
+# 4) News article pretty URLs: /news/some-article-slug -> article.php?news=some-article-slug
+RewriteRule ^news/([A-Za-z0-9_-]+)/?$ article.php?news=$1 [L,QSA]
+
+# 5) Pretty business-details route: /listing/business-name-id -> business-details.php?name=business-name&id=id
+RewriteRule ^listing/([A-Za-z0-9_-]+)-([0-9]+)/?$ business-details.php?name=$1&id=$2 [L,QSA]
+
+
+# 5) Directory filters: /directory/Category[/District] -> directory.php?category=Category&district=District
+RewriteRule ^directory/([^/]+)/([^/]+)/?$ directory.php?category=$1&district=$2 [L,QSA]
+# 5b) Only category provided
+RewriteRule ^directory/([^/]+)/?$ directory.php?category=$1 [L,QSA]
+
+# 6) Pretty adventure route: /adventure/slug-id -> adventure-details.php?id=id
+RewriteRule ^adventure/[A-Za-z0-9_-]+-([0-9]+)/?$ adventure-details.php?id=$1 [L,QSA]
+# # 6b) Old ID-based adventure-details route (disabled)
+# RewriteRule ^adventure-details/([0-9]+)/?$ adventure-details.php?id=$1 [L,QSA]
+
+# 7) Pretty wildlife route: /wildlife/slug-id -> wildlife-details.php?id=id
+RewriteRule ^wildlife/[A-Za-z0-9_-]+-([0-9]+)/?$ wildlife-details.php?id=$1 [L,QSA]
+# # 7b) Old ID-based wildlife-details route (disabled)
+# RewriteRule ^wildlife-details/([0-9]+)/?$ wildlife-details.php?id=$1 [L,QSA]
+
+# 8) Pretty blog route: /blog/slug-id -> blog-details.php?id=id
+RewriteRule ^blog/[A-Za-z0-9_-]+-([0-9]+)/?$ blog-details.php?id=$1 [L,QSA]

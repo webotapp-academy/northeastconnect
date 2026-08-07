@@ -60,7 +60,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const directoryRoutes: MetadataRoute.Sitemap = directory.map((item) => {
       const slug = item.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
       return {
-        url: `${baseUrl}/directory/${slug}-${item.id}`,
+        url: `${baseUrl}/listing/${slug}-${item.id}`,
         lastModified: item.createdAt ? new Date(item.createdAt) : new Date(),
         changeFrequency: "monthly",
         priority: 0.6,

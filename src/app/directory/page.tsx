@@ -227,7 +227,7 @@ export default async function DirectoryPage({ searchParams }: PageProps) {
                   <div className="space-y-6">
                     {directoryList.map((item) => {
                       const slug = item.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-                      const detailUrl = `/directory/${slug}-${item.id}`;
+                      const detailUrl = `/listing/${slug}-${item.id}`;
                       const cleanDesc = stripHtml(item.description);
                       const rawImgs = item.imageUrls ? item.imageUrls.split(",") : [];
                       const mainImage = rawImgs[0] ? formatImageSrc(rawImgs[0]) : null;

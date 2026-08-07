@@ -1,10 +1,14 @@
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { cache } from "react";
+import type { Metadata } from "next";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://northeastconnect.in";
 
 function formatImageSrc(imgStr: string): string {
   if (!imgStr) return "";
@@ -26,24 +30,67 @@ function stripHtml(htmlStr: string | null | undefined): string {
     .trim();
 }
 
+// Cached per-request so generateMetadata and the page body share one DB lookup.
+const getArticle = cache(async (decodedParam: string) => {
+  const numericId = parseInt(decodedParam, 10);
+
+  if (!isNaN(numericId)) {
+    const byId = await db.news.findUnique({ where: { id: numericId } });
+    if (byId) return byId;
+  }
+
+  return db.news.findFirst({ where: { url: decodedParam } });
+});
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const decodedParam = decodeURIComponent(id);
+  const article = await getArticle(decodedParam);
+
+  if (!article) {
+    return { title: "Article Not Found" };
+  }
+
+  const description = stripHtml(article.content).slice(0, 160);
+  const rawImages = article.imageUrls ? article.imageUrls.split(",") : [];
+  const mainImage = rawImages[0] ? formatImageSrc(rawImages[0]) : `${siteUrl}/assets/images/hero.jpg`;
+  const canonicalPath = `/news/${article.url || article.id}`;
+  const keywords = article.tags ? article.tags.split(",").map((t) => t.trim()).filter(Boolean) : undefined;
+
+  return {
+    title: article.title,
+    description,
+    keywords,
+    authors: [{ name: article.author || "Editorial Team" }],
+    alternates: {
+      canonical: canonicalPath,
+    },
+    openGraph: {
+      type: "article",
+      title: article.title,
+      description,
+      url: canonicalPath,
+      siteName: "North East Connect",
+      publishedTime: article.publishedDate ? new Date(article.publishedDate).toISOString() : undefined,
+      authors: [article.author || "Editorial Team"],
+      section: article.category || "News",
+      tags: keywords,
+      images: [{ url: mainImage, width: 1200, height: 630, alt: article.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description,
+      images: [mainImage],
+    },
+  };
+}
+
 export default async function NewsDetailPage({ params }: PageProps) {
   const { id } = await params;
   const decodedParam = decodeURIComponent(id);
-  const numericId = parseInt(decodedParam, 10);
 
-  let article = null;
-
-  if (!isNaN(numericId)) {
-    article = await db.news.findUnique({
-      where: { id: numericId },
-    });
-  }
-
-  if (!article) {
-    article = await db.news.findFirst({
-      where: { url: decodedParam },
-    });
-  }
+  const article = await getArticle(decodedParam);
 
   if (!article) {
     notFound();

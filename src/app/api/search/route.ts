@@ -99,7 +99,7 @@ export async function GET(request: Request) {
           label: d.businessName,
           type: "directory",
           id: d.id,
-          url: `/directory/${slug}-${d.id}`,
+          url: `/listing/${slug}-${d.id}`,
         };
       }),
     ];

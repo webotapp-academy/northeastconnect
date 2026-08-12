@@ -1,9 +1,96 @@
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://northeastconnect.in";
+
+function formatImageSrc(imgStr: string): string {
+  if (!imgStr) return "";
+  const trimmed = imgStr.trim();
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
+  if (trimmed.startsWith("/")) return trimmed;
+  return `/assets/images/${trimmed}`;
+}
+
+function stripHtml(htmlStr: string | null | undefined): string {
+  if (!htmlStr) return "";
+  return htmlStr
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const idMatch = id.match(/-(\d+)$/) || [null, id];
+  const numericId = parseInt(idMatch[1], 10);
+
+  let business = null;
+  if (!isNaN(numericId)) {
+    business = await db.directory.findUnique({
+      where: { id: numericId },
+    });
+  }
+
+  if (!business) {
+    return {
+      title: "Business Listing Not Found",
+    };
+  }
+
+  const cleanDesc =
+    stripHtml(business.description).slice(0, 160) ||
+    `${business.businessName} located in ${business.district || "Guwahati"}, Assam. Verified business info, address, working hours, and contact details on North East Connect.`;
+
+  const rawImages = business.imageUrls ? business.imageUrls.split(",") : [];
+  const mainImage = rawImages[0] ? formatImageSrc(rawImages[0]) : `${siteUrl}/assets/images/hero.jpg`;
+  const canonicalUrl = `${siteUrl}/listing/${id}`;
+
+  return {
+    title: `${business.businessName} - ${business.district || "Guwahati"}, Assam`,
+    description: cleanDesc,
+    keywords: [
+      business.businessName,
+      business.category,
+      business.district,
+      "Assam Business Directory",
+      "Guwahati Businesses",
+      "North East Connect",
+    ].filter(Boolean) as string[],
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      type: "website",
+      url: canonicalUrl,
+      title: `${business.businessName} - ${business.district || "Guwahati"}, Assam | North East Connect`,
+      description: cleanDesc,
+      siteName: "North East Connect",
+      images: [
+        {
+          url: mainImage,
+          width: 1200,
+          height: 630,
+          alt: business.businessName,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${business.businessName} - ${business.district || "Guwahati"}, Assam`,
+      description: cleanDesc,
+      images: [mainImage],
+    },
+  };
 }
 
 export default async function ListingDetailPage({ params }: PageProps) {

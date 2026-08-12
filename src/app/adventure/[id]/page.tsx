@@ -1,9 +1,50 @@
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://northeastconnect.in";
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const idMatch = id.match(/-(\d+)$/) || [null, id];
+  const numericId = parseInt(idMatch[1], 10);
+
+  let activity = null;
+  if (!isNaN(numericId)) {
+    activity = await db.adventure.findUnique({
+      where: { id: numericId },
+    });
+  }
+
+  if (!activity) {
+    return { title: "Adventure Activity Not Found" };
+  }
+
+  const desc = activity.description?.slice(0, 160) || `Experience ${activity.name} in ${activity.location || "Assam"}. Difficulty level, best season, and booking on North East Connect.`;
+  const canonicalUrl = `${siteUrl}/adventure/${id}`;
+
+  return {
+    title: `${activity.name} - ${activity.location || "Assam"} | Adventure`,
+    description: desc,
+    keywords: [activity.name, activity.type, activity.location, "Assam Adventure", "Northeast Trekking"].filter(Boolean) as string[],
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      title: `${activity.name} - ${activity.location || "Assam"} | North East Connect`,
+      description: desc,
+      url: canonicalUrl,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${activity.name} - ${activity.location || "Assam"}`,
+      description: desc,
+    },
+  };
 }
 
 export default async function AdventureDetailPage({ params }: PageProps) {
@@ -50,100 +91,69 @@ export default async function AdventureDetailPage({ params }: PageProps) {
             {activity.name}
           </h1>
           <p className="text-xl md:text-2xl text-gray-200 mb-12">
-            {activity.district || activity.location} District, Assam
+            {activity.type || "Adventure Experience"}
           </p>
         </div>
       </header>
 
-      {/* Adventure Details Section */}
-      <div className="bg-gray-50 py-16">
-        <div className="container mx-auto px-4 max-w-6xl">
+      {/* Main Content */}
+      <div className="py-16">
+        <div className="container mx-auto px-4 max-w-5xl">
           <Link href="/adventure" className="inline-flex items-center text-sm font-semibold text-orange-600 hover:underline mb-8">
-            &larr; Back to Adventure Activities
+            &larr; Back to Outdoor Adventures
           </Link>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Information Card */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-              <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-4">
-                Activity Details
+          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 space-y-8">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-4 border-b pb-4">
+                About {activity.name}
               </h2>
-              <div className="space-y-4">
-                <div className="flex items-center">
-                  <span className="text-lg font-semibold text-gray-800">
-                    {activity.name}
-                  </span>
-                </div>
+              <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-line">
+                {activity.description}
+              </p>
+            </div>
 
-                <div className="flex items-center text-sm">
-                  <span className="font-semibold text-gray-700 mr-2">Category:</span>
-                  <span className="text-gray-600">{activity.type || "Outdoor Adventure"}</span>
-                </div>
-
-                <div className="flex items-center text-sm">
-                  <span className="font-semibold text-gray-700 mr-2">Difficulty:</span>
-                  <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-bold">
-                    {activity.difficultyLevel || "Moderate"}
-                  </span>
-                </div>
-
-                {activity.price && (
-                  <div className="flex items-center text-sm">
-                    <span className="font-semibold text-gray-700 mr-2">Price per Person:</span>
-                    <span className="text-xl font-bold text-green-700">₹{Number(activity.price).toLocaleString()}</span>
-                  </div>
-                )}
-
-                <div className="flex items-center text-sm">
-                  <span className="font-semibold text-gray-700 mr-2">Duration:</span>
-                  <span className="text-gray-600">{activity.duration || "Full Day"}</span>
-                </div>
-
-                <div className="flex items-center text-sm">
-                  <span className="font-semibold text-gray-700 mr-2">Best Season:</span>
-                  <span className="text-gray-600">{activity.bestSeason || "October - May"}</span>
-                </div>
-
-                {activity.includes && (
-                  <div className="flex items-start text-sm">
-                    <span className="font-semibold text-gray-700 mr-2 min-w-[70px]">Includes:</span>
-                    <span className="text-gray-600">{activity.includes}</span>
-                  </div>
-                )}
-
-                {activity.contactInfo && (
-                  <div className="flex items-center text-sm pt-2 border-t border-gray-100">
-                    <span className="font-semibold text-gray-700 mr-2">Contact:</span>
-                    <span className="text-gray-600">{activity.contactInfo}</span>
-                  </div>
-                )}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t">
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Location</h3>
+                <p className="text-gray-600">{activity.location}</p>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Difficulty</h3>
+                <span className="inline-block bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-semibold">
+                  {activity.difficultyLevel || "Moderate"}
+                </span>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Best Season</h3>
+                <p className="text-gray-600">{activity.bestSeason || "October - April"}</p>
               </div>
             </div>
 
-            {/* Images Grid and Description */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 flex flex-col">
-              {images.length > 0 && (
-                <div className="w-full grid grid-cols-2 gap-3 mb-6">
+            {images.length > 0 && (
+              <div className="pt-6 border-t">
+                <h3 className="text-2xl font-bold text-gray-800 mb-6">Photo Gallery</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {images.map((img, idx) => (
-                    <img
-                      key={idx}
-                      src={img}
-                      alt={activity.name}
-                      className="w-full h-40 object-cover rounded-xl shadow-sm hover:opacity-90 transition-opacity"
-                    />
+                    <div key={idx} className="rounded-xl overflow-hidden shadow">
+                      <img
+                        src={img}
+                        alt={`${activity.name} photo ${idx + 1}`}
+                        className="w-full h-64 object-cover hover:scale-105 transition duration-300"
+                      />
+                    </div>
                   ))}
                 </div>
-              )}
-              <h3 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Description</h3>
-              <p className="text-gray-600 text-base leading-relaxed whitespace-pre-line">
-                {activity.description}
-              </p>
-
-              <div className="mt-8 pt-4 border-t border-gray-100 flex justify-end">
-                <Link href="/contact" className="bg-orange-600 text-white px-8 py-3 rounded-xl hover:bg-orange-700 transition font-semibold text-sm shadow-md">
-                  Book Expedition &rarr;
-                </Link>
               </div>
+            )}
+
+            <div className="pt-6 border-t flex justify-end">
+              <Link
+                href="/contact"
+                className="bg-orange-600 text-white px-8 py-3 rounded-full hover:bg-orange-700 transition font-bold"
+              >
+                Book This Experience
+              </Link>
             </div>
           </div>
         </div>

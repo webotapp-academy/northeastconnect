@@ -1,10 +1,13 @@
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://northeastconnect.in";
 
 function formatImageSrc(imgStr: string): string {
   if (!imgStr) return "";
@@ -12,6 +15,44 @@ function formatImageSrc(imgStr: string): string {
   if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
   if (trimmed.startsWith("/")) return trimmed;
   return `/assets/images/${trimmed}`;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id } = await params;
+  const idMatch = id.match(/-(\d+)$/) || [null, id];
+  const numericId = parseInt(idMatch[1], 10);
+
+  let culture = null;
+  if (!isNaN(numericId)) {
+    culture = await db.culture.findUnique({
+      where: { id: numericId },
+    });
+  }
+
+  if (!culture) {
+    return { title: "Cultural Heritage Not Found" };
+  }
+
+  const desc = culture.description?.slice(0, 160) || `Experience ${culture.name} in ${culture.district || "Assam"}. Festival dates, history, and cultural heritage on North East Connect.`;
+  const canonicalUrl = `${siteUrl}/culture/${id}`;
+
+  return {
+    title: `${culture.name} - ${culture.district || "Assam"} | Cultural Heritage`,
+    description: desc,
+    keywords: [culture.name, culture.type, culture.district, "Assam Culture", "Bihu Festival", "Northeast Heritage"].filter(Boolean) as string[],
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      title: `${culture.name} - ${culture.district || "Assam"} | North East Connect`,
+      description: desc,
+      url: canonicalUrl,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${culture.name} - ${culture.district || "Assam"}`,
+      description: desc,
+    },
+  };
 }
 
 export default async function CultureDetailPage({ params }: PageProps) {

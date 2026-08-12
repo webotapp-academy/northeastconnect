@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
+import GoogleAd from "@/components/GoogleAd";
 
 export const revalidate = 60;
 
@@ -81,6 +82,9 @@ export default async function NewsPage({ searchParams }: PageProps) {
               Discover what’s happening across Assam right now
             </p>
           </div>
+
+          {/* Top News Google Ad */}
+          <GoogleAd format="horizontal" responsive={true} className="max-w-4xl mx-auto mb-10" />
 
           <div className="grid md:grid-cols-3 gap-8">
             {newsList.map((n) => {

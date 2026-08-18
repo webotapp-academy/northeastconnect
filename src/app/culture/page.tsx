@@ -68,7 +68,7 @@ export default async function CulturePage({ searchParams }: PageProps) {
           />
         </div>
 
-        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto pt-20">
+        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto pt-36 pb-14 md:pt-40 md:pb-18">
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
             Cultural Heritage
           </h1>

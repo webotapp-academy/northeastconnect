@@ -1,14 +1,18 @@
 import { MetadataRoute } from "next";
 import { db } from "@/lib/db";
 
-export const revalidate = 3600; // Revalidate every 1 hour
+export const revalidate = 1800; // Revalidate every 30 minutes
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://northeastconnect.in";
 
-  // Static routes
+  // Static core routes
   const staticRoutes: MetadataRoute.Sitemap = [
     "",
+    "/marketplace",
+    "/marketplace/new",
+    "/community",
+    "/leaderboard",
     "/wildlife",
     "/culture",
     "/adventure",
@@ -19,34 +23,76 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
-    changeFrequency: "daily",
-    priority: route === "" ? 1.0 : 0.8,
+    changeFrequency: route === "" || route === "/marketplace" || route === "/community" ? "hourly" : "daily",
+    priority: route === "" ? 1.0 : route === "/marketplace" || route === "/community" ? 0.9 : 0.8,
   }));
 
   // Fetch dynamic routes from database
   try {
-    const [news, directory, wildlife, adventure, culture] = await Promise.all([
+    const [marketplace, users, culture, news, directory, wildlife, adventure] = await Promise.all([
+      db.marketplaceListing.findMany({
+        where: { status: "Active" },
+        select: { id: true, updatedAt: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+        take: 2000,
+      }),
+      db.user.findMany({
+        where: { status: "Active" },
+        select: { username: true, createdAt: true },
+        take: 2000,
+      }),
+      db.culture.findMany({
+        select: { id: true, name: true, createdAt: true },
+        take: 2000,
+      }),
       db.news.findMany({
         where: { status: "Published" },
         select: { id: true, url: true, publishedDate: true },
         orderBy: { publishedDate: "desc" },
-        take: 1000,
+        take: 2000,
       }),
       db.directory.findMany({
         select: { id: true, businessName: true, createdAt: true },
-        take: 1000,
+        take: 2000,
       }),
       db.wildlife.findMany({
         select: { id: true, name: true, createdAt: true },
+        take: 2000,
       }),
       db.adventure.findMany({
         select: { id: true, name: true, createdAt: true },
-      }),
-      db.culture.findMany({
-        select: { id: true, name: true, createdAt: true },
+        take: 2000,
       }),
     ]);
 
+    // 1. Marketplace Listings
+    const marketplaceRoutes: MetadataRoute.Sitemap = marketplace.map((item) => ({
+      url: `${baseUrl}/marketplace/${item.id}`,
+      lastModified: item.updatedAt ? new Date(item.updatedAt) : new Date(item.createdAt),
+      changeFrequency: "daily",
+      priority: 0.8,
+    }));
+
+    // 2. User Profiles
+    const profileRoutes: MetadataRoute.Sitemap = users.map((user) => ({
+      url: `${baseUrl}/profile/${encodeURIComponent(user.username)}`,
+      lastModified: user.createdAt ? new Date(user.createdAt) : new Date(),
+      changeFrequency: "weekly",
+      priority: 0.6,
+    }));
+
+    // 3. Culture Heritage & Festivals
+    const cultureRoutes: MetadataRoute.Sitemap = culture.map((item) => {
+      const slug = item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      return {
+        url: `${baseUrl}/culture/${slug}-${item.id}`,
+        lastModified: item.createdAt ? new Date(item.createdAt) : new Date(),
+        changeFrequency: "weekly",
+        priority: 0.7,
+      };
+    });
+
+    // 4. News Articles
     const newsRoutes: MetadataRoute.Sitemap = news.map((item) => {
       const slugOrId = item.url || item.id;
       return {
@@ -57,6 +103,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
 
+    // 5. Directory Businesses
     const directoryRoutes: MetadataRoute.Sitemap = directory.map((item) => {
       const slug = item.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
       return {
@@ -67,6 +114,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
 
+    // 6. Wildlife Sanctuaries
     const wildlifeRoutes: MetadataRoute.Sitemap = wildlife.map((item) => {
       const slug = item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
       return {
@@ -77,6 +125,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
 
+    // 7. Adventure Spots
     const adventureRoutes: MetadataRoute.Sitemap = adventure.map((item) => {
       const slug = item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
       return {
@@ -87,26 +136,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
 
-    const cultureRoutes: MetadataRoute.Sitemap = culture.map((item) => {
-      const slug = item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-      return {
-        url: `${baseUrl}/culture/${slug}-${item.id}`,
-        lastModified: item.createdAt ? new Date(item.createdAt) : new Date(),
-        changeFrequency: "monthly",
-        priority: 0.7,
-      };
-    });
-
     return [
       ...staticRoutes,
+      ...marketplaceRoutes,
+      ...profileRoutes,
+      ...cultureRoutes,
       ...newsRoutes,
       ...directoryRoutes,
       ...wildlifeRoutes,
       ...adventureRoutes,
-      ...cultureRoutes,
     ];
   } catch (error) {
-    console.error("Error generating dynamic sitemap:", error);
+    console.error("Error generating dynamic master sitemap:", error);
     return staticRoutes;
   }
 }

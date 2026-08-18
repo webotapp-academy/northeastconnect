@@ -86,7 +86,7 @@ export default async function DirectoryPage({ searchParams }: PageProps) {
           />
         </div>
 
-        <div className="relative z-10 max-w-5xl mx-auto space-y-6 pt-20">
+        <div className="relative z-10 max-w-5xl mx-auto space-y-6 pt-36 pb-14 md:pt-40 md:pb-18">
           <h1 className="text-4xl md:text-6xl font-extrabold text-white">
             Business Directory
           </h1>

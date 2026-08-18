@@ -33,7 +33,16 @@ model User {
   fullName          String?   @map("full_name")
   mobileNumber      String?   @map("mobile_number")
   profileImageUrl   String?   @map("profile_image_url")
+  coverImageUrl     String?   @map("cover_image_url")
+  bio               String?   @db.Text
+  state             String?
+  city              String?
   role              String    @default("User")
+  xpPoints          Int       @default(0) @map("xp_points")
+  rankTier          String    @default("Explorer Novice") @map("rank_tier")
+  badges            String?   @db.Text
+  websiteUrl        String?   @map("website_url")
+  socialLinks       String?   @map("social_links") @db.Text
   lastLogin         DateTime? @map("last_login")
   isVerified        Boolean   @default(false) @map("is_verified")
   verificationToken String?   @map("verification_token")
@@ -42,8 +51,17 @@ model User {
   status            String    @default("Active")
   createdAt         DateTime  @default(now()) @map("created_at")
 
-  reviews  Review[]
-  bookings Booking[]
+  reviews                Review[]
+  bookings               Booking[]
+  comments               UniversalComment[]
+  commentLikes           CommentLike[]
+  sentFriendships        Friendship[]        @relation("SentFriendships")
+  receivedFriendships    Friendship[]        @relation("ReceivedFriendships")
+  communityPosts         CommunityPost[]
+  activityLogs           UserActivityLog[]
+  notifications          Notification[]      @relation("UserNotifications")
+  triggeredNotifications Notification[]      @relation("ActorNotifications")
+  marketplaceListings    MarketplaceListing[]
 
   @@map("users")
 }
@@ -321,4 +339,148 @@ model SystemHealth {
   checkedAt DateTime @default(now()) @map("checked_at")
 
   @@map("system_health")
+}
+
+model Friendship {
+  id         Int      @id @default(autoincrement())
+  senderId   Int      @map("sender_id")
+  receiverId Int      @map("receiver_id")
+  status     String   @default("PENDING") // PENDING, ACCEPTED, REJECTED, BLOCKED
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  sender   User @relation("SentFriendships", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("ReceivedFriendships", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([status])
+  @@map("friendships")
+}
+
+model UniversalComment {
+  id         Int       @id @default(autoincrement())
+  entityType String    @map("entity_type") // news, culture, wildlife, adventure, directory, post
+  entityId   Int       @map("entity_id")
+  userId     Int       @map("user_id")
+  parentId   Int?      @map("parent_id")
+  content    String    @db.Text
+  likesCount Int       @default(0) @map("likes_count")
+  status     String    @default("Active") // Active, Flagged, Deleted
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  user    User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent  UniversalComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies UniversalComment[] @relation("CommentReplies")
+  likes   CommentLike[]
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([parentId])
+  @@map("universal_comments")
+}
+
+model CommentLike {
+  id        Int      @id @default(autoincrement())
+  commentId Int      @map("comment_id")
+  userId    Int      @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  comment UniversalComment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([commentId, userId])
+  @@index([commentId])
+  @@index([userId])
+  @@map("comment_likes")
+}
+
+model CommunityPost {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @map("user_id")
+  content          String   @db.Text
+  mediaUrls        String?  @map("media_urls") @db.Text
+  taggedLocation   String?  @map("tagged_location")
+  taggedEntityType String?  @map("tagged_entity_type")
+  taggedEntityId   Int?     @map("tagged_entity_id")
+  likesCount       Int      @default(0) @map("likes_count")
+  commentsCount    Int      @default(0) @map("comments_count")
+  status           String   @default("Active")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("community_posts")
+}
+
+model UserActivityLog {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  actionType String   @map("action_type") // COMMENT, POST, FRIEND_ACCEPTED, REVIEW, DAILY_LOGIN, LIKE
+  xpEarned   Int      @map("xp_earned")
+  metadata   String?  @db.Text
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([actionType])
+  @@map("user_activity_logs")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  actorId   Int?     @map("actor_id")
+  type      String   // FRIEND_REQUEST, FRIEND_ACCEPT, COMMENT_REPLY, POST_LIKE, COMMENT_LIKE, RANK_UP, BADGE_UNLOCKED
+  title     String
+  message   String   @db.Text
+  linkUrl   String?  @map("link_url")
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  actor User? @relation("ActorNotifications", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("notifications")
+}
+
+model MarketplaceListing {
+  id              Int      @id @default(autoincrement())
+  title           String
+  description     String   @db.Text
+  price           Float
+  isNegotiable    Boolean  @default(true) @map("is_negotiable")
+  category        String   // Vehicles, Electronics, Property, Furniture, Handlooms & Crafts, Tea & Agri, Fashion, Jobs & Services, Others
+  condition       String   @default("Used") // Brand New, Like New, Good, Fair
+  state           String   // Assam, Meghalaya, etc.
+  city            String   // Guwahati, Shillong, etc.
+  locality        String?
+  imageUrls       String?  @map("image_urls") @db.Text
+  contactPhone    String?  @map("contact_phone")
+  contactWhatsApp String?  @map("contact_whatsapp")
+  contactEmail    String?  @map("contact_email")
+  status          String   @default("Active") // Active, Sold, Inactive
+  featured        Boolean  @default(false)
+  viewsCount      Int      @default(0) @map("views_count")
+  userId          Int      @map("user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([category])
+  @@index([state])
+  @@index([city])
+  @@index([status])
+  @@index([createdAt])
+  @@map("marketplace_listings")
 }

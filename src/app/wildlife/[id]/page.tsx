@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import CommentSection from "@/components/comments/CommentSection";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -65,13 +66,27 @@ export default async function WildlifeDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const rawImages = park.imageUrls ? park.imageUrls.split(",") : [];
-  const images = rawImages.map((img) => {
-    const trimmed = img.trim();
-    if (!trimmed || trimmed === "null") return "/assets/images/1.jpg";
-    if (trimmed.startsWith("http")) return trimmed;
-    return `/assets/images/${trimmed}`;
-  });
+  let images: string[] = ["/assets/images/hero.jpg"];
+  if (park.imageUrls) {
+    try {
+      const parsed = JSON.parse(park.imageUrls);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        images = parsed.map((img: string) =>
+          img.startsWith("http") || img.startsWith("/") ? img : `/assets/images/${img}`
+        );
+      } else if (typeof parsed === "string") {
+        images = [parsed.startsWith("http") || parsed.startsWith("/") ? parsed : `/assets/images/${parsed}`];
+      }
+    } catch {
+      const split = park.imageUrls.replace(/[\[\]'"]/g, "").split(",");
+      if (split.length > 0 && split[0].trim()) {
+        images = split
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .map((img) => (img.startsWith("http") || img.startsWith("/") ? img : `/assets/images/${img}`));
+      }
+    }
+  }
 
   return (
     <main className="w-full bg-white text-gray-900 font-sans">
@@ -150,6 +165,14 @@ export default async function WildlifeDetailPage({ params }: PageProps) {
               </Link>
             </div>
           </div>
+
+          {/* Universal Community Comments */}
+          <CommentSection
+            entityType="wildlife"
+            entityId={park.id}
+            entityTitle={park.name}
+            entityUrl={`/wildlife/${id}`}
+          />
         </div>
       </div>
     </main>

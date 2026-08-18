@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import CommentSection from "@/components/comments/CommentSection";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -435,6 +436,14 @@ export default async function ListingDetailPage({ params }: PageProps) {
               </div>
             </div>
           )}
+
+          {/* Universal Community Comments & Reviews */}
+          <CommentSection
+            entityType="directory"
+            entityId={business.id}
+            entityTitle={business.businessName}
+            entityUrl={`/listing/${id}`}
+          />
         </div>
       </div>
     </main>

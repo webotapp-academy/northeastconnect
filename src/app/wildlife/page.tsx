@@ -53,7 +53,7 @@ export default async function WildlifePage({ searchParams }: PageProps) {
           />
         </div>
 
-        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto pt-20">
+        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto pt-36 pb-14 md:pt-40 md:pb-18">
           <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
             Wildlife Sanctuaries
           </h1>
@@ -155,9 +155,27 @@ export default async function WildlifePage({ searchParams }: PageProps) {
               {wildlifeList.map((item) => {
                 const slug = item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
                 const detailUrl = `/wildlife/${slug}-${item.id}`;
-                const images = item.imageUrls ? item.imageUrls.split(",") : [];
-                const mainImage = images[0]?.trim() || "1.jpg";
-                const imgSrc = mainImage.startsWith("http") ? mainImage : `/assets/images/${mainImage}`;
+                
+                let mainImage = "/assets/images/hero.jpg";
+                if (item.imageUrls) {
+                  try {
+                    const parsed = JSON.parse(item.imageUrls);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                      mainImage = parsed[0];
+                    } else if (typeof parsed === "string") {
+                      mainImage = parsed;
+                    }
+                  } catch {
+                    const split = item.imageUrls.replace(/[\[\]'"]/g, "").split(",");
+                    if (split.length > 0 && split[0].trim()) {
+                      mainImage = split[0].trim();
+                    }
+                  }
+                }
+
+                const imgSrc = mainImage.startsWith("http") || mainImage.startsWith("/")
+                  ? mainImage
+                  : `/assets/images/${mainImage}`;
 
                 return (
                   <div

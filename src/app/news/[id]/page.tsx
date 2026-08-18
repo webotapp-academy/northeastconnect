@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import GoogleAd from "@/components/GoogleAd";
+import CommentSection from "@/components/comments/CommentSection";
 import { cache } from "react";
 import type { Metadata } from "next";
 
@@ -222,9 +223,6 @@ export default async function NewsDetailPage({ params }: PageProps) {
           </a>
         </div>
 
-        {/* Top Responsive Leaderboard Ad */}
-        <GoogleAd format="horizontal" responsive={true} className="w-full my-4" />
-
         {/* Article Body Content rendered natively as HTML */}
         <article className="text-gray-900 text-lg leading-[1.8] font-sans space-y-4 my-8 prose max-w-none">
           <div dangerouslySetInnerHTML={{ __html: renderHtml }} />
@@ -259,11 +257,16 @@ export default async function NewsDetailPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* In-article & Bottom Live Google Ads */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-          <GoogleAd format="rectangle" responsive={true} className="w-full" />
-          <GoogleAd format="rectangle" responsive={true} className="w-full" />
-        </div>
+        {/* Discreet, cleanly formatted sponsor unit */}
+        <GoogleAd format="horizontal" responsive={true} className="max-w-3xl mx-auto my-8" />
+
+        {/* Universal Community Comments & Discussion */}
+        <CommentSection
+          entityType="news"
+          entityId={article.id}
+          entityTitle={article.title}
+          entityUrl={`/news/${article.url || article.id}`}
+        />
 
         {/* More News Section matching legacy article.php */}
         {moreNews.length > 0 && (

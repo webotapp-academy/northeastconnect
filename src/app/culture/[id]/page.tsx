@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import CommentSection from "@/components/comments/CommentSection";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -200,6 +201,14 @@ export default async function CultureDetailPage({ params }: PageProps) {
               </div>
             </div>
           </div>
+
+          {/* Universal Community Comments */}
+          <CommentSection
+            entityType="culture"
+            entityId={culture.id}
+            entityTitle={culture.name}
+            entityUrl={`/culture/${id}`}
+          />
 
           {/* Similar Heritage Grid */}
           {similarCulture.length > 0 && (

@@ -104,3 +104,11 @@ export async function getCurrentUser() {
     return null;
   }
 }
+
+export async function requireAdminUser() {
+  const user = await getCurrentUser();
+  if (!user) return null;
+  const role = (user.role || "").toLowerCase();
+  if (role !== "admin" && role !== "superadmin") return null;
+  return user;
+}

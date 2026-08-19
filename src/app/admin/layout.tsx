@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -24,19 +24,41 @@ const navItems = [
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/auth/me")
       .then((res) => res.json())
       .then((data) => {
         if (data.status === "success" && data.user) {
+          const role = (data.user.role || "").toLowerCase();
+          if (role !== "admin" && role !== "superadmin") {
+            router.replace("/login?error=unauthorized_role&redirect=/admin");
+            return;
+          }
           setCurrentUser(data.user);
+          setLoading(false);
+        } else {
+          router.replace("/login?error=admin_required&redirect=/admin");
         }
       })
-      .catch(() => {});
-  }, []);
+      .catch(() => {
+        router.replace("/login?error=admin_required&redirect=/admin");
+      });
+  }, [router]);
+
+  async function handleLogout() {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/login");
+      router.refresh();
+    } catch {
+      router.push("/login");
+    }
+  }
 
   const isActive = (item: { href: string; exact?: boolean }) => {
     if (item.exact) {
@@ -44,6 +66,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     }
     return pathname.startsWith(item.href);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f6f7fb] flex flex-col items-center justify-center p-4">
+        <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-sm font-semibold text-gray-700">Verifying administrator credentials...</p>
+        <p className="text-xs text-gray-400 mt-1">Please wait while we secure your session</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f6f7fb] text-gray-800 flex flex-col font-sans">
@@ -100,7 +132,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </nav>
 
           {/* Sidebar Footer */}
-          <div className="p-3 border-t border-gray-200 bg-gray-50/50">
+          <div className="p-3 border-t border-gray-200 bg-gray-50/50 space-y-2">
             <Link
               href="/"
               target="_blank"
@@ -108,6 +140,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             >
               <span>🌐</span> View Live Website
             </Link>
+            <button
+              onClick={handleLogout}
+              type="button"
+              className="flex items-center justify-center gap-2 w-full py-2 px-3 text-xs font-semibold text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition cursor-pointer"
+            >
+              <span>🚪</span> Sign Out Admin
+            </button>
           </div>
         </aside>
 
@@ -153,10 +192,19 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 </div>
                 <div className="hidden sm:block text-left">
                   <div className="text-xs font-bold text-gray-900 leading-tight">
-                    {currentUser?.fullName || currentUser?.username || "Master Admin"}
+                    {currentUser?.fullName || currentUser?.username || "Admin"}
                   </div>
-                  <div className="text-[10px] text-gray-400 font-mono">admin@northeastconnect</div>
+                  <div className="text-[10px] text-gray-400 font-mono">{currentUser?.email || "admin@northeastconnect"}</div>
                 </div>
+                <button
+                  onClick={handleLogout}
+                  title="Sign Out"
+                  className="ml-2 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </button>
               </div>
             </div>
           </header>

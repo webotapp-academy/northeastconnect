@@ -28,6 +28,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -51,12 +52,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }, [router]);
 
   async function handleLogout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
     try {
       await fetch("/api/auth/logout", { method: "POST" });
       router.push("/login");
       router.refresh();
     } catch {
       router.push("/login");
+    } finally {
+      setLoggingOut(false);
     }
   }
 
@@ -142,10 +147,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </Link>
             <button
               onClick={handleLogout}
+              disabled={loggingOut}
               type="button"
-              className="flex items-center justify-center gap-2 w-full py-2 px-3 text-xs font-semibold text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition cursor-pointer"
+              className="flex items-center justify-center gap-2 w-full py-2 px-3 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition shadow-2xs cursor-pointer disabled:opacity-50"
             >
-              <span>🚪</span> Sign Out Admin
+              <span>🚪</span> {loggingOut ? "Logging out..." : "Logout"}
             </button>
           </div>
         </aside>
@@ -158,7 +164,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <button
                 type="button"
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                className="lg:hidden p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 cursor-pointer"
                 aria-label="Toggle menu"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,12 +204,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 </div>
                 <button
                   onClick={handleLogout}
-                  title="Sign Out"
-                  className="ml-2 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
+                  disabled={loggingOut}
+                  title="Logout"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition ml-1 cursor-pointer disabled:opacity-50"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
+                  <span className="hidden sm:inline">{loggingOut ? "Logging out..." : "Logout"}</span>
                 </button>
               </div>
             </div>

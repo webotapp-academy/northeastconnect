@@ -8,6 +8,10 @@ import RankBadge from "@/components/profile/RankBadge";
 
 export default function Navbar() {
   const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   const isTransparentNav =
     pathname === "/" ||
     pathname.startsWith("/directory") ||

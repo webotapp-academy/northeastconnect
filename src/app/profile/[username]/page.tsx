@@ -275,34 +275,103 @@ export default function UserProfilePage() {
 
         {/* Tab Contents */}
         {activeTab === "activity" && (
-          <div className="space-y-4">
-            {profile.recentComments && profile.recentComments.length > 0 ? (
-              profile.recentComments.map((c: any) => (
-                <div
-                  key={c.id}
-                  className="bg-white border border-gray-200/90 p-5 rounded-2xl shadow-sm hover:shadow-md transition"
-                >
-                  <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-                    <span className="bg-emerald-50 px-2.5 py-0.5 rounded-md text-emerald-800 font-bold uppercase text-[10px] border border-emerald-200">
-                      {c.entityType} #{c.entityId}
-                    </span>
-                    <span>{new Date(c.createdAt).toLocaleDateString()}</span>
-                  </div>
-                  <p className="text-gray-800 text-sm">{c.content}</p>
-                  <div className="mt-3 flex items-center justify-between text-xs pt-3 border-t border-gray-100">
-                    <span className="text-gray-500 font-medium">❤️ {c.likesCount || 0} Likes</span>
-                    <Link
-                      href={`/${c.entityType}/${c.entityId}`}
-                      className="text-emerald-700 hover:underline font-bold"
+          <div className="space-y-6">
+            {/* Recent Comments */}
+            <div>
+              <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <span>💬</span> Recent Thoughts &amp; Discussions
+              </h3>
+              {profile.recentComments && profile.recentComments.length > 0 ? (
+                <div className="space-y-3">
+                  {profile.recentComments.map((c: any) => (
+                    <div
+                      key={c.id}
+                      className="bg-white border border-gray-200/90 p-5 rounded-2xl shadow-sm hover:shadow-md transition"
                     >
-                      View Discussion &rarr;
-                    </Link>
-                  </div>
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500 mb-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className="bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded-md font-bold uppercase text-[10px] border border-emerald-200">
+                            {c.entityType || "Comment"}
+                          </span>
+                          <span className="font-semibold text-gray-700 truncate max-w-xs sm:max-w-md">
+                            {c.entityTitle || `${c.entityType} #${c.entityId}`}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-gray-400">
+                          {new Date(c.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">{c.content}</p>
+                      <div className="mt-3 flex items-center justify-between text-xs pt-3 border-t border-gray-100">
+                        <span className="text-gray-500 font-medium">❤️ {c.likesCount || 0} Likes</span>
+                        <Link
+                          href={c.entityUrl || `/${c.entityType}/${c.entityId}`}
+                          className="text-emerald-700 hover:underline font-bold flex items-center gap-1"
+                        >
+                          View Discussion <span>&rarr;</span>
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-300 text-gray-500 text-xs shadow-sm">
-                No recent comments from this user yet.
+              ) : (
+                <div className="text-center py-10 bg-white rounded-2xl border border-dashed border-gray-300 text-gray-500 text-xs shadow-sm">
+                  No recent comments from this user yet.
+                </div>
+              )}
+            </div>
+
+            {/* Recent Community Posts */}
+            {profile.recentPosts && profile.recentPosts.length > 0 && (
+              <div>
+                <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <span>📰</span> Community Posts
+                </h3>
+                <div className="space-y-3">
+                  {profile.recentPosts.map((post: any) => (
+                    <div
+                      key={post.id}
+                      className="bg-white border border-gray-200/90 p-5 rounded-2xl shadow-sm hover:shadow-md transition"
+                    >
+                      <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+                        <span className="bg-teal-50 text-teal-800 px-2.5 py-0.5 rounded-md font-bold text-[10px] border border-teal-200">
+                          {post.taggedLocation || "Community Post"}
+                        </span>
+                        <span className="text-[11px] text-gray-400">
+                          {new Date(post.createdAt).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-gray-800 text-sm leading-relaxed mb-3">{post.content}</p>
+                      {post.mediaUrls && (
+                        <div className="mb-3 rounded-xl overflow-hidden max-h-60 border border-gray-100">
+                          <img
+                            src={
+                              post.mediaUrls.startsWith("[")
+                                ? JSON.parse(post.mediaUrls)[0]
+                                : post.mediaUrls
+                            }
+                            alt="Post Attachment"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between text-xs pt-3 border-t border-gray-100 text-gray-500">
+                        <span>❤️ {post.likesCount || 0} Likes • 💬 {post.commentsCount || 0} Comments</span>
+                        <Link href="/community" className="text-emerald-700 hover:underline font-bold">
+                          Join Discussion &rarr;
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

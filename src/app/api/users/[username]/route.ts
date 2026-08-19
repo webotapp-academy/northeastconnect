@@ -11,8 +11,13 @@ export async function GET(
     const { username } = await props.params;
     const cleanUsername = decodeURIComponent(username).toLowerCase().trim();
 
-    const targetUser = await db.user.findUnique({
-      where: { username: cleanUsername },
+    const targetUser = await db.user.findFirst({
+      where: {
+        OR: [
+          { username: { equals: cleanUsername, mode: "insensitive" } },
+          { username: cleanUsername },
+        ],
+      },
       select: {
         id: true,
         username: true,
@@ -80,24 +85,111 @@ export async function GET(
 
     // Count comments & posts
     const commentsCount = await db.universalComment.count({
-      where: { userId: targetUser.id, status: "Active" },
+      where: {
+        userId: targetUser.id,
+        NOT: { status: "Deleted" },
+      },
     });
 
     const postsCount = await db.communityPost.count({
-      where: { userId: targetUser.id, status: "Active" },
+      where: {
+        userId: targetUser.id,
+        NOT: { status: "Deleted" },
+      },
     });
 
-    // Get recent activity
-    const recentComments = await db.universalComment.findMany({
-      where: { userId: targetUser.id, status: "Active" },
+    // Get recent comments
+    const rawComments = await db.universalComment.findMany({
+      where: {
+        userId: targetUser.id,
+        NOT: { status: "Deleted" },
+      },
       orderBy: { createdAt: "desc" },
-      take: 5,
+      take: 20,
       select: {
         id: true,
         entityType: true,
         entityId: true,
         content: true,
         likesCount: true,
+        createdAt: true,
+      },
+    });
+
+    // Enrich comments with entity title and link
+    const recentComments = await Promise.all(
+      rawComments.map(async (c) => {
+        let title = `${c.entityType ? c.entityType.charAt(0).toUpperCase() + c.entityType.slice(1) : "Post"} #${c.entityId}`;
+        let url = `/${c.entityType}/${c.entityId}`;
+
+        try {
+          if (c.entityType === "news") {
+            const item = await db.news.findUnique({ where: { id: c.entityId }, select: { title: true } });
+            if (item?.title) {
+              title = item.title;
+              url = `/news/${c.entityId}`;
+            }
+          } else if (c.entityType === "culture") {
+            const item = await db.culture.findUnique({ where: { id: c.entityId }, select: { name: true } });
+            if (item?.name) {
+              title = item.name;
+              url = `/culture/${c.entityId}`;
+            }
+          } else if (c.entityType === "wildlife") {
+            const item = await db.wildlife.findUnique({ where: { id: c.entityId }, select: { name: true } });
+            if (item?.name) {
+              title = item.name;
+              url = `/wildlife/${c.entityId}`;
+            }
+          } else if (c.entityType === "adventure") {
+            const item = await db.adventure.findUnique({ where: { id: c.entityId }, select: { name: true } });
+            if (item?.name) {
+              title = item.name;
+              url = `/adventure/${c.entityId}`;
+            }
+          } else if (c.entityType === "directory") {
+            const item = await db.directory.findUnique({ where: { id: c.entityId }, select: { businessName: true } });
+            if (item?.businessName) {
+              title = item.businessName;
+              url = `/listing/${c.entityId}`;
+            }
+          } else if (c.entityType === "marketplace") {
+            const item = await db.marketplaceListing.findUnique({ where: { id: c.entityId }, select: { title: true } });
+            if (item?.title) {
+              title = item.title;
+              url = `/marketplace/${c.entityId}`;
+            }
+          } else if (c.entityType === "post") {
+            url = `/community`;
+            title = "Community Post Discussion";
+          }
+        } catch {
+          // Fallback title
+        }
+
+        return {
+          ...c,
+          entityTitle: title,
+          entityUrl: url,
+        };
+      })
+    );
+
+    // Get recent community posts by user
+    const recentPosts = await db.communityPost.findMany({
+      where: {
+        userId: targetUser.id,
+        NOT: { status: "Deleted" },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        content: true,
+        mediaUrls: true,
+        taggedLocation: true,
+        likesCount: true,
+        commentsCount: true,
         createdAt: true,
       },
     });
@@ -142,6 +234,7 @@ export async function GET(
         friendshipId,
         friendsPreview,
         recentComments,
+        recentPosts,
       },
     });
   } catch (error: any) {

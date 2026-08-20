@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     const user = await getCurrentUser();
     if (!user) {
@@ -17,9 +17,32 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
+    const adIds = listings.map((l) => String(l.id));
+    const marketAdIds = listings.map((l) => `marketplace_${l.id}`);
+
+    const leads = await db.lead.findMany({
+      where: {
+        listingId: { in: [...adIds, ...marketAdIds] },
+      },
+      orderBy: { id: "desc" },
+    });
+
+    const listingsWithLeads = listings.map((l) => {
+      const adLeads = leads.filter(
+        (ld) => ld.listingId === String(l.id) || ld.listingId === `marketplace_${l.id}`
+      );
+      return {
+        ...l,
+        leadsCount: adLeads.length,
+        leads: adLeads,
+      };
+    });
+
     return NextResponse.json({
       status: "success",
-      listings,
+      listings: listingsWithLeads,
+      totalViews: listings.reduce((acc, l) => acc + (l.viewsCount || 0), 0),
+      totalLeads: leads.length,
     });
   } catch (error: any) {
     console.error("Marketplace my-ads GET error:", error);

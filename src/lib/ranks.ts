@@ -136,7 +136,8 @@ export type ActionType =
   | "LIKE_RECEIVED"
   | "FRIEND_ACCEPTED"
   | "PROFILE_COMPLETED"
-  | "DAILY_LOGIN";
+  | "DAILY_LOGIN"
+  | "BUSINESS_CLAIMED";
 
 export const ACTION_XP_MAP: Record<ActionType, number> = {
   COMMENT: 10,
@@ -146,4 +147,5 @@ export const ACTION_XP_MAP: Record<ActionType, number> = {
   FRIEND_ACCEPTED: 15,
   PROFILE_COMPLETED: 50,
   DAILY_LOGIN: 5,
+  BUSINESS_CLAIMED: 50,
 };

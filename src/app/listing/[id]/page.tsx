@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import CommentSection from "@/components/comments/CommentSection";
+import DirectoryClaimButton from "@/components/directory/DirectoryClaimButton";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -106,6 +107,12 @@ export default async function ListingDetailPage({ params }: PageProps) {
     business = await db.directory.findUnique({
       where: { id: numericId },
     });
+    if (business) {
+      await db.directory.update({
+        where: { id: numericId },
+        data: { viewsCount: { increment: 1 } },
+      }).catch(() => null);
+    }
   }
 
   if (!business) {
@@ -169,16 +176,30 @@ export default async function ListingDetailPage({ params }: PageProps) {
 
         {/* Top Header Card (Glossy) */}
         <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-full border border-emerald-200 dark:border-emerald-800/60 uppercase tracking-wider">
-              {business.category || "Verified Business"}
-            </span>
-            {business.district && (
-              <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
-                📍 {business.district}, Assam
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-full border border-emerald-200 dark:border-emerald-800/60 uppercase tracking-wider">
+                {business.category || "Verified Business"}
               </span>
-            )}
+              {business.district && (
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+                  📍 {business.district}, Assam
+                </span>
+              )}
+              <span className="text-xs text-slate-400 font-mono">
+                👁️ {(business.viewsCount || 0) + 1} views
+              </span>
+            </div>
+
+            {/* Claim / Ownership Status */}
+            <DirectoryClaimButton
+              directoryId={business.id}
+              businessName={business.businessName}
+              isClaimed={business.isClaimed}
+              ownerId={business.userId}
+            />
           </div>
+
           <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight tracking-tight">
             {business.businessName}
           </h1>

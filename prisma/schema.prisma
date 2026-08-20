@@ -62,6 +62,8 @@ model User {
   notifications          Notification[]      @relation("UserNotifications")
   triggeredNotifications Notification[]      @relation("ActorNotifications")
   marketplaceListings    MarketplaceListing[]
+  directories            Directory[]
+  businessClaims         BusinessClaimRequest[]
 
   @@map("users")
 }
@@ -232,15 +234,51 @@ model Directory {
   imageUrls     String?   @map("image_urls") @db.Text
   rating        Decimal?  @db.Decimal(3, 2)
   reviewsCount  Int?      @default(0) @map("reviews_count")
+  viewsCount    Int?      @default(0) @map("views_count")
+  userId        Int?      @map("user_id")
+  isClaimed     Boolean   @default(false) @map("is_claimed")
+  claimedAt     DateTime? @map("claimed_at")
   updatedAt     DateTime? @updatedAt @map("updated_at")
   status        String?   @default("Active")
   createdAt     DateTime  @default(now()) @map("created_at")
   facebookPostId String?  @map("facebook_post_id")
 
+  user          User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  claims        BusinessClaimRequest[]
+
   @@index([businessName])
   @@index([district])
+  @@index([userId])
   @@index([rating])
   @@map("directory")
+}
+
+model BusinessClaimRequest {
+  id                   Int       @id @default(autoincrement())
+  directoryId          Int       @map("directory_id")
+  userId               Int       @map("user_id")
+  businessName         String    @map("business_name")
+  claimantName         String    @map("claimant_name")
+  claimantEmail        String    @map("claimant_email")
+  claimantPhone        String    @map("claimant_phone")
+  registrationProofUrl String    @map("registration_proof_url") @db.Text
+  utilityBillUrl       String    @map("utility_bill_url") @db.Text
+  idProofUrl           String?   @map("id_proof_url") @db.Text
+  notes                String?   @db.Text
+  status               String    @default("Pending") // Pending, Approved, Rejected
+  adminNotes           String?   @map("admin_notes") @db.Text
+  reviewedBy           Int?      @map("reviewed_by")
+  reviewedAt           DateTime? @map("reviewed_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  directory            Directory @relation(fields: [directoryId], references: [id], onDelete: Cascade)
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([directoryId])
+  @@index([userId])
+  @@index([status])
+  @@map("business_claim_requests")
 }
 
 model Job {

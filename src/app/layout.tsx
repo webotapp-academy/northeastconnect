@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import MobileAppBottomNav from "@/components/layout/MobileAppBottomNav";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://northeastconnect.in";
@@ -9,45 +10,45 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://northeastconnect.in
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "North East Connect - Discover Assam & Northeast India",
+    default: "North East Connect - Northeast India Community & Social Hub",
     template: "%s | North East Connect",
   },
   description:
-    "Your comprehensive guide to exploring wildlife sanctuaries, rich cultural heritage, adventure experiences, news, and verified business directory in Assam and Northeast India.",
+    "Join the vibrant community of Assam and Northeast India. Share moments, connect with local explorers, discover top regional businesses, wildlife sanctuaries, cultural stories, and live news.",
   keywords: [
-    "Assam Tourism",
-    "Kaziranga National Park",
+    "Northeast India Social Network",
+    "Assam Community",
     "Northeast India Travel",
-    "Bihu Festival",
+    "Kaziranga National Park",
     "Guwahati Business Directory",
     "Assam News",
-    "Majuli Island",
+    "Majuli Island Culture",
   ],
-  authors: [{ name: "North East Connect Editorial Team" }],
+  authors: [{ name: "North East Connect Community" }],
   creator: "North East Connect",
   publisher: "North East Connect",
   openGraph: {
     type: "website",
     locale: "en_IN",
     url: siteUrl,
-    title: "North East Connect - Discover Assam & Northeast India",
+    title: "North East Connect - Northeast India Community & Social Hub",
     description:
-      "Explore wildlife sanctuaries, rich cultural heritage, adventure experiences, news, and verified business directory across Assam and North East India.",
+      "Connect with local explorers, share posts, discover verified businesses, culture, news, and travel gems across Northeast India.",
     siteName: "North East Connect",
     images: [
       {
         url: `${siteUrl}/assets/images/hero.jpg`,
         width: 1200,
         height: 630,
-        alt: "North East Connect - Discover Assam",
+        alt: "North East Connect - Northeast India Community Hub",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "North East Connect - Discover Assam & Northeast India",
+    title: "North East Connect - Northeast India Community & Social Hub",
     description:
-      "Explore wildlife sanctuaries, rich cultural heritage, adventure experiences, news, and verified business directory across Assam.",
+      "Connect with local explorers, share posts, discover verified businesses, culture, and news across Northeast India.",
     images: [`${siteUrl}/assets/images/hero.jpg`],
   },
   robots: {
@@ -114,7 +115,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization) }}
         />
 
-        {/* Google AdSense (Manual ad units only, no intrusive popups or auto ads) */}
+        {/* Google AdSense (Strictly manual inline banners only, no auto-ad popups/vignettes) */}
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
@@ -136,31 +137,12 @@ export default function RootLayout({
             gtag('config', 'G-N02BLD55G8');
           `}
         </Script>
-
-        {/* Subscribe with Google Basic for News */}
-        <Script
-          async
-          type="application/javascript"
-          src="https://news.google.com/swg/js/v1/swg-basic.js"
-          strategy="afterInteractive"
-        />
-        <Script id="swg-basic-init" strategy="afterInteractive">
-          {`
-            (self.SWG_BASIC = self.SWG_BASIC || []).push( basicSubscriptions => {
-              basicSubscriptions.init({
-                type: "NewsArticle",
-                isPartOfType: ["Product"],
-                isPartOfProductId: "CAowqcy9DA:openaccess",
-                clientOptions: { theme: "light", lang: "en-GB" },
-              });
-            });
-          `}
-        </Script>
       </head>
-      <body className="min-h-full flex flex-col bg-white text-gray-900 font-sans antialiased">
+      <body className="min-h-full flex flex-col bg-slate-50 text-gray-900 font-sans antialiased selection:bg-emerald-500 selection:text-white">
         <Navbar />
-        <div className="flex-1 flex flex-col">{children}</div>
+        <div className="flex-1 flex flex-col pb-20 lg:pb-0">{children}</div>
         <Footer />
+        <MobileAppBottomNav />
       </body>
     </html>
   );

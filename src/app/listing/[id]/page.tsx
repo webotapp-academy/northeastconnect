@@ -147,100 +147,104 @@ export default async function ListingDetailPage({ params }: PageProps) {
   };
 
   return (
-    <main className="w-full bg-gray-50 text-gray-900 font-sans min-h-screen">
+    <main className="min-h-screen bg-slate-50 dark:bg-[#0b0e14] text-slate-900 dark:text-slate-100 font-sans pt-4 sm:pt-6 pb-16 transition-colors">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdBusiness) }}
       />
-      {/* Full-screen Hero Section matching legacy business-details.php */}
-      <header className="relative min-h-[50vh] flex items-center justify-center text-center">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-green-900 to-green-600 opacity-80 z-10" />
-          <img
-            src="/assets/images/hero.jpg"
-            alt="Business Details"
-            className="w-full h-full object-cover"
-          />
+
+      <div className="container mx-auto px-3 sm:px-4 max-w-6xl">
+        {/* Navigation Breadcrumb */}
+        <div className="mb-4">
+          <Link
+            href="/directory"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 transition"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>Back to Business Directory</span>
+          </Link>
         </div>
 
-        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto pt-20">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+        {/* Top Header Card (Glossy) */}
+        <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-full border border-emerald-200 dark:border-emerald-800/60 uppercase tracking-wider">
+              {business.category || "Verified Business"}
+            </span>
+            {business.district && (
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+                📍 {business.district}, Assam
+              </span>
+            )}
+          </div>
+          <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight tracking-tight">
             {business.businessName}
           </h1>
-          <p className="text-xl md:text-2xl text-gray-200 mb-12">
-            {business.category || "Discover Local Businesses"}
-          </p>
         </div>
-      </header>
 
-      {/* Main Container */}
-      <div className="py-16">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <Link href="/directory" className="inline-flex items-center text-sm font-semibold text-green-700 hover:underline mb-8">
-            &larr; Back to Business Directory
-          </Link>
-
-          {/* 1. Main 2-Column Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* 1. Main 2-Column Grid (Glossy Cards) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left Card: Business Information */}
-            <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-              <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-4">
+            <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] p-6 sm:p-8 border border-white/60 dark:border-slate-800/80">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
                 Business Information
               </h2>
 
               <div className="space-y-6">
                 {/* Business Name */}
                 <div className="flex items-center">
-                  <svg className="w-6 h-6 mr-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 mr-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
                   <div>
-                    <span className="text-xs text-gray-500 block font-medium">Business Name</span>
-                    <h3 className="text-xl font-bold text-gray-800">{business.businessName}</h3>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">Business Name</span>
+                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">{business.businessName}</h3>
                   </div>
                 </div>
 
                 {/* Business Category */}
                 <div className="flex items-center">
-                  <svg className="w-6 h-6 mr-4 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 mr-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                   </svg>
                   <div>
-                    <span className="text-xs text-gray-500 block font-medium">Business Category</span>
-                    <p className="text-lg font-semibold text-gray-800">{business.category || "Services"}</p>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">Business Category</span>
+                    <p className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-200">{business.category || "Services"}</p>
                   </div>
                 </div>
 
                 {/* District */}
                 <div className="flex items-center">
-                  <svg className="w-6 h-6 mr-4 text-purple-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 mr-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                   <div>
-                    <span className="text-xs text-gray-500 block font-medium">District</span>
-                    <p className="text-lg font-semibold text-gray-800">{business.district || "Kamrup Metro"}</p>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">District</span>
+                    <p className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-200">{business.district || "Kamrup Metro"}</p>
                   </div>
                 </div>
 
                 {/* Full Address */}
                 <div className="flex items-center">
-                  <svg className="w-6 h-6 mr-4 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 mr-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
                   <div>
-                    <span className="text-xs text-gray-500 block font-medium">Full Address</span>
-                    <p className="text-lg font-semibold text-gray-800">{business.address || `${business.city || business.district}, Assam`}</p>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">Full Address</span>
+                    <p className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-200">{business.address || `${business.city || business.district}, Assam`}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Card: Contact Information */}
-            <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 flex flex-col justify-between">
+            {/* Right Card: Contact Information (Glossy) */}
+            <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] p-6 sm:p-8 border border-white/60 dark:border-slate-800/80 flex flex-col justify-between">
               <div>
-                <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
                   Contact Information
                 </h2>
 
@@ -248,13 +252,13 @@ export default async function ListingDetailPage({ params }: PageProps) {
                   {/* Phone Number */}
                   {business.contactNumber && (
                     <div className="flex items-center">
-                      <svg className="w-6 h-6 mr-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 mr-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
                       <div>
-                        <span className="text-xs text-gray-500 block font-medium">Phone Number</span>
-                        <p className="text-lg font-semibold text-gray-800">
-                          <a href={`tel:${business.contactNumber}`} className="hover:underline text-blue-600">
+                        <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">Phone Number</span>
+                        <p className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-200">
+                          <a href={`tel:${business.contactNumber}`} className="hover:underline text-emerald-600 dark:text-emerald-400">
                             {business.contactNumber}
                           </a>
                         </p>
@@ -265,13 +269,13 @@ export default async function ListingDetailPage({ params }: PageProps) {
                   {/* Email */}
                   {business.email && (
                     <div className="flex items-center">
-                      <svg className="w-6 h-6 mr-4 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 mr-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                       <div>
-                        <span className="text-xs text-gray-500 block font-medium">Email Address</span>
-                        <p className="text-lg font-semibold text-gray-800">
-                          <a href={`mailto:${business.email}`} className="hover:underline text-green-700">
+                        <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">Email Address</span>
+                        <p className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-200">
+                          <a href={`mailto:${business.email}`} className="hover:underline text-emerald-600 dark:text-emerald-400">
                             {business.email}
                           </a>
                         </p>
@@ -282,13 +286,13 @@ export default async function ListingDetailPage({ params }: PageProps) {
                   {/* Website */}
                   {business.website && (
                     <div className="flex items-center">
-                      <svg className="w-6 h-6 mr-4 text-purple-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 005.656-5.656l-1.1 1.1" />
+                      <svg className="w-6 h-6 mr-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4.5 4.5 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4.5 4.5 0 005.656 0l4-4a4 4 0 005.656-5.656l-1.1 1.1" />
                       </svg>
                       <div>
-                        <span className="text-xs text-gray-500 block font-medium">Website</span>
-                        <p className="text-lg font-semibold text-gray-800">
-                          <a href={business.website} target="_blank" rel="noopener noreferrer" className="text-purple-700 hover:underline">
+                        <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">Website</span>
+                        <p className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-200">
+                          <a href={business.website} target="_blank" rel="noopener noreferrer" className="text-emerald-600 dark:text-emerald-400 hover:underline">
                             {business.website.replace(/^https?:\/\//, "")}
                           </a>
                         </p>
@@ -299,62 +303,56 @@ export default async function ListingDetailPage({ params }: PageProps) {
                   {/* Working Hours */}
                   {business.workingHours && (
                     <div className="flex items-center">
-                      <svg className="w-6 h-6 mr-4 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 mr-4 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <div>
-                        <span className="text-xs text-gray-500 block font-medium">Working Hours</span>
-                        <p className="text-lg font-semibold text-gray-800">{business.workingHours}</p>
+                        <span className="text-xs text-slate-500 dark:text-slate-400 block font-medium">Working Hours</span>
+                        <p className="text-sm sm:text-base font-semibold text-slate-800 dark:text-slate-200">{business.workingHours}</p>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Animated CTA Button matching legacy business-details.php */}
+              {/* Action Button */}
               <div className="mt-8">
                 <Link
                   href="/contact"
-                  className="w-full bg-blue-600 text-white py-3.5 px-6 rounded-full hover:bg-blue-700 active:bg-blue-800 transition duration-300 flex items-center justify-center font-bold text-lg relative shadow-lg group overflow-hidden"
+                  className="w-full bg-emerald-600 text-white py-3 px-6 rounded-full hover:bg-emerald-500 transition duration-200 flex items-center justify-center font-bold text-sm shadow-xs cursor-pointer"
                 >
-                  <span className="absolute top-1.5 right-3 bg-gradient-to-r from-pink-500 to-red-500 text-white font-bold text-[11px] px-2.5 py-1 rounded-full shadow">
-                    Get Offer
-                  </span>
-                  <svg className="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  Contact Us
+                  Contact Business
                 </Link>
               </div>
             </div>
           </div>
 
-          {/* 2. Location Section matching legacy business-details.php */}
+          {/* 2. Location Section (Glossy) */}
           {business.address && (
-            <div className="mt-12 bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-              <h2 className="text-3xl font-bold text-gray-800 p-8 pb-4">
+            <div className="mt-10 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] overflow-hidden border border-white/60 dark:border-slate-800/80">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 p-6 sm:p-8 pb-4 border-b border-slate-100 dark:border-slate-800">
                 Location
               </h2>
               <div className="w-full relative">
                 <iframe
                   src={`https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d14326.51!2d${longitude}!3d${latitude}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sin!4v1754830090901`}
                   width="100%"
-                  height="450"
+                  height="400"
                   style={{ border: 0 }}
                   allowFullScreen
                   loading="lazy"
                   className="relative z-10"
                 />
-                <div className="flex flex-wrap justify-center gap-6 py-4 bg-white border-t border-gray-100 text-sm font-semibold">
+                <div className="flex flex-wrap justify-center gap-6 py-4 bg-slate-50/80 dark:bg-slate-900/80 border-t border-slate-100 dark:border-slate-800 text-sm font-semibold">
                   <a
                     href={`https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:text-blue-800 flex items-center"
+                    className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 flex items-center"
                   >
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     Open in Google Maps
                   </a>
@@ -362,10 +360,10 @@ export default async function ListingDetailPage({ params }: PageProps) {
                     href={`https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-green-600 hover:text-green-800 flex items-center"
+                    className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 flex items-center"
                   >
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 13l-6-3" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 13l-6-3" />
                     </svg>
                     Get Directions
                   </a>
@@ -374,45 +372,41 @@ export default async function ListingDetailPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* 3. Similar Businesses Section matching legacy business-details.php */}
+          {/* 3. Similar Businesses Section (Glossy) */}
           {similarBusinesses.length > 0 && (
-            <div className="mt-12">
-              <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+            <div className="mt-10">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">
                 Similar Businesses
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {similarBusinesses.map((sim) => {
                   const slug = sim.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
                   return (
-                    <div key={sim.id} className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden group hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
-                      <div className="relative h-56 overflow-hidden bg-gray-100">
+                    <div key={sim.id} className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] border border-white/60 dark:border-slate-800/80 overflow-hidden group hover:shadow-lg transition flex flex-col justify-between">
+                      <div className="relative h-44 overflow-hidden bg-slate-100 dark:bg-slate-950">
                         <img
                           src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?fit=crop&w=600&h=400&q=80"
                           alt={sim.businessName}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-6">
-                          <h3 className="text-white text-xl font-bold mb-1">
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                          <h3 className="text-white text-base font-bold mb-0.5 truncate">
                             {sim.businessName}
                           </h3>
-                          <p className="text-white/90 text-sm flex items-center">
-                            <svg className="w-4 h-4 mr-1 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            {sim.district || "Assam"}
+                          <p className="text-slate-300 text-xs flex items-center">
+                            📍 {sim.district || "Assam"}
                           </p>
                         </div>
                       </div>
-                      <div className="p-6 flex items-center justify-between">
-                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-semibold">
+                      <div className="p-4 flex items-center justify-between">
+                        <span className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 rounded-full text-xs font-semibold">
                           {sim.category}
                         </span>
                         <Link
                           href={`/listing/${slug}-${sim.id}`}
-                          className="inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold text-sm"
+                          className="inline-flex items-center text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 font-bold text-xs"
                         >
                           View Details &rarr;
                         </Link>
@@ -424,28 +418,29 @@ export default async function ListingDetailPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* 4. About the Business Section matching legacy business-details.php */}
+          {/* 4. About the Business Section (Glossy) */}
           {business.description && (
-            <div className="mt-12 bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-              <h2 className="text-3xl font-bold text-gray-800 mb-6 border-b pb-4">
+            <div className="mt-10 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] p-6 sm:p-8 border border-white/60 dark:border-slate-800/80">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">
                 About the Business
               </h2>
 
-              <div className="text-gray-600 leading-relaxed text-base whitespace-pre-line space-y-4">
+              <div className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm whitespace-pre-line space-y-4">
                 <p>{business.description}</p>
               </div>
             </div>
           )}
 
           {/* Universal Community Comments & Reviews */}
-          <CommentSection
-            entityType="directory"
-            entityId={business.id}
-            entityTitle={business.businessName}
-            entityUrl={`/listing/${id}`}
-          />
+          <div className="mt-10">
+            <CommentSection
+              entityType="directory"
+              entityId={business.id}
+              entityTitle={business.businessName}
+              entityUrl={`/listing/${id}`}
+            />
+          </div>
         </div>
-      </div>
-    </main>
-  );
-}
+      </main>
+    );
+  }

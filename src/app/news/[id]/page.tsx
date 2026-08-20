@@ -119,15 +119,36 @@ export default async function NewsDetailPage({ params }: PageProps) {
   const mainImage = imageList[0] || "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800&auto=format&fit=crop&q=60";
   const galleryImages = imageList.slice(1);
 
-  // Render HTML content cleanly like PHP article.php (echo $renderContent)
+  // Process article paragraphs to allow in-article sponsored banner placements
   const rawContent = article.content || "";
-  let renderHtml = rawContent;
+  let paragraphBlocks: string[] = [];
 
-  if (!/<\s*p\b/i.test(renderHtml)) {
-    const text = renderHtml.replace(/\r\n|\r/g, "\n");
+  if (/<\s*p\b/i.test(rawContent)) {
+    // Extract HTML paragraphs
+    const matches = rawContent.match(/<p[\s\S]*?<\/p>/gi);
+    if (matches && matches.length > 0) {
+      paragraphBlocks = matches;
+    } else {
+      paragraphBlocks = [rawContent];
+    }
+  } else {
+    // Plain text content
+    const text = rawContent.replace(/\r\n|\r/g, "\n");
     const parts = text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
     if (parts.length > 0) {
-      renderHtml = parts.map((p) => `<p>${p.replace(/\n/g, "<br />")}</p>`).join("\n");
+      paragraphBlocks = parts.map((p) => `<p>${p.replace(/\n/g, "<br />")}</p>`);
+    } else if (text.trim()) {
+      // Split long single text block by sentences if needed
+      const sentences = text.match(/[^.!?]+[.!?]+/g);
+      if (sentences && sentences.length >= 4) {
+        const mid = Math.ceil(sentences.length / 2);
+        paragraphBlocks = [
+          `<p>${sentences.slice(0, mid).join(" ").trim()}</p>`,
+          `<p>${sentences.slice(mid).join(" ").trim()}</p>`,
+        ];
+      } else {
+        paragraphBlocks = [`<p>${text.replace(/\n/g, "<br />")}</p>`];
+      }
     }
   }
 
@@ -150,181 +171,254 @@ export default async function NewsDetailPage({ params }: PageProps) {
     description: article.content ? article.content.slice(0, 160) : article.title,
   };
 
+  const jsonLdBreadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [{
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: "https://northeastconnect.in"
+    }, {
+      "@type": "ListItem",
+      position: 2,
+      name: "News",
+      item: "https://northeastconnect.in/news"
+    }, {
+      "@type": "ListItem",
+      position: 3,
+      name: article.title,
+      item: `https://northeastconnect.in/news/${article.url || article.id}`
+    }]
+  };
+
   return (
-    <main className="w-full bg-white text-gray-900 font-sans">
+    <main className="min-h-screen bg-slate-50 dark:bg-[#0b0e14] text-slate-900 dark:text-slate-100 font-sans pt-4 sm:pt-6 pb-16 transition-colors">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdNews) }}
       />
-      {/* Hero Header matching legacy article.php */}
-      <header className="relative min-h-[25vh] flex items-center justify-center text-center px-4 bg-gray-900">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/90 z-10" />
-          <img
-            src={mainImage}
-            alt={article.title}
-            className="w-full h-full object-cover filter brightness-50"
-          />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdBreadcrumb) }}
+      />
+
+      <div className="container mx-auto px-3 sm:px-4 max-w-4xl">
+        {/* Navigation Breadcrumb */}
+        <div className="mb-4">
+          <Link
+            href="/news"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 transition"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>Back to News &amp; Updates</span>
+          </Link>
         </div>
-        <div className="relative z-10 max-w-4xl mx-auto py-16">
-          <h1 className="text-3xl md:text-5xl font-extrabold text-white leading-tight drop-shadow-md">
+
+        {/* Main Article Container (Glossy) */}
+        <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] space-y-6">
+          {/* Category & Meta */}
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="px-3 py-1 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-full border border-emerald-200 dark:border-emerald-800/60 uppercase tracking-wider">
+                {article.category || "Regional News"}
+              </span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                {formattedDate}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <span>By <strong className="text-slate-800 dark:text-slate-200">{article.author || "Editorial Team"}</strong></span>
+              <span>&bull;</span>
+              <span>👁 {article.viewsCount || 1} views</span>
+            </div>
+          </div>
+
+          {/* Title */}
+          <h1 className="text-2xl sm:text-3.5xl font-extrabold text-slate-900 dark:text-slate-100 leading-tight tracking-tight">
             {article.title}
           </h1>
-        </div>
-      </header>
 
-      {/* Main Article Content */}
-      <div className="w-full max-w-[940px] mx-auto px-4 py-8 space-y-6">
-        <div className="flex items-center justify-between text-xs text-gray-500 font-medium border-b border-gray-100 pb-4">
-          <span>{formattedDate} &bull; <strong className="text-emerald-700 uppercase">{article.category || "News"}</strong></span>
-          <span>👁 {article.viewsCount || 1} views</span>
-        </div>
-
-        {/* Featured Main Image */}
-        {mainImage && (
-          <div className="w-full rounded-2xl overflow-hidden shadow-xl border border-gray-200">
-            <img
-              src={mainImage}
-              alt={article.title}
-              className="w-full max-h-[520px] object-cover hover:scale-[1.01] transition-transform duration-300"
-            />
+          {/* Social Share Bar */}
+          <div className="flex items-center gap-2.5 py-2.5 border-y border-slate-100 dark:border-slate-800 flex-wrap">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Share:</span>
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=https://northeastconnect.in/news/${article.url || article.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center bg-slate-100/90 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition text-blue-500 cursor-pointer"
+              title="Share on Facebook"
+            >
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12.07C22 6.48 17.52 2 11.93 2 6.35 2 1.86 6.48 1.86 12.07c0 4.97 3.64 9.09 8.39 9.93v-7.02H7.9v-2.9h2.36V9.41c0-2.33 1.39-3.62 3.52-3.62 1.02 0 2.08.18 2.08.18v2.29h-1.17c-1.15 0-1.51.72-1.51 1.46v1.75h2.57l-.41 2.9h-2.16V22c4.75-.84 8.39-4.96 8.39-9.93z"/></svg>
+            </a>
+            <a
+              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center bg-slate-100/90 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition text-slate-800 dark:text-slate-200 cursor-pointer"
+              title="Share on X"
+            >
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2H21.5l-7.5 8.565L22.5 22h-7.373l-5.367-6.234L3.5 22H.244l8.258-9.43L.5 2h7.5l4.843 5.616L18.244 2zm-1.292 18h2.053L7.123 4h-2.05L16.952 20z"/></svg>
+            </a>
+            <a
+              href={`https://api.whatsapp.com/send?text=${encodeURIComponent(article.title)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center bg-slate-100/90 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition text-emerald-600 dark:text-emerald-400 cursor-pointer"
+              title="Share on WhatsApp"
+            >
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.52 3.48A11.79 11.79 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.52 5.81L0 24l6.34-1.66A11.93 11.93 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.21-1.3-6.11-3.48-8.52zM12 21.82c-1.91 0-3.68-.55-5.17-1.5l-.37-.22-3.77.99 1.01-3.67-.24-.38A9.82 9.82 0 1 1 12 21.82zm5.67-7.5c-.31-.15-1.82-.9-2.1-1-.28-.1-.49-.15-.7.15-.2.31-.8 1-.98 1.2-.18.2-.36.22-.67.08-.31-.15-1.3-.48-2.47-1.53-.91-.81-1.52-1.8-1.7-2.1-.18-.31-.02-.48.13-.63.13-.13.31-.36.46-.54.15-.18.2-.31.31-.51.1-.2.05-.38-.02-.53-.07-.15-.7-1.67-.96-2.29-.25-.6-.51-.52-.7-.53h-.6c-.2 0-.53.08-.82.38-.28.31-1.07 1.04-1.07 2.54 0 1.49 1.1 2.93 1.25 3.12.15.2 2.17 3.31 5.26 4.64.74.32 1.31.51 1.76.65.74.24 1.42.2 1.96.12.6-.09 1.82-.74 2.08-1.46.26-.72.26-1.34.18-1.46-.08-.12-.28-.2-.58-.35z"/></svg>
+            </a>
           </div>
-        )}
 
-        {/* Social Share Bar */}
-        <div className="flex items-center gap-3 py-3 border-y border-gray-200/60 my-6 flex-wrap">
-          <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Share:</span>
-          <a
-            href={`https://www.facebook.com/sharer/sharer.php?u=https://northeastconnect.in/news/${article.url || article.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center bg-white hover:shadow-md transition text-blue-600"
-            title="Share on Facebook"
-          >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12.07C22 6.48 17.52 2 11.93 2 6.35 2 1.86 6.48 1.86 12.07c0 4.97 3.64 9.09 8.39 9.93v-7.02H7.9v-2.9h2.36V9.41c0-2.33 1.39-3.62 3.52-3.62 1.02 0 2.08.18 2.08.18v2.29h-1.17c-1.15 0-1.51.72-1.51 1.46v1.75h2.57l-.41 2.9h-2.16V22c4.75-.84 8.39-4.96 8.39-9.93z"/></svg>
-          </a>
-          <a
-            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center bg-white hover:shadow-md transition text-gray-900"
-            title="Share on X"
-          >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2H21.5l-7.5 8.565L22.5 22h-7.373l-5.367-6.234L3.5 22H.244l8.258-9.43L.5 2h7.5l4.843 5.616L18.244 2zm-1.292 18h2.053L7.123 4h-2.05L16.952 20z"/></svg>
-          </a>
-          <a
-            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(article.title)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center bg-white hover:shadow-md transition text-green-600"
-            title="Share on WhatsApp"
-          >
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.52 3.48A11.79 11.79 0 0 0 12 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.52 5.81L0 24l6.34-1.66A11.93 11.93 0 0 0 12 24c6.63 0 12-5.37 12-12 0-3.21-1.3-6.11-3.48-8.52zM12 21.82c-1.91 0-3.68-.55-5.17-1.5l-.37-.22-3.77.99 1.01-3.67-.24-.38A9.82 9.82 0 1 1 12 21.82zm5.67-7.5c-.31-.15-1.82-.9-2.1-1-.28-.1-.49-.15-.7.15-.2.31-.8 1-.98 1.2-.18.2-.36.22-.67.08-.31-.15-1.3-.48-2.47-1.53-.91-.81-1.52-1.8-1.7-2.1-.18-.31-.02-.48.13-.63.13-.13.31-.36.46-.54.15-.18.2-.31.31-.51.1-.2.05-.38-.02-.53-.07-.15-.7-1.67-.96-2.29-.25-.6-.51-.52-.7-.53h-.6c-.2 0-.53.08-.82.38-.28.31-1.07 1.04-1.07 2.54 0 1.49 1.1 2.93 1.25 3.12.15.2 2.17 3.31 5.26 4.64.74.32 1.31.51 1.76.65.74.24 1.42.2 1.96.12.6-.09 1.82-.74 2.08-1.46.26-.72.26-1.34.18-1.46-.08-.12-.28-.2-.58-.35z"/></svg>
-          </a>
-        </div>
+          {/* Featured Main Image */}
+          {mainImage && (
+            <div className="w-full rounded-2xl overflow-hidden shadow-xs border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950">
+              <img
+                src={mainImage}
+                alt={article.title}
+                className="w-full max-h-[480px] object-cover"
+              />
+            </div>
+          )}
 
-        {/* Article Body Content rendered natively as HTML */}
-        <article className="text-gray-900 text-lg leading-[1.8] font-sans space-y-4 my-8 prose max-w-none">
-          <div dangerouslySetInnerHTML={{ __html: renderHtml }} />
-        </article>
+          {/* Article Body with In-Between Sponsored Banners */}
+          <article className="text-slate-800 dark:text-slate-200 text-sm sm:text-base leading-[1.85] font-sans space-y-5 my-6 prose dark:prose-invert prose-emerald max-w-none">
+            {paragraphBlocks.map((block, idx) => (
+              <div key={idx} className="space-y-4">
+                <div dangerouslySetInnerHTML={{ __html: block }} />
 
-        {/* Attached Images Section */}
-        {galleryImages.length > 0 && (
-          <section className="my-10 pt-8 border-t border-gray-200 space-y-4">
-            <h3 className="text-xl font-bold text-gray-900">Attached Media &amp; Photos</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {galleryImages.map((imgUrl, idx) => (
-                <div key={idx} className="rounded-xl overflow-hidden shadow-md border border-gray-200 group">
-                  <img
-                    src={imgUrl}
-                    alt={`Attached image ${idx + 1}`}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
+                {/* 1st In-Article Sponsored Banner after 2nd paragraph (or after 1st if short) */}
+                {((paragraphBlocks.length > 2 && idx === 1) || (paragraphBlocks.length === 2 && idx === 0)) && (
+                  <div className="my-6 not-prose">
+                    <GoogleAd format="horizontal" responsive={true} />
+                  </div>
+                )}
+
+                {/* 2nd In-Article Sponsored Banner after 4th paragraph if article is long */}
+                {paragraphBlocks.length >= 5 && idx === 3 && (
+                  <div className="my-6 not-prose">
+                    <GoogleAd format="horizontal" responsive={true} />
+                  </div>
+                )}
+              </div>
+            ))}
+          </article>
+
+          {/* Attached Images */}
+          {galleryImages.length > 0 && (
+            <section className="my-8 pt-6 border-t border-slate-100 dark:border-slate-800 space-y-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Attached Photos</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {galleryImages.map((imgUrl, idx) => (
+                  <div key={idx} className="rounded-xl overflow-hidden shadow-xs border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-950 group">
+                    <img
+                      src={imgUrl}
+                      alt={`Attached image ${idx + 1}`}
+                      className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Tags */}
+          {article.tags && (
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-1.5">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold mr-1">Tags:</span>
+              {article.tags.split(",").map((tag, idx) => (
+                <span key={idx} className="text-xs px-2.5 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 rounded-lg text-slate-700 dark:text-slate-300">
+                  #{tag.trim()}
+                </span>
               ))}
             </div>
-          </section>
-        )}
+          )}
 
-        {article.tags && (
-          <div className="pt-4 border-t border-gray-200 flex flex-wrap items-center gap-2">
-            <span className="text-xs text-gray-500 font-bold uppercase">Tags:</span>
-            {article.tags.split(",").map((tag, idx) => (
-              <span key={idx} className="text-xs px-3 py-1 bg-gray-100 border border-gray-200 rounded-lg text-gray-700">
-                #{tag.trim()}
-              </span>
-            ))}
+          {/* End-of-Article Clean Sponsored Banner */}
+          <GoogleAd format="horizontal" responsive={true} className="max-w-3xl mx-auto my-6" />
+
+          {/* Universal Comments & Community Discussion */}
+          <div className="pt-6 border-t border-slate-100 dark:border-slate-800">
+            <CommentSection
+              entityType="news"
+              entityId={article.id}
+              entityTitle={article.title}
+              entityUrl={`/news/${article.url || article.id}`}
+            />
           </div>
-        )}
+        </div>
 
-        {/* Discreet, cleanly formatted sponsor unit */}
-        <GoogleAd format="horizontal" responsive={true} className="max-w-3xl mx-auto my-8" />
-
-        {/* Universal Community Comments & Discussion */}
-        <CommentSection
-          entityType="news"
-          entityId={article.id}
-          entityTitle={article.title}
-          entityUrl={`/news/${article.url || article.id}`}
-        />
-
-        {/* More News Section matching legacy article.php */}
+        {/* More Regional News Section (Glossy Minimal Cards without Thumbnails) */}
         {moreNews.length > 0 && (
-          <section className="mt-16 pt-12 border-t border-gray-200">
-            <div className="text-center mb-8">
-              <span className="text-emerald-700 font-bold text-xs uppercase tracking-wider block">
-                You might also like
-              </span>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-gray-900 mt-1">
-                More News
-              </h2>
+          <section className="mt-10">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
+                  More Regional News
+                </h2>
+              </div>
+              <Link
+                href="/news"
+                className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 transition flex items-center gap-1"
+              >
+                <span>View all news</span>
+                <span>&rarr;</span>
+              </Link>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {moreNews.map((item) => {
                 const articleHref = `/news/${encodeURIComponent(item.url || String(item.id))}`;
-                const itemRawImgs = item.imageUrls ? item.imageUrls.split(",") : [];
-                const itemImg = itemRawImgs[0]
-                  ? formatImageSrc(itemRawImgs[0])
-                  : "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800&auto=format&fit=crop&q=60";
 
                 return (
-                  <div
+                  <Link
                     key={item.id}
-                    className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-md flex flex-col justify-between"
+                    href={articleHref}
+                    className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 hover:border-emerald-500/70 hover:bg-white/90 dark:hover:bg-slate-850 rounded-2xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] transition-all duration-200 group flex flex-col justify-between"
                   >
                     <div>
-                      <Link href={articleHref}>
-                        <img
-                          src={itemImg}
-                          alt={item.title}
-                          className="w-full h-44 object-cover hover:opacity-90 transition-opacity"
-                        />
-                      </Link>
-                      <div className="p-4 space-y-2">
-                        <div className="text-xs text-gray-500">
+                      {/* Meta header */}
+                      <div className="flex items-center justify-between gap-2 mb-2.5">
+                        <span className="px-2.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 border border-slate-200 dark:border-slate-700/80 rounded-md uppercase tracking-wider">
+                          {item.category || "News"}
+                        </span>
+                        <span className="text-[11px] text-slate-500 font-mono">
                           {item.publishedDate
-                            ? new Date(item.publishedDate).toISOString().split("T")[0]
-                            : "Recent"}{" "}
-                          &bull; {item.category || "News"}
-                        </div>
-                        <h3 className="text-base font-bold text-gray-900 line-clamp-2 leading-snug">
-                          <Link href={articleHref} className="hover:text-emerald-700">
-                            {item.title}
-                          </Link>
-                        </h3>
-                        <p className="text-gray-600 text-xs line-clamp-2">{stripHtml(item.content)}</p>
+                            ? new Date(item.publishedDate).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })
+                            : "Recent"}
+                        </span>
                       </div>
+
+                      {/* Headline */}
+                      <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors leading-snug line-clamp-2 mb-2">
+                        {item.title}
+                      </h3>
+
+                      {/* Excerpt */}
+                      <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed mb-4">
+                        {stripHtml(item.content)}
+                      </p>
                     </div>
-                    <div className="p-4 pt-0">
-                      <Link
-                        href={articleHref}
-                        className="text-blue-600 font-bold text-xs hover:underline"
-                      >
-                        Read Article &rarr;
-                      </Link>
+
+                    {/* Bottom Action link */}
+                    <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold group-hover:text-emerald-500 flex items-center gap-1 transition-transform group-hover:translate-x-0.5">
+                        Read Story &rarr;
+                      </span>
+                      <span className="text-[11px] text-slate-500 font-mono">
+                        3 min read
+                      </span>
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>

@@ -112,20 +112,20 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-gray-900 pt-28 pb-16 px-4">
+    <div className="min-h-screen bg-[#090d16] text-slate-100 pt-28 pb-16 px-4">
       <div className="container mx-auto max-w-2xl">
-        <div className="bg-white border border-gray-200/90 rounded-3xl p-6 sm:p-8 shadow-sm">
-          <div className="flex items-center justify-between border-b border-gray-100 pb-5 mb-6">
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-5 mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Edit Explorer Profile</h1>
-              <p className="text-xs text-gray-500 mt-1">
+              <h1 className="text-2xl font-bold text-slate-100">Edit Explorer Profile</h1>
+              <p className="text-xs text-slate-400 mt-1">
                 Customize your bio, Northeast location, avatar, and social links.
               </p>
             </div>
             {currentUser && (
               <Link
                 href={`/profile/${currentUser.username}`}
-                className="text-xs text-emerald-700 font-semibold hover:underline"
+                className="text-xs text-emerald-400 font-semibold hover:underline"
               >
                 View Profile &rarr;
               </Link>
@@ -133,13 +133,13 @@ export default function EditProfilePage() {
           </div>
 
           {errorMsg && (
-            <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs">
+            <div className="mb-5 p-3 bg-rose-950/70 border border-rose-800 rounded-xl text-rose-300 text-xs">
               {errorMsg}
             </div>
           )}
 
           {successMsg && (
-            <div className="mb-5 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs flex items-center gap-2 font-medium">
+            <div className="mb-5 p-3 bg-emerald-950/70 border border-emerald-800 rounded-xl text-emerald-300 text-xs flex items-center gap-2 font-medium">
               <span>✨</span> {successMsg}
             </div>
           )}
@@ -148,26 +148,26 @@ export default function EditProfilePage() {
             {/* Full Name & Mobile */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                   Full Name
                 </label>
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                   Mobile Number (Optional)
                 </label>
                 <input
                   type="text"
                   value={mobileNumber}
                   onChange={(e) => setMobileNumber(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 font-mono"
                 />
               </div>
             </div>
@@ -175,13 +175,13 @@ export default function EditProfilePage() {
             {/* State & City */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                   State in Northeast
                 </label>
                 <select
                   value={state}
                   onChange={(e) => setState(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs outline-none focus:border-emerald-500 focus:bg-white"
+                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 cursor-pointer"
                 >
                   <option value="">Select State</option>
                   {NE_STATES.map((st) => (
@@ -193,7 +193,7 @@ export default function EditProfilePage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                   City / Town
                 </label>
                 <input
@@ -201,14 +201,14 @@ export default function EditProfilePage() {
                   placeholder="e.g. Guwahati, Shillong, Kohima"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 placeholder-slate-500"
                 />
               </div>
             </div>
 
             {/* Bio */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                 About / Bio
               </label>
               <textarea
@@ -216,14 +216,14 @@ export default function EditProfilePage() {
                 placeholder="Share a short bio about yourself and your travels or favorite spots in the Northeast..."
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100 resize-none placeholder:text-gray-400"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 resize-none placeholder-slate-500 leading-relaxed"
               />
             </div>
 
             {/* Avatar & Cover URLs */}
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                   Profile Picture URL
                 </label>
                 <input
@@ -231,12 +231,12 @@ export default function EditProfilePage() {
                   placeholder="https://..."
                   value={profileImageUrl}
                   onChange={(e) => setProfileImageUrl(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 placeholder-slate-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                   Cover Image URL
                 </label>
                 <input
@@ -244,14 +244,14 @@ export default function EditProfilePage() {
                   placeholder="https://images.unsplash.com/..."
                   value={coverImageUrl}
                   onChange={(e) => setCoverImageUrl(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 placeholder-slate-500"
                 />
               </div>
             </div>
 
             {/* Website URL */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                 Personal Website or Blog
               </label>
               <input
@@ -259,21 +259,21 @@ export default function EditProfilePage() {
                 placeholder="https://yourblog.com"
                 value={websiteUrl}
                 onChange={(e) => setWebsiteUrl(e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 placeholder-slate-500"
               />
             </div>
 
-            <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-100">
+            <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-800">
               <Link
                 href={`/profile/${currentUser?.username}`}
-                className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl transition"
+                className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl transition border border-slate-700"
               >
                 Cancel
               </Link>
               <button
                 type="submit"
                 disabled={saving}
-                className="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white text-xs font-bold rounded-xl shadow-md transition disabled:opacity-50 cursor-pointer"
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-sm transition disabled:opacity-50 cursor-pointer"
               >
                 {saving ? "Saving..." : "Save Changes"}
               </button>

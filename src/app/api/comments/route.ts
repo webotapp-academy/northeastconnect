@@ -192,7 +192,7 @@ export async function POST(request: Request) {
             type: "COMMENT_REPLY",
             title: "New Reply to Your Comment 💬",
             message: `@${currentUser.username} replied: "${content.trim().slice(0, 75)}..."`,
-            linkUrl: entityUrl || `/${entityType}/${entityId}`,
+            linkUrl: entityUrl || (entityType === "post" ? `/#post-${numericEntityId}` : `/${entityType}/${numericEntityId}`),
           },
         });
       }
@@ -211,7 +211,7 @@ export async function POST(request: Request) {
             type: "POST_COMMENT",
             title: "New Comment on Your Post 💬",
             message: `@${currentUser.username} commented on your post: "${content.trim().slice(0, 75)}..."`,
-            linkUrl: "/community",
+            linkUrl: `/#post-${numericEntityId}`,
           },
         });
       }

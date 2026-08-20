@@ -8,6 +8,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const filter = searchParams.get("filter") || "all"; // all, friends
     const state = searchParams.get("state");
+    const adda = searchParams.get("adda");
 
     const currentUser = await getCurrentUser();
 
@@ -27,12 +28,21 @@ export async function GET(request: Request) {
       userIdsFilter = [currentUser.id, ...friendIds];
     }
 
+    const whereClause: any = { status: "Active" };
+    if (userIdsFilter) whereClause.userId = { in: userIdsFilter };
+    if (state && state !== "All States") whereClause.user = { state };
+    if (adda) {
+      const cleanAdda = adda.replace(/^n:/, "");
+      whereClause.OR = [
+        { taggedLocation: { contains: cleanAdda, mode: "insensitive" } },
+        { taggedLocation: { contains: adda, mode: "insensitive" } },
+        { content: { contains: adda, mode: "insensitive" } },
+        { content: { contains: cleanAdda, mode: "insensitive" } },
+      ];
+    }
+
     const posts = await db.communityPost.findMany({
-      where: {
-        status: "Active",
-        ...(userIdsFilter ? { userId: { in: userIdsFilter } } : {}),
-        ...(state ? { user: { state } } : {}),
-      },
+      where: whereClause,
       include: {
         user: {
           select: {

@@ -3,12 +3,23 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import AuthModal from "@/components/auth/AuthModal";
-import RankBadge from "@/components/profile/RankBadge";
 import {
   NORTHEAST_LOCATIONS,
   NE_STATE_NAMES,
   getCitiesForState,
 } from "@/lib/locations";
+
+const NE_STATES = [
+  { name: "All States", icon: "🏔️" },
+  { name: "Assam", icon: "🦏" },
+  { name: "Meghalaya", icon: "🌧️" },
+  { name: "Arunachal", icon: "☀️" },
+  { name: "Manipur", icon: "💃" },
+  { name: "Mizoram", icon: "🎋" },
+  { name: "Nagaland", icon: "🦅" },
+  { name: "Sikkim", icon: "❄️" },
+  { name: "Tripura", icon: "🏛️" },
+];
 
 const CATEGORIES = [
   { id: "All", name: "All Categories", icon: "🛍️" },
@@ -16,12 +27,12 @@ const CATEGORIES = [
   { id: "Mobiles & Electronics", name: "Electronics & Tech", icon: "📱" },
   { id: "Properties & Rent", name: "Property & Rentals", icon: "🏠" },
   { id: "Jobs & Services", name: "Jobs & Local Services", icon: "💼" },
-  { id: "Handlooms & Crafts", name: "Traditional Handlooms & Crafts", icon: "🧣" },
+  { id: "Handlooms & Crafts", name: "Handlooms & Crafts", icon: "🧣" },
   { id: "Tea & Agro Products", name: "Assam Tea & Agro", icon: "🍵" },
   { id: "Furniture & Decor", name: "Furniture & Decor", icon: "🛋️" },
   { id: "Pets & Livestock", name: "Pets & Farm Animals", icon: "🐾" },
   { id: "Fashion & Lifestyle", name: "Fashion & Clothes", icon: "👗" },
-  { id: "Books & Hobbies", name: "Books, Sports & Hobbies", icon: "📚" },
+  { id: "Books & Hobbies", name: "Books & Hobbies", icon: "📚" },
 ];
 
 export default function MarketplacePage() {
@@ -91,86 +102,90 @@ export default function MarketplacePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-gray-900 pt-24 pb-20 px-4">
-      {/* Top Banner / Hero Header */}
-      <div className="container mx-auto max-w-6xl mb-8">
-        <div className="bg-gradient-to-r from-emerald-800 via-teal-800 to-indigo-900 border border-emerald-700/30 rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-lg text-white">
-          <div className="relative z-10 max-w-2xl">
-            <span className="px-3.5 py-1 bg-white/20 text-emerald-100 text-xs font-semibold rounded-full border border-white/30 backdrop-blur">
-              🛒 Northeast Buy &amp; Sell Marketplace
-            </span>
-            <h1 className="text-2xl md:text-4xl font-extrabold text-white mt-3 tracking-tight">
-              Buy, Sell &amp; Discover Across the 8 States
-            </h1>
-            <p className="text-xs md:text-sm text-emerald-100/90 mt-2 leading-relaxed">
-              Find cars, bikes, gadgets, properties, authentic Assam silk, organic tea, and regional crafts directly from local buyers and sellers.
-            </p>
-          </div>
-
-          <div className="relative z-10 mt-6 flex flex-wrap items-center gap-3">
-            <Link
-              href="/marketplace/new"
-              className="px-6 py-3 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-stone-950 font-extrabold text-xs md:text-sm rounded-2xl shadow-lg transition flex items-center gap-2"
-            >
-              <span>➕</span>
-              <span>Post Free Ad / Sell Item (+30 XP)</span>
-            </Link>
-            {currentUser && (
-              <Link
-                href="/marketplace/my-ads"
-                className="px-5 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs md:text-sm rounded-2xl border border-white/20 backdrop-blur transition"
-              >
-                📋 My Posted Ads
-              </Link>
-            )}
-          </div>
-
-          <div className="absolute -right-6 -bottom-6 text-9xl opacity-15 select-none pointer-events-none">
-            🏷️
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0b0e14] text-slate-900 dark:text-slate-100 pt-3 sm:pt-5 pb-20 px-2 sm:px-4 transition-colors">
+      <div className="container mx-auto max-w-7xl">
+        {/* State Quick Switcher */}
+        <div className="mb-4 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-2xl p-2.5 sm:p-3 shadow-sm">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none snap-x">
+            {NE_STATES.map((st) => {
+              const active = selectedState === st.name;
+              return (
+                <button
+                  key={st.name}
+                  onClick={() => {
+                    setSelectedState(st.name);
+                    setSelectedCity("All Cities");
+                  }}
+                  className={`flex-shrink-0 snap-start flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                    active
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white border border-slate-200/80 dark:border-slate-700/60"
+                  }`}
+                >
+                  <span>{st.icon}</span>
+                  <span>{st.name === "All States" ? "n:all" : `n:${st.name.toLowerCase().replace(/\s+/g, "")}`}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
-      </div>
 
-      <div className="container mx-auto max-w-6xl space-y-6">
-        {/* Search & Location Bar */}
-        <div className="bg-white border border-gray-200/90 rounded-3xl p-4 md:p-5 shadow-sm">
-          <form onSubmit={handleSearch} className="flex flex-col md:flex-row gap-3">
+        {/* Top Header Card (Glossy) */}
+        <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                  Local Marketplace
+                </span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                Buy &amp; Sell Across Northeast India
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                Find vehicles, tech, Assam silk, handlooms, and agro products directly from local community members
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Link
+                href="/marketplace/new"
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-full shadow-xs transition active:scale-95 flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>+</span> Post an Ad
+              </Link>
+              {currentUser && (
+                <Link
+                  href="/marketplace/my-ads"
+                  className="px-4 py-2.5 bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs rounded-full transition border border-slate-300 dark:border-slate-700 cursor-pointer"
+                >
+                  My Ads
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {/* Search & Location Form */}
+          <form onSubmit={handleSearch} className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row gap-2.5">
             <div className="flex-1 relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-base">🔍</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
               <input
                 type="text"
-                placeholder="Search items, brands, cars, Assam silk, phones..."
+                placeholder="Search items, vehicles, Assam silk, phones..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs md:text-sm text-gray-900 outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-full text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 transition"
               />
             </div>
 
             <div className="flex flex-wrap sm:flex-nowrap gap-2">
-              {/* State Selector */}
-              <select
-                value={selectedState}
-                onChange={(e) => {
-                  const st = e.target.value;
-                  setSelectedState(st);
-                  setSelectedCity("All Cities");
-                }}
-                className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs text-gray-800 outline-none focus:border-emerald-500 font-medium"
-              >
-                <option value="All States">📍 All States</option>
-                {NE_STATE_NAMES.map((st) => (
-                  <option key={st} value={st}>
-                    📍 {st}
-                  </option>
-                ))}
-              </select>
-
               {/* Dynamic City Selector */}
               {selectedState !== "All States" && (
                 <select
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
-                  className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs text-gray-800 outline-none focus:border-emerald-500 font-medium animate-in fade-in duration-150"
+                  className="px-3.5 py-2.5 bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-full text-xs sm:text-sm text-slate-800 dark:text-slate-200 outline-none focus:border-emerald-500 font-medium cursor-pointer"
                 >
                   <option value="All Cities">🏙️ All Cities</option>
                   {getCitiesForState(selectedState).map((c) => (
@@ -184,7 +199,7 @@ export default function MarketplacePage() {
               <select
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value)}
-                className="px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-xs text-gray-800 outline-none focus:border-emerald-500 font-medium"
+                className="px-3.5 py-2.5 bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-full text-xs sm:text-sm text-slate-800 dark:text-slate-200 outline-none focus:border-emerald-500 font-medium cursor-pointer"
               >
                 <option value="newest">🕒 Newest First</option>
                 <option value="price_asc">📉 Price: Low to High</option>
@@ -194,68 +209,68 @@ export default function MarketplacePage() {
 
               <button
                 type="submit"
-                className="px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-2xl shadow-sm transition cursor-pointer"
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold rounded-full shadow-xs transition cursor-pointer"
               >
                 Search
               </button>
             </div>
           </form>
-        </div>
 
-        {/* Categories Bar */}
-        <div className="overflow-x-auto pb-2 scrollbar-none">
-          <div className="flex gap-2.5 min-w-max">
-            {CATEGORIES.map((cat) => {
-              const active = selectedCategory === cat.id;
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-2.5 rounded-2xl text-xs font-semibold flex items-center gap-2 border transition cursor-pointer ${
-                    active
-                      ? "bg-emerald-700 text-white border-emerald-700 shadow-sm"
-                      : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
-                  }`}
-                >
-                  <span className="text-base">{cat.icon}</span>
-                  <span>{cat.name}</span>
-                </button>
-              );
-            })}
+          {/* Categories Bar */}
+          <div className="overflow-x-auto pt-3 mt-3 border-t border-slate-100 dark:border-slate-800/80 scrollbar-none">
+            <div className="flex gap-1.5 min-w-max">
+              {CATEGORIES.map((cat) => {
+                const active = selectedCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+                      active
+                        ? "bg-emerald-600 text-white shadow-xs"
+                        : "bg-slate-100/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/60"
+                    }`}
+                  >
+                    <span>{cat.icon}</span>
+                    <span>{cat.name}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
         {/* Results Header */}
-        <div className="flex items-center justify-between pt-2">
-          <h2 className="text-base md:text-lg font-bold text-gray-900">
+        <div className="flex items-center justify-between pb-4">
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100">
             {selectedCategory === "All" ? "Fresh Recommendations" : selectedCategory}{" "}
-            <span className="text-xs text-gray-500 font-normal">({totalCount} items found)</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">({totalCount} items found)</span>
           </h2>
 
           <Link
             href="/marketplace/new"
-            className="text-xs text-emerald-700 font-bold hover:underline flex items-center gap-1"
+            className="text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:underline flex items-center gap-1"
           >
             <span>+ Sell an item</span>
           </Link>
         </div>
 
-        {/* Listings Grid */}
+        {/* Listings Grid (Glossy Cards) */}
         {loading ? (
-          <div className="py-20 text-center text-gray-400 text-xs">
-            <div className="w-9 h-9 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="py-20 text-center text-slate-400 text-xs">
+            <div className="w-9 h-9 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             Loading marketplace items...
           </div>
         ) : items.length === 0 ? (
-          <div className="text-center py-20 bg-white border border-dashed border-gray-300 rounded-3xl p-8 shadow-sm">
+          <div className="text-center py-16 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-dashed border-slate-300 dark:border-slate-800 rounded-3xl p-8 shadow-sm">
             <div className="text-5xl mb-3">🛍️</div>
-            <h3 className="font-bold text-gray-900 text-base">No items found</h3>
-            <p className="text-xs text-gray-500 mt-1 max-w-md mx-auto">
+            <h3 className="font-bold text-slate-900 dark:text-slate-100 text-base">No items found</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
               No active listings match your current filters. Be the first to list an item for sale in {selectedState}!
             </p>
             <Link
               href="/marketplace/new"
-              className="mt-5 inline-block px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-md"
+              className="mt-5 inline-block px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-full shadow-xs"
             >
               Post Your Ad Now (+30 XP)
             </Link>
@@ -272,22 +287,22 @@ export default function MarketplacePage() {
                 <Link
                   key={item.id}
                   href={`/marketplace/${item.id}`}
-                  className="group bg-white border border-gray-200/90 rounded-3xl overflow-hidden shadow-xs hover:shadow-md hover:border-emerald-400 transition-all flex flex-col justify-between"
+                  className="group bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:shadow-lg transition-all flex flex-col justify-between"
                 >
                   <div>
                     {/* Image Container */}
-                    <div className="relative aspect-4/3 overflow-hidden bg-gray-100">
+                    <div className="relative aspect-4/3 overflow-hidden bg-slate-100 dark:bg-slate-950">
                       <img
                         src={thumbnail}
                         alt={item.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       {/* Condition Badge */}
-                      <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold rounded-md">
+                      <span className="absolute top-2.5 left-2.5 px-2.5 py-0.5 bg-slate-900/80 border border-slate-700/60 backdrop-blur-xs text-white text-[10px] font-bold rounded-md uppercase tracking-wider">
                         {item.condition}
                       </span>
-                      {/* Featured or State Badge */}
-                      <span className="absolute top-2.5 right-2.5 px-2.5 py-0.5 bg-emerald-600/90 backdrop-blur-md text-white text-[10px] font-bold rounded-md">
+                      {/* State Badge */}
+                      <span className="absolute top-2.5 right-2.5 px-2.5 py-0.5 bg-emerald-600/90 backdrop-blur-xs text-white text-[10px] font-bold rounded-md">
                         📍 {item.city || item.state}
                       </span>
                     </div>
@@ -296,23 +311,23 @@ export default function MarketplacePage() {
                     <div className="p-4">
                       {/* Price */}
                       <div className="flex items-baseline justify-between mb-1.5">
-                        <span className="text-lg md:text-xl font-extrabold text-gray-900 font-mono">
+                        <span className="text-lg md:text-xl font-black text-slate-900 dark:text-slate-100 font-mono">
                           ₹{item.price.toLocaleString("en-IN")}
                         </span>
                         {item.isNegotiable && (
-                          <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-semibold">
+                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/60 font-bold">
                             Negotiable
                           </span>
                         )}
                       </div>
 
                       {/* Title */}
-                      <h3 className="text-xs md:text-sm font-bold text-gray-800 line-clamp-2 leading-snug group-hover:text-emerald-700 transition">
+                      <h3 className="text-xs md:text-sm font-bold text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition">
                         {item.title}
                       </h3>
 
                       {/* Locality & Location */}
-                      <p className="text-[11px] text-gray-500 mt-2 flex items-center gap-1 truncate">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1 truncate font-medium">
                         <span>📍</span>
                         <span>{item.locality ? `${item.locality}, ` : ""}{item.city}, {item.state}</span>
                       </p>
@@ -320,7 +335,7 @@ export default function MarketplacePage() {
                   </div>
 
                   {/* Footer (Seller & Date) */}
-                  <div className="p-4 pt-2.5 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
+                  <div className="p-4 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
                     <div className="flex items-center gap-1.5 truncate">
                       <img
                         src={
@@ -328,9 +343,9 @@ export default function MarketplacePage() {
                           `https://api.dicebear.com/7.x/bottts/svg?seed=${item.user?.username || "user"}`
                         }
                         alt="Seller"
-                        className="w-5 h-5 rounded-full object-cover border border-gray-200"
+                        className="w-5 h-5 rounded-full object-cover border border-slate-200 dark:border-slate-700"
                       />
-                      <span className="truncate text-gray-600 font-medium">@{item.user?.username}</span>
+                      <span className="truncate text-slate-700 dark:text-slate-300 font-medium">@{item.user?.username}</span>
                     </div>
                     <span>{new Date(item.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
                   </div>

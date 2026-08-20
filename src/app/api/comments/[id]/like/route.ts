@@ -86,7 +86,7 @@ export async function POST(
             type: "COMMENT_LIKE",
             title: "Someone liked your comment! ❤️",
             message: `@${currentUser.username} liked your comment: "${comment.content.slice(0, 50)}..."`,
-            linkUrl: `/${comment.entityType}/${comment.entityId}`,
+            linkUrl: comment.entityType === "post" ? `/#post-${comment.entityId}` : `/${comment.entityType}/${comment.entityId}`,
           },
         });
       }

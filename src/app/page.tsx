@@ -53,7 +53,7 @@ export default async function Home() {
       db.user.findMany({
         where: { status: "Active" },
         orderBy: { xpPoints: "desc" },
-        take: 5,
+        take: 12,
         select: {
           id: true,
           username: true,
@@ -61,6 +61,9 @@ export default async function Home() {
           profileImageUrl: true,
           rankTier: true,
           xpPoints: true,
+          city: true,
+          state: true,
+          bio: true,
         },
       }),
       db.marketplaceListing.findMany({

@@ -1,11 +1,22 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
-import HeroSearch from "@/components/HeroSearch";
 
 export const revalidate = 60;
 
+const NE_STATES = [
+  { name: "All States", icon: "🏔️" },
+  { name: "Assam", icon: "🦏" },
+  { name: "Meghalaya", icon: "🌧️" },
+  { name: "Arunachal", icon: "☀️" },
+  { name: "Manipur", icon: "💃" },
+  { name: "Mizoram", icon: "🎋" },
+  { name: "Nagaland", icon: "🦅" },
+  { name: "Sikkim", icon: "❄️" },
+  { name: "Tripura", icon: "🏛️" },
+];
+
 interface PageProps {
-  searchParams: Promise<{ type?: string; term?: string }>;
+  searchParams: Promise<{ type?: string; term?: string; state?: string }>;
 }
 
 function formatImageSrc(imgStr: string): string {
@@ -29,13 +40,16 @@ function stripHtml(htmlStr: string | null | undefined): string {
 }
 
 export default async function CulturePage({ searchParams }: PageProps) {
-  const { type = "", term = "" } = await searchParams;
+  const { type = "", term = "", state = "" } = await searchParams;
 
-  // Build query filters
   const where: any = {};
-
-  if (type) {
-    where.type = type;
+  if (type) where.type = type;
+  if (state && state !== "All States") {
+    where.OR = [
+      { location: { contains: state, mode: "insensitive" } },
+      { description: { contains: state, mode: "insensitive" } },
+      { name: { contains: state, mode: "insensitive" } },
+    ];
   }
   if (term) {
     where.OR = [
@@ -56,60 +70,83 @@ export default async function CulturePage({ searchParams }: PageProps) {
   const uniqueTypes = types.map((t) => t.type).filter(Boolean);
 
   return (
-    <main className="w-full bg-white text-gray-900 font-sans">
-      {/* Full-screen Hero Section */}
-      <header className="relative min-h-[70vh] flex items-center justify-center">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-900 via-purple-700 to-indigo-900 opacity-80 z-10" />
-          <img
-            src="/assets/images/hero.jpg"
-            alt="Culture of Assam"
-            className="w-full h-full object-cover"
-          />
-        </div>
-
-        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto pt-36 pb-14 md:pt-40 md:pb-18">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
-            Cultural Heritage
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-200 mb-12">
-            Experience the vibrant traditions and festivals of Assam
-          </p>
-
-          {/* Live Autocomplete Hero Search */}
-          <HeroSearch
-            placeholder="Search cultural events and festivals..."
-            actionUrl="/culture"
-            buttonBgColor="bg-purple-600 hover:bg-purple-700"
-            focusBorderColor="focus:border-purple-500"
-            defaultValue={term}
-          />
-
-          {/* Quick Stats */}
-          <div className="mt-12 flex flex-wrap justify-center gap-8 text-sm sm:text-base">
-            <div className="px-6 py-3 bg-white/10 backdrop-blur-sm rounded-full text-white">
-              <span className="font-bold">50+</span> Festivals
-            </div>
-            <div className="px-6 py-3 bg-white/10 backdrop-blur-sm rounded-full text-white">
-              <span className="font-bold">30+</span> Heritage Sites
-            </div>
-            <div className="px-6 py-3 bg-white/10 backdrop-blur-sm rounded-full text-white">
-              <span className="font-bold">100+</span> Art Traditions
-            </div>
+    <main className="min-h-screen bg-slate-50 dark:bg-[#0b0e14] text-slate-900 dark:text-slate-100 font-sans pt-3 sm:pt-5 pb-16 transition-colors">
+      <div className="container mx-auto px-2 sm:px-4 max-w-7xl">
+        {/* State Quick Switcher */}
+        <div className="mb-4 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-2xl p-2.5 sm:p-3 shadow-sm">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none snap-x">
+            {NE_STATES.map((st) => {
+              const active = (state === "" && st.name === "All States") || state === st.name;
+              const href = st.name === "All States" ? "/culture" : `/culture?state=${encodeURIComponent(st.name)}`;
+              return (
+                <Link
+                  key={st.name}
+                  href={href}
+                  className={`flex-shrink-0 snap-start flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                    active
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white border border-slate-200/80 dark:border-slate-700/60"
+                  }`}
+                >
+                  <span>{st.icon}</span>
+                  <span>{st.name === "All States" ? "n:all" : `n:${st.name.toLowerCase().replace(/\s+/g, "")}`}</span>
+                </Link>
+              );
+            })}
           </div>
         </div>
-      </header>
 
-      {/* Sticky Filters Section */}
-      <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-md shadow-md py-6 border-b border-gray-200/50">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <form action="/culture" method="GET" className="flex flex-wrap gap-4 items-center">
-            {/* Type Filter */}
-            <div className="flex-1 min-w-[200px]">
+        {/* Top Header Card (Glossy) */}
+        <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                  Heritage &amp; Festivals
+                </span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                Cultural Heritage of Northeast India
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                Explore ancient traditions, vibrant festivals, folk arts, and sacred monuments across the 8 states
+              </p>
+            </div>
+
+            <div className="text-xs font-medium shrink-0">
+              <span className="px-3.5 py-1.5 bg-slate-100/90 dark:bg-slate-800/90 rounded-full border border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 shadow-xs">
+                <strong className="text-slate-900 dark:text-slate-100 font-bold">{cultureList.length}</strong> Heritage &amp; Festivals
+              </span>
+            </div>
+          </div>
+
+          {/* Search & Category Filter Bar */}
+          <form action="/culture" method="GET" className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row gap-2.5">
+            {state && <input type="hidden" name="state" value={state} />}
+            <div className="flex-1 relative">
+              <svg
+                className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                name="term"
+                defaultValue={term}
+                placeholder="Search festivals, dance forms, heritage places..."
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-full text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
+              />
+            </div>
+
+            <div className="flex gap-2">
               <select
                 name="type"
                 defaultValue={type}
-                className="w-full px-4 py-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-purple-500 bg-white/80 text-gray-900"
+                className="px-3.5 py-2.5 bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-full text-xs sm:text-sm text-slate-800 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:border-emerald-500 transition cursor-pointer"
               >
                 <option value="">All Categories</option>
                 {uniqueTypes.map((t) => (
@@ -118,106 +155,113 @@ export default async function CulturePage({ searchParams }: PageProps) {
                   </option>
                 ))}
               </select>
+
+              <button
+                type="submit"
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full text-xs sm:text-sm font-bold transition cursor-pointer shrink-0 shadow-xs"
+              >
+                Filter
+              </button>
             </div>
-
-            {/* Apply Button */}
-            <button
-              type="submit"
-              className="bg-purple-600 text-white px-8 py-3 rounded-full hover:bg-purple-700 transition duration-300 min-w-[120px] font-semibold cursor-pointer shadow-md"
-            >
-              Filter
-            </button>
-
-            {/* Clear Link */}
-            {(type || term) && (
-              <Link href="/culture" className="text-gray-600 hover:text-gray-800 px-4 py-3 font-medium text-sm">
-                Clear All
-              </Link>
-            )}
           </form>
-        </div>
-      </div>
 
-      {/* Listings Section */}
-      <div className="bg-gray-50 py-16">
-        <div className="container mx-auto px-4 max-w-7xl">
-          {cultureList.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-2xl shadow border border-gray-100">
-              <div className="text-gray-400 text-6xl mb-4">🎭</div>
-              <p className="text-gray-600 text-xl">No cultural events found matching your criteria.</p>
-              <Link href="/culture" className="inline-block mt-4 text-purple-600 hover:text-purple-700 font-semibold">
-                View all cultural heritage &rarr;
+          {/* Type Filter Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pt-3 mt-3 border-t border-slate-100 dark:border-slate-800/80 scrollbar-none">
+            <Link
+              href="/culture"
+              className={`px-3 py-1 rounded-full text-xs font-semibold transition shrink-0 ${
+                !type
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "bg-slate-100/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/60"
+              }`}
+            >
+              All
+            </Link>
+            {uniqueTypes.map((t) => (
+              <Link
+                key={t}
+                href={`/culture?type=${encodeURIComponent(t!)}`}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition shrink-0 ${
+                  type === t
+                    ? "bg-emerald-600 text-white shadow-xs"
+                    : "bg-slate-100/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/60"
+                }`}
+              >
+                {t}
               </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Culture Grid (Glossy Cards) */}
+        {cultureList.length === 0 ? (
+          <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-dashed border-slate-300 dark:border-slate-800 rounded-3xl p-12 text-center shadow-sm">
+            <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 flex items-center justify-center mx-auto text-2xl mb-3">
+              🎭
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {cultureList.map((item) => {
-                const slug = item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-                const detailUrl = `/culture/${slug}-${item.id}`;
-                const images = item.imageUrls ? item.imageUrls.split(",") : [];
-                const mainImage = images[0] ? formatImageSrc(images[0]) : "https://images.unsplash.com/photo-1698515959329-878121b965aa?w=900&auto=format&fit=crop&q=60";
-                const cleanDesc = stripHtml(item.description);
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">No cultural events or sites found</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Try clearing your filters or searching with another keyword.</p>
+            <Link
+              href="/culture"
+              className="inline-block px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-full shadow-xs transition"
+            >
+              View all heritage
+            </Link>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {cultureList.map((item) => {
+              const slug = item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+              const detailUrl = `/culture/${slug}-${item.id}`;
+              const images = item.imageUrls ? item.imageUrls.split(",") : [];
+              const mainImage = images[0] ? formatImageSrc(images[0]) : "https://images.unsplash.com/photo-1698515959329-878121b965aa?w=900&auto=format&fit=crop&q=60";
+              const cleanDesc = stripHtml(item.description);
 
-                return (
-                  <div
-                    key={item.id}
-                    className="group bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="relative h-64 overflow-hidden bg-gray-100">
-                        <img
-                          src={mainImage}
-                          alt={item.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-6">
-                          <h3 className="text-white text-2xl font-bold mb-2">
-                            <Link href={detailUrl} className="hover:underline text-purple-200">
-                              {item.name}
-                            </Link>
-                          </h3>
-                          <p className="text-white/90 flex items-center text-sm font-medium">
-                            <svg className="w-5 h-5 mr-2 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            {item.location || item.district || "Assam"}
-                          </p>
-                        </div>
-                      </div>
+              return (
+                <article
+                  key={item.id}
+                  className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:shadow-lg transition-all duration-200 flex flex-col justify-between group"
+                >
+                  <div>
+                    <Link href={detailUrl} className="block relative h-48 sm:h-52 bg-slate-100 dark:bg-slate-950 overflow-hidden">
+                      <img
+                        src={mainImage}
+                        alt={item.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      {item.type && (
+                        <span className="absolute top-3 left-3 px-2.5 py-1 bg-slate-900/80 backdrop-blur-xs text-[10px] font-bold text-white border border-slate-700/60 rounded-md shadow-xs uppercase tracking-wider">
+                          {item.type}
+                        </span>
+                      )}
+                    </Link>
 
-                      <div className="p-6 space-y-3">
-                        {item.type && (
-                          <div className="flex gap-2">
-                            <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-semibold">
-                              {item.type}
-                            </span>
-                          </div>
-                        )}
-                        <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
-                          {cleanDesc}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="p-6 pt-0 flex items-center justify-between border-t border-gray-100 mt-4 pt-4">
-                      <span className="text-xs text-gray-500 font-medium">
-                        {item.startDate ? new Date(item.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Annual Heritage"}
-                      </span>
-                      <Link
-                        href={detailUrl}
-                        className="inline-flex items-center text-purple-700 hover:text-purple-800 font-bold text-sm"
-                      >
-                        Explore &rarr;
-                      </Link>
+                    <div className="p-5 space-y-2">
+                      <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 leading-snug line-clamp-1 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition">
+                        <Link href={detailUrl}>{item.name}</Link>
+                      </h3>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                        {cleanDesc}
+                      </p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+
+                  <div className="p-5 pt-0 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 mt-3 pt-3">
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
+                      📍 {item.location || "Northeast India"}
+                    </span>
+                    <Link
+                      href={detailUrl}
+                      className="px-3.5 py-1.5 bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-full border border-slate-300 dark:border-slate-700 transition"
+                    >
+                      Explore &rarr;
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </div>
     </main>
   );

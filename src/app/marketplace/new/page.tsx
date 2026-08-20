@@ -240,31 +240,31 @@ export default function PostMarketplaceAdPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-gray-900 pt-24 pb-20 px-4">
+    <div className="min-h-screen bg-[#090d16] text-slate-100 pt-24 pb-20 px-4">
       <div className="container mx-auto max-w-3xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <Link
               href="/marketplace"
-              className="text-xs text-emerald-700 font-semibold hover:underline flex items-center gap-1 mb-1"
+              className="text-xs text-emerald-400 font-semibold hover:underline flex items-center gap-1 mb-1"
             >
               &larr; Back to Marketplace
             </Link>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-100 tracking-tight">
               Post an Ad / Listing
             </h1>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-slate-400 mt-1">
               Reach thousands of verified buyers across Assam and Northeast India (+30 Explorer XP)
             </p>
           </div>
-          <div className="hidden sm:flex items-center gap-2 bg-emerald-50 text-emerald-800 border border-emerald-200 px-3.5 py-1.5 rounded-2xl text-xs font-bold">
+          <div className="hidden sm:flex items-center gap-2 bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 px-3.5 py-1.5 rounded-2xl text-xs font-bold">
             <span>✨</span> +30 XP Reward
           </div>
         </div>
 
         {errorMsg && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-xs">
+          <div className="mb-6 p-4 bg-rose-950/70 border border-rose-800 rounded-2xl text-rose-300 text-xs">
             {errorMsg}
           </div>
         )}
@@ -272,20 +272,20 @@ export default function PostMarketplaceAdPage() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Section 1: Category & Dynamic Fields */}
-          <div className="bg-white border border-gray-200/90 rounded-3xl p-6 md:p-8 shadow-sm space-y-5">
-            <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-5">
+            <h2 className="text-base font-bold text-slate-100 border-b border-slate-800 pb-3 flex items-center gap-2">
               <span>🏷️</span> Category &amp; Specific Details
             </h2>
 
             {/* Category Select */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                Category <span className="text-red-500">*</span>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                Category <span className="text-rose-400">*</span>
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs md:text-sm outline-none focus:border-emerald-500 focus:bg-white font-bold"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs md:text-sm outline-none focus:border-emerald-500 focus:bg-slate-900 font-bold cursor-pointer"
               >
                 {CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
@@ -299,19 +299,19 @@ export default function PostMarketplaceAdPage() {
 
             {/* 1. JOBS & SERVICES */}
             {category === "Jobs & Services" && (
-              <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-4 animate-in fade-in duration-200">
-                <div className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+              <div className="p-4 bg-emerald-950/40 border border-emerald-800/60 rounded-2xl space-y-4 animate-in fade-in duration-200">
+                <div className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
                   <span>💼</span> Job &amp; Service Specifications
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                       Job Type / Role
                     </label>
                     <select
                       value={jobType}
                       onChange={(e) => setJobType(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-emerald-500 font-medium"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-emerald-500 font-medium cursor-pointer"
                     >
                       <option value="Full-time">Full-time Employee</option>
                       <option value="Part-time">Part-time</option>
@@ -323,13 +323,13 @@ export default function PostMarketplaceAdPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                       Experience Required
                     </label>
                     <select
                       value={experienceLevel}
                       onChange={(e) => setExperienceLevel(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-emerald-500 font-medium"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-emerald-500 font-medium cursor-pointer"
                     >
                       <option value="Fresher / Entry Level">Fresher / Entry Level</option>
                       <option value="1-3 Years Experience">1-3 Years Experience</option>
@@ -340,13 +340,13 @@ export default function PostMarketplaceAdPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                       Payment Frequency
                     </label>
                     <select
                       value={salaryPeriod}
                       onChange={(e) => setSalaryPeriod(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-emerald-500 font-medium"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-emerald-500 font-medium cursor-pointer"
                     >
                       <option value="Per Month">Monthly Salary</option>
                       <option value="Per Day">Daily Rate</option>
@@ -360,19 +360,19 @@ export default function PostMarketplaceAdPage() {
 
             {/* 2. PROPERTIES & RENT */}
             {category === "Properties & Rent" && (
-              <div className="p-4 bg-cyan-50/70 border border-cyan-200 rounded-2xl space-y-4 animate-in fade-in duration-200">
-                <div className="text-xs font-bold text-cyan-950 flex items-center gap-1.5">
+              <div className="p-4 bg-cyan-950/40 border border-cyan-800/60 rounded-2xl space-y-4 animate-in fade-in duration-200">
+                <div className="text-xs font-bold text-cyan-400 flex items-center gap-1.5">
                   <span>🏠</span> Property &amp; Rental Specifications
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                       Property Type
                     </label>
                     <select
                       value={propertyType}
                       onChange={(e) => setPropertyType(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-cyan-500 font-medium"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-cyan-500 font-medium cursor-pointer"
                     >
                       <option value="Apartment / Flat for Rent">Apartment / Flat for Rent</option>
                       <option value="House / Villa for Rent">House / Villa for Rent</option>
@@ -384,13 +384,13 @@ export default function PostMarketplaceAdPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                       Bedrooms / Configuration
                     </label>
                     <select
                       value={bhk}
                       onChange={(e) => setBhk(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-cyan-500 font-medium"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-cyan-500 font-medium cursor-pointer"
                     >
                       <option value="1 RK / Studio">1 RK / Studio</option>
                       <option value="1 BHK">1 BHK</option>
@@ -402,13 +402,13 @@ export default function PostMarketplaceAdPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                       Furnishing Status
                     </label>
                     <select
                       value={furnishing}
                       onChange={(e) => setFurnishing(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-cyan-500 font-medium"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-cyan-500 font-medium cursor-pointer"
                     >
                       <option value="Unfurnished">Unfurnished</option>
                       <option value="Semi-Furnished">Semi-Furnished</option>
@@ -421,19 +421,19 @@ export default function PostMarketplaceAdPage() {
 
             {/* 3. VEHICLES & BIKES */}
             {category === "Vehicles & Bikes" && (
-              <div className="p-4 bg-amber-50/70 border border-amber-200 rounded-2xl space-y-4 animate-in fade-in duration-200">
-                <div className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+              <div className="p-4 bg-amber-950/40 border border-amber-800/60 rounded-2xl space-y-4 animate-in fade-in duration-200">
+                <div className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
                   <span>🚗</span> Vehicle Specifications
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                       Vehicle Type
                     </label>
                     <select
                       value={vehicleType}
                       onChange={(e) => setVehicleType(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-amber-500 font-medium"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-amber-500 font-medium cursor-pointer"
                     >
                       <option value="Car">Car</option>
                       <option value="Motorcycle / Bike">Motorcycle / Bike</option>
@@ -445,13 +445,13 @@ export default function PostMarketplaceAdPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                       Fuel Type
                     </label>
                     <select
                       value={fuelType}
                       onChange={(e) => setFuelType(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-amber-500 font-medium"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-amber-500 font-medium cursor-pointer"
                     >
                       <option value="Petrol">Petrol</option>
                       <option value="Diesel">Diesel</option>
@@ -461,13 +461,13 @@ export default function PostMarketplaceAdPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                       Transmission
                     </label>
                     <select
                       value={transmission}
                       onChange={(e) => setTransmission(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-amber-500 font-medium"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-amber-500 font-medium cursor-pointer"
                     >
                       <option value="Manual">Manual</option>
                       <option value="Automatic">Automatic</option>
@@ -475,13 +475,13 @@ export default function PostMarketplaceAdPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                       Condition
                     </label>
                     <select
                       value={itemCondition}
                       onChange={(e) => setItemCondition(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-amber-500 font-medium"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-amber-500 font-medium cursor-pointer"
                     >
                       <option value="Brand New">Brand New</option>
                       <option value="Like New">Like New</option>
@@ -495,19 +495,19 @@ export default function PostMarketplaceAdPage() {
 
             {/* 4. PETS & LIVESTOCK */}
             {category === "Pets & Livestock" && (
-              <div className="p-4 bg-purple-50/70 border border-purple-200 rounded-2xl space-y-4 animate-in fade-in duration-200">
-                <div className="text-xs font-bold text-purple-950 flex items-center gap-1.5">
+              <div className="p-4 bg-purple-950/40 border border-purple-800/60 rounded-2xl space-y-4 animate-in fade-in duration-200">
+                <div className="text-xs font-bold text-purple-400 flex items-center gap-1.5">
                   <span>🐾</span> Pet &amp; Animal Details
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                       Animal / Pet Category
                     </label>
                     <select
                       value={petType}
                       onChange={(e) => setPetType(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-purple-500 font-medium"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-purple-500 font-medium cursor-pointer"
                     >
                       <option value="Dogs & Puppies">Dogs &amp; Puppies</option>
                       <option value="Cats & Kittens">Cats &amp; Kittens</option>
@@ -521,7 +521,7 @@ export default function PostMarketplaceAdPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                       Breed / Age / Details
                     </label>
                     <input
@@ -529,7 +529,7 @@ export default function PostMarketplaceAdPage() {
                       placeholder="e.g. Golden Retriever (3 months), Pure Assam Desi"
                       value={breedOrAge}
                       onChange={(e) => setBreedOrAge(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-purple-500"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-purple-500"
                     />
                   </div>
                 </div>
@@ -538,19 +538,19 @@ export default function PostMarketplaceAdPage() {
 
             {/* 5. TEA & AGRO PRODUCTS */}
             {category === "Tea & Agro Products" && (
-              <div className="p-4 bg-lime-50/70 border border-lime-200 rounded-2xl space-y-4 animate-in fade-in duration-200">
-                <div className="text-xs font-bold text-lime-950 flex items-center gap-1.5">
+              <div className="p-4 bg-lime-950/40 border border-lime-800/60 rounded-2xl space-y-4 animate-in fade-in duration-200">
+                <div className="text-xs font-bold text-lime-400 flex items-center gap-1.5">
                   <span>🍵</span> Tea &amp; Agro Specifications
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                       Product Type
                     </label>
                     <select
                       value={agroType}
                       onChange={(e) => setAgroType(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-lime-500 font-medium"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-lime-500 font-medium cursor-pointer"
                     >
                       <option value="Organic Assam CTC / Orthodox Tea">Organic Assam CTC / Orthodox Tea</option>
                       <option value="Specialty Green & White Tea">Specialty Green &amp; White Tea</option>
@@ -564,13 +564,13 @@ export default function PostMarketplaceAdPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                       Unit / Package Size
                     </label>
                     <select
                       value={quantityUnit}
                       onChange={(e) => setQuantityUnit(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-lime-500 font-medium"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-lime-500 font-medium cursor-pointer"
                     >
                       <option value="Per 250g Pack">Per 250g Pack</option>
                       <option value="Per 500g Pack">Per 500g Pack</option>
@@ -585,19 +585,19 @@ export default function PostMarketplaceAdPage() {
 
             {/* 6. HANDLOOMS & CRAFTS */}
             {category === "Handlooms & Crafts" && (
-              <div className="p-4 bg-orange-50/70 border border-orange-200 rounded-2xl space-y-4 animate-in fade-in duration-200">
-                <div className="text-xs font-bold text-orange-950 flex items-center gap-1.5">
+              <div className="p-4 bg-orange-950/40 border border-orange-800/60 rounded-2xl space-y-4 animate-in fade-in duration-200">
+                <div className="text-xs font-bold text-orange-400 flex items-center gap-1.5">
                   <span>🧣</span> Handloom, Silk &amp; Craft Details
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                       Silk / Material Variety
                     </label>
                     <select
                       value={fabricType}
                       onChange={(e) => setFabricType(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-orange-500 font-medium"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-orange-500 font-medium cursor-pointer"
                     >
                       <option value="Pure Muga Silk">Pure Golden Muga Silk</option>
                       <option value="Eri / Ahimsa Silk">Eri / Ahimsa Organic Silk</option>
@@ -611,13 +611,13 @@ export default function PostMarketplaceAdPage() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-gray-700 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
                       Craft Condition
                     </label>
                     <select
                       value={craftCondition}
                       onChange={(e) => setCraftCondition(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-orange-500 font-medium"
+                      className="w-full px-3 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-orange-500 font-medium cursor-pointer"
                     >
                       <option value="Brand New (Handwoven)">Brand New (Handwoven)</option>
                       <option value="Master Artisan Handcrafted">Master Artisan Handcrafted</option>
@@ -632,13 +632,13 @@ export default function PostMarketplaceAdPage() {
             {/* 7. MOBILES, ELECTRONICS, FURNITURE, FASHION, BOOKS, OTHERS */}
             {!["Jobs & Services", "Properties & Rent", "Vehicles & Bikes", "Pets & Livestock", "Tea & Agro Products", "Handlooms & Crafts"].includes(category) && (
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  Item Condition <span className="text-red-500">*</span>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  Item Condition <span className="text-rose-400">*</span>
                 </label>
                 <select
                   value={itemCondition}
                   onChange={(e) => setItemCondition(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs md:text-sm outline-none focus:border-emerald-500 focus:bg-white font-medium"
+                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs md:text-sm outline-none focus:border-emerald-500 focus:bg-slate-900 font-medium cursor-pointer"
                 >
                   <option value="Brand New (Sealed)">Brand New (Sealed / Unused)</option>
                   <option value="Like New">Like New (Mint Condition)</option>
@@ -650,8 +650,8 @@ export default function PostMarketplaceAdPage() {
 
             {/* Title */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                {category === "Jobs & Services" ? "Job Title / Service Name" : "Ad Title"} <span className="text-red-500">*</span>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                {category === "Jobs & Services" ? "Job Title / Service Name" : "Ad Title"} <span className="text-rose-400">*</span>
               </label>
               <input
                 type="text"
@@ -665,22 +665,22 @@ export default function PostMarketplaceAdPage() {
                 }
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs md:text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs md:text-sm outline-none focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 placeholder-slate-500"
               />
             </div>
 
             {/* Price & Negotiable */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                   {category === "Jobs & Services"
                     ? "Salary / Compensation (₹ INR)"
                     : category === "Properties & Rent"
                     ? "Monthly Rent / Sale Amount (₹ INR)"
-                    : "Price (₹ INR)"} <span className="text-red-500">*</span>
+                    : "Price (₹ INR)"} <span className="text-rose-400">*</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-bold">₹</span>
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
                   <input
                     type="number"
                     required
@@ -688,7 +688,7 @@ export default function PostMarketplaceAdPage() {
                     placeholder="e.g. 15000"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    className="w-full pl-8 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs md:text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100 font-mono font-bold"
+                    className="w-full pl-8 pr-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs md:text-sm outline-none focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 font-mono font-bold placeholder-slate-500"
                   />
                 </div>
               </div>
@@ -699,9 +699,9 @@ export default function PostMarketplaceAdPage() {
                     type="checkbox"
                     checked={isNegotiable}
                     onChange={(e) => setIsNegotiable(e.target.checked)}
-                    className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                    className="w-4 h-4 text-emerald-500 rounded border-slate-700 bg-slate-800 focus:ring-emerald-500"
                   />
-                  <span className="text-xs font-semibold text-gray-800">
+                  <span className="text-xs font-semibold text-slate-300">
                     {category === "Jobs & Services" ? "Salary is Negotiable" : "Price is Negotiable"}
                   </span>
                 </label>
@@ -710,8 +710,8 @@ export default function PostMarketplaceAdPage() {
 
             {/* Description */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                Detailed Description <span className="text-red-500">*</span>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                Detailed Description <span className="text-rose-400">*</span>
               </label>
               <textarea
                 rows={5}
@@ -725,18 +725,18 @@ export default function PostMarketplaceAdPage() {
                 }
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs md:text-sm outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100 resize-none leading-relaxed placeholder:text-gray-400"
+                className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs md:text-sm outline-none focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 resize-none leading-relaxed placeholder-slate-500"
               />
             </div>
           </div>
 
           {/* Section 2: Photos & File Upload */}
-          <div className="bg-white border border-gray-200/90 rounded-3xl p-6 md:p-8 shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
                 <span>📷</span> Photos &amp; Images
               </h2>
-              <span className="text-xs text-gray-400 font-medium">
+              <span className="text-xs text-slate-400 font-medium">
                 {uploadedImages.length} photo{uploadedImages.length === 1 ? "" : "s"} added
               </span>
             </div>
@@ -768,25 +768,25 @@ export default function PostMarketplaceAdPage() {
               onClick={() => fileInputRef.current?.click()}
               className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${
                 isDragging
-                  ? "border-emerald-500 bg-emerald-50/80 scale-[1.01]"
-                  : "border-gray-300 hover:border-emerald-400 hover:bg-gray-50/60 bg-gray-50/30"
+                  ? "border-emerald-500 bg-emerald-950/40 scale-[1.01]"
+                  : "border-slate-700 hover:border-emerald-400 hover:bg-slate-800/80 bg-slate-800/40"
               }`}
             >
               {isUploading ? (
                 <div className="py-4">
-                  <div className="w-8 h-8 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-                  <p className="text-xs font-semibold text-emerald-800">Uploading photos...</p>
+                  <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                  <p className="text-xs font-semibold text-emerald-400">Uploading photos...</p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   <div className="text-3xl">📤</div>
                   <div>
-                    <span className="font-bold text-sm text-emerald-700 hover:underline">
+                    <span className="font-bold text-sm text-emerald-400 hover:underline">
                       Click to choose photos
                     </span>{" "}
-                    <span className="text-xs text-gray-500">or drag &amp; drop here</span>
+                    <span className="text-xs text-slate-400">or drag &amp; drop here</span>
                   </div>
-                  <p className="text-[11px] text-gray-400">
+                  <p className="text-[11px] text-slate-500">
                     Supports JPG, PNG, WebP (up to 10MB per image, multiple photos supported)
                   </p>
                 </div>
@@ -796,14 +796,14 @@ export default function PostMarketplaceAdPage() {
             {/* Uploaded Thumbnails Grid */}
             {uploadedImages.length > 0 && (
               <div className="pt-2">
-                <label className="block text-xs font-semibold text-gray-700 mb-2">
+                <label className="block text-xs font-semibold text-slate-300 mb-2">
                   Uploaded Photos Preview:
                 </label>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                   {uploadedImages.map((url, idx) => (
                     <div
                       key={idx}
-                      className="relative aspect-square rounded-2xl overflow-hidden border border-gray-200 group bg-gray-100 shadow-xs"
+                      className="relative aspect-square rounded-2xl overflow-hidden border border-slate-700 group bg-slate-950 shadow-xs"
                     >
                       <img
                         src={url}
@@ -821,7 +821,7 @@ export default function PostMarketplaceAdPage() {
                           e.stopPropagation();
                           removeImage(idx);
                         }}
-                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center justify-center shadow-md transition cursor-pointer"
+                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center justify-center shadow-md transition cursor-pointer"
                         title="Remove photo"
                       >
                         &times;
@@ -838,20 +838,20 @@ export default function PostMarketplaceAdPage() {
                 <button
                   type="button"
                   onClick={() => setShowUrlInput(true)}
-                  className="text-xs text-emerald-700 hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                  className="text-xs text-emerald-400 hover:underline font-semibold flex items-center gap-1 cursor-pointer"
                 >
                   <span>🔗</span> Or paste an image URL directly
                 </button>
               ) : (
-                <div className="p-3.5 bg-gray-50 border border-gray-200 rounded-2xl space-y-2 animate-in fade-in duration-150">
+                <div className="p-3.5 bg-slate-800 border border-slate-700 rounded-2xl space-y-2 animate-in fade-in duration-150">
                   <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-semibold text-gray-700">
+                    <label className="text-[11px] font-semibold text-slate-300">
                       Add Image via Direct URL
                     </label>
                     <button
                       type="button"
                       onClick={() => setShowUrlInput(false)}
-                      className="text-[11px] text-gray-400 hover:text-gray-600"
+                      className="text-[11px] text-slate-400 hover:text-slate-200"
                     >
                       Cancel
                     </button>
@@ -862,12 +862,12 @@ export default function PostMarketplaceAdPage() {
                       placeholder="https://images.unsplash.com/photo-..."
                       value={manualUrl}
                       onChange={(e) => setManualUrl(e.target.value)}
-                      className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-emerald-500"
+                      className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-emerald-500 placeholder-slate-500"
                     />
                     <button
                       type="button"
                       onClick={handleAddManualUrl}
-                      className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer"
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-xs cursor-pointer"
                     >
                       Add
                     </button>
@@ -878,16 +878,16 @@ export default function PostMarketplaceAdPage() {
           </div>
 
           {/* Section 3: Location Dropdowns */}
-          <div className="bg-white border border-gray-200/90 rounded-3xl p-6 md:p-8 shadow-sm space-y-4">
-            <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-4">
+            <h2 className="text-base font-bold text-slate-100 border-b border-slate-800 pb-3 flex items-center gap-2">
               <span>📍</span> Location in Northeast India
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* State Dropdown */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  State <span className="text-red-500">*</span>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  State <span className="text-rose-400">*</span>
                 </label>
                 <select
                   value={state}
@@ -900,7 +900,7 @@ export default function PostMarketplaceAdPage() {
                     setCity(nextCity);
                     setLocality(nextLocalities[0] || "Main Area");
                   }}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs outline-none focus:border-emerald-500 focus:bg-white font-medium"
+                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 font-medium cursor-pointer"
                 >
                   {NE_STATE_NAMES.map((st) => (
                     <option key={st} value={st}>
@@ -912,8 +912,8 @@ export default function PostMarketplaceAdPage() {
 
               {/* City Dropdown */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  City / Town <span className="text-red-500">*</span>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  City / Town <span className="text-rose-400">*</span>
                 </label>
                 <select
                   value={city}
@@ -923,7 +923,7 @@ export default function PostMarketplaceAdPage() {
                     setCity(nextCity);
                     setLocality(nextLocalities[0] || "Main Area");
                   }}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs outline-none focus:border-emerald-500 focus:bg-white font-medium"
+                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 font-medium cursor-pointer"
                 >
                   {getCitiesForState(state).map((cityName) => (
                     <option key={cityName} value={cityName}>
@@ -939,20 +939,20 @@ export default function PostMarketplaceAdPage() {
                     placeholder="Enter city / town name"
                     value={customCity}
                     onChange={(e) => setCustomCity(e.target.value)}
-                    className="w-full mt-2 px-3.5 py-2 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-emerald-500"
+                    className="w-full mt-2 px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-emerald-500 placeholder-slate-500"
                   />
                 )}
               </div>
 
               {/* Locality / Neighborhood Dropdown */}
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                  Neighborhood / Locality <span className="text-red-500">*</span>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  Neighborhood / Locality <span className="text-rose-400">*</span>
                 </label>
                 <select
                   value={locality}
                   onChange={(e) => setLocality(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs outline-none focus:border-emerald-500 focus:bg-white font-medium"
+                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 font-medium cursor-pointer"
                 >
                   {getLocalitiesForCity(state, city).map((locName) => (
                     <option key={locName} value={locName}>
@@ -966,7 +966,7 @@ export default function PostMarketplaceAdPage() {
                     placeholder="Enter specific area or landmark"
                     value={customLocality}
                     onChange={(e) => setCustomLocality(e.target.value)}
-                    className="w-full mt-2 px-3.5 py-2 bg-white border border-gray-300 rounded-xl text-xs text-gray-900 outline-none focus:border-emerald-500"
+                    className="w-full mt-2 px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 outline-none focus:border-emerald-500 placeholder-slate-500"
                   />
                 )}
               </div>
@@ -974,14 +974,14 @@ export default function PostMarketplaceAdPage() {
           </div>
 
           {/* Section 4: Contact */}
-          <div className="bg-white border border-gray-200/90 rounded-3xl p-6 md:p-8 shadow-sm space-y-4">
-            <h2 className="text-base font-bold text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-2">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm space-y-4">
+            <h2 className="text-base font-bold text-slate-100 border-b border-slate-800 pb-3 flex items-center gap-2">
               <span>📞</span> Contact Information
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                   Phone Number for Direct Calls
                 </label>
                 <input
@@ -989,12 +989,12 @@ export default function PostMarketplaceAdPage() {
                   placeholder="e.g. 9876543210"
                   value={contactPhone}
                   onChange={(e) => setContactPhone(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100 font-mono"
+                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 font-mono placeholder-slate-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                   WhatsApp Number (for instant chat)
                 </label>
                 <input
@@ -1002,7 +1002,7 @@ export default function PostMarketplaceAdPage() {
                   placeholder="e.g. 9876543210"
                   value={contactWhatsApp}
                   onChange={(e) => setContactWhatsApp(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs outline-none focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100 font-mono"
+                  className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 font-mono placeholder-slate-500"
                 />
               </div>
             </div>
@@ -1012,14 +1012,14 @@ export default function PostMarketplaceAdPage() {
           <div className="flex items-center justify-end gap-3 pt-2">
             <Link
               href="/marketplace"
-              className="px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-2xl transition"
+              className="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-2xl transition border border-slate-700"
             >
               Cancel
             </Link>
             <button
               type="submit"
               disabled={submitting || isUploading}
-              className="px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-extrabold text-xs md:text-sm rounded-2xl shadow-md transition disabled:opacity-50 cursor-pointer"
+              className="px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-extrabold text-xs md:text-sm rounded-2xl shadow-md transition disabled:opacity-50 cursor-pointer"
             >
               {submitting ? "Publishing Listing..." : "Post Listing Now (+30 XP)"}
             </button>

@@ -9,6 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static core routes
   const staticRoutes: MetadataRoute.Sitemap = [
     "",
+    "/addas",
     "/marketplace",
     "/marketplace/new",
     "/community",
@@ -18,6 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/adventure",
     "/directory",
     "/news",
+    "/search",
     "/contact",
     "/post-ads",
   ].map((route) => ({

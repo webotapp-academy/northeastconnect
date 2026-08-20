@@ -3,6 +3,7 @@ import Script from "next/script";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MobileAppBottomNav from "@/components/layout/MobileAppBottomNav";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://northeastconnect.in";
@@ -104,8 +105,31 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className="h-full scroll-smooth">
+    <html lang="en" className="h-full scroll-smooth" suppressHydrationWarning>
       <head>
+        {/* Instant Anti-FOUC Theme Script (Loads by default according to computer theme) */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('nec-theme');
+                  var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  if (saved === 'dark' || ((!saved || saved === 'system') && systemDark)) {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.classList.remove('light');
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                    document.documentElement.setAttribute('data-theme', 'light');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite) }}
@@ -138,11 +162,13 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body className="min-h-full flex flex-col bg-slate-50 text-gray-900 font-sans antialiased selection:bg-emerald-500 selection:text-white">
-        <Navbar />
-        <div className="flex-1 flex flex-col pb-20 lg:pb-0">{children}</div>
-        <Footer />
-        <MobileAppBottomNav />
+      <body className="min-h-full flex flex-col bg-slate-50 dark:bg-[#0b0e14] text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-white transition-colors duration-200">
+        <ThemeProvider>
+          <Navbar />
+          <div className="flex-1 flex flex-col pb-20 lg:pb-0">{children}</div>
+          <Footer />
+          <MobileAppBottomNav />
+        </ThemeProvider>
       </body>
     </html>
   );

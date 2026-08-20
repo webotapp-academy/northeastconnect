@@ -99,37 +99,37 @@ export default function AuthModal({
   }
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div
-        className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden relative border border-gray-100 animate-in zoom-in-95 duration-200"
+        className="bg-slate-900 rounded-3xl shadow-2xl max-w-md w-full overflow-hidden relative border border-slate-800 animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with decorative background */}
-        <div className="bg-gradient-to-br from-emerald-800 via-teal-800 to-indigo-900 text-white p-6 relative">
+        <div className="bg-gradient-to-br from-emerald-950 via-slate-900 to-indigo-950 text-white p-6 relative border-b border-slate-800">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-white/70 hover:text-white bg-black/20 hover:bg-black/40 rounded-full w-8 h-8 flex items-center justify-center transition-colors focus:outline-none"
+            className="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-full w-8 h-8 flex items-center justify-center transition-colors focus:outline-none cursor-pointer"
             aria-label="Close"
           >
             &times;
           </button>
           <div className="flex items-center gap-2 mb-2">
-            <span className="p-2 bg-white/10 backdrop-blur rounded-xl">🌿</span>
-            <span className="font-semibold tracking-wide uppercase text-xs text-emerald-300">
+            <span className="p-2 bg-slate-800/80 backdrop-blur rounded-xl">🌿</span>
+            <span className="font-semibold tracking-wide uppercase text-xs text-emerald-400">
               North East Connect
             </span>
           </div>
-          <h2 className="text-2xl font-bold">
+          <h2 className="text-2xl font-bold text-slate-100">
             {tab === "login" ? "Welcome Back!" : "Join the Community"}
           </h2>
-          <p className="text-sm text-emerald-100/80 mt-1">
+          <p className="text-sm text-slate-400 mt-1">
             {tab === "login"
               ? "Sign in to comment, connect with friends, and level up your Explorer Rank."
               : "Create an account, earn your Explorer Novice badge (+20 XP), and join travelers & locals across Northeast India."}
           </p>
 
           {/* Tab Selector */}
-          <div className="grid grid-cols-2 bg-black/25 p-1 rounded-2xl mt-4">
+          <div className="grid grid-cols-2 bg-slate-950 p-1 rounded-2xl mt-4 border border-slate-800">
             <button
               type="button"
               onClick={() => {
@@ -138,8 +138,8 @@ export default function AuthModal({
               }}
               className={`py-2 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
                 tab === "login"
-                  ? "bg-white text-gray-900 shadow-md"
-                  : "text-white/80 hover:text-white"
+                  ? "bg-slate-800 text-emerald-400 border border-slate-700 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
               }`}
             >
               Sign In
@@ -152,8 +152,8 @@ export default function AuthModal({
               }}
               className={`py-2 text-sm font-semibold rounded-xl transition-all cursor-pointer ${
                 tab === "register"
-                  ? "bg-white text-gray-900 shadow-md"
-                  : "text-white/80 hover:text-white"
+                  ? "bg-slate-800 text-emerald-400 border border-slate-700 shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
               }`}
             >
               Create Account
@@ -164,8 +164,8 @@ export default function AuthModal({
         {/* Body */}
         <div className="p-6">
           {errorMsg && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl flex items-center gap-2">
-              <svg className="w-5 h-5 text-red-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <div className="mb-4 p-3 bg-rose-950/70 border border-rose-800 text-rose-300 text-sm rounded-xl flex items-center gap-2">
+              <svg className="w-5 h-5 text-rose-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
               <span>{errorMsg}</span>
@@ -175,7 +175,7 @@ export default function AuthModal({
           {tab === "login" ? (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Email or Username
                 </label>
                 <input
@@ -184,12 +184,12 @@ export default function AuthModal({
                   placeholder="e.g. wanderer@northeast.in or explore_ne"
                   value={loginId}
                   onChange={(e) => setLoginId(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none text-sm text-gray-900"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-800 focus:bg-slate-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-slate-100 placeholder-slate-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Password
                 </label>
                 <input
@@ -198,14 +198,14 @@ export default function AuthModal({
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none text-sm text-gray-900"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-800 focus:bg-slate-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-slate-100 placeholder-slate-500"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 text-sm cursor-pointer"
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl shadow-sm transition-all disabled:opacity-50 text-sm cursor-pointer"
               >
                 {loading ? "Signing in..." : "Sign In"}
               </button>
@@ -213,8 +213,8 @@ export default function AuthModal({
           ) : (
             <form onSubmit={handleRegister} className="space-y-3.5 max-h-[60vh] overflow-y-auto pr-1">
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
-                  Username <span className="text-emerald-600 font-normal">(@unique)</span>
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
+                  Username <span className="text-emerald-400 font-normal">(@unique)</span>
                 </label>
                 <input
                   type="text"
@@ -222,12 +222,12 @@ export default function AuthModal({
                   placeholder="e.g. kaziranga_explorer"
                   value={regUsername}
                   onChange={(e) => setRegUsername(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none text-sm text-gray-900"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-700 bg-slate-800 focus:bg-slate-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-slate-100 placeholder-slate-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Full Name
                 </label>
                 <input
@@ -235,12 +235,12 @@ export default function AuthModal({
                   placeholder="e.g. Ananya Barman"
                   value={regFullName}
                   onChange={(e) => setRegFullName(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none text-sm text-gray-900"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-700 bg-slate-800 focus:bg-slate-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-slate-100 placeholder-slate-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Email Address
                 </label>
                 <input
@@ -249,18 +249,18 @@ export default function AuthModal({
                   placeholder="you@domain.com"
                   value={regEmail}
                   onChange={(e) => setRegEmail(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none text-sm text-gray-900"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-700 bg-slate-800 focus:bg-slate-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-slate-100 placeholder-slate-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
                   State in Northeast (or Region)
                 </label>
                 <select
                   value={regState}
                   onChange={(e) => setRegState(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none text-sm text-gray-900 bg-white"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-700 bg-slate-800 focus:bg-slate-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-slate-200 cursor-pointer"
                 >
                   <option value="">Select State (Optional)</option>
                   {NE_STATES.map((st) => (
@@ -272,7 +272,7 @@ export default function AuthModal({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Password
                 </label>
                 <input
@@ -281,21 +281,21 @@ export default function AuthModal({
                   placeholder="At least 6 characters"
                   value={regPassword}
                   onChange={(e) => setRegPassword(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none text-sm text-gray-900"
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-700 bg-slate-800 focus:bg-slate-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-slate-100 placeholder-slate-500"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-gradient-to-r from-emerald-600 to-indigo-700 hover:from-emerald-700 hover:to-indigo-800 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 text-sm mt-2 cursor-pointer"
+                className="w-full py-3 bg-gradient-to-r from-emerald-600 to-indigo-700 hover:from-emerald-500 hover:to-indigo-600 text-white font-semibold rounded-xl shadow-md transition-all disabled:opacity-50 text-sm mt-2 cursor-pointer"
               >
                 {loading ? "Creating Account..." : "Create Account & Get 20 XP"}
               </button>
             </form>
           )}
 
-          <div className="mt-4 text-center text-xs text-gray-500">
+          <div className="mt-4 text-center text-xs text-slate-500">
             By continuing, you agree to North East Connect&apos;s Community Guidelines.
           </div>
         </div>

@@ -4,8 +4,20 @@ import GoogleAd from "@/components/GoogleAd";
 
 export const revalidate = 60;
 
+const NE_STATES = [
+  { name: "All States", icon: "🏔️" },
+  { name: "Assam", icon: "🦏" },
+  { name: "Meghalaya", icon: "🌧️" },
+  { name: "Arunachal", icon: "☀️" },
+  { name: "Manipur", icon: "💃" },
+  { name: "Mizoram", icon: "🎋" },
+  { name: "Nagaland", icon: "🦅" },
+  { name: "Sikkim", icon: "❄️" },
+  { name: "Tripura", icon: "🏛️" },
+];
+
 interface PageProps {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; state?: string }>;
 }
 
 function formatImageSrc(imgStr: string): string {
@@ -29,144 +41,173 @@ function stripHtml(htmlStr: string | null | undefined): string {
 }
 
 export default async function NewsPage({ searchParams }: PageProps) {
-  const { page = "1" } = await searchParams;
+  const { page = "1", state = "" } = await searchParams;
 
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
   const perPage = 12;
 
+  const where: any = { status: "Published" };
+  if (state && state !== "All States") {
+    where.OR = [
+      { title: { contains: state, mode: "insensitive" } },
+      { content: { contains: state, mode: "insensitive" } },
+      { category: { contains: state, mode: "insensitive" } },
+    ];
+  }
+
   const [newsList, totalResults] = await Promise.all([
     db.news.findMany({
-      where: { status: "Published" },
+      where,
       orderBy: { publishedDate: "desc" },
       skip: (pageNum - 1) * perPage,
       take: perPage,
     }),
-    db.news.count({ where: { status: "Published" } }),
+    db.news.count({ where }),
   ]);
 
   const totalPages = Math.ceil(totalResults / perPage);
 
   return (
-    <main className="w-full bg-white text-gray-900 font-sans">
-      {/* Full-screen Hero Section */}
-      <header className="relative min-h-[50vh] flex items-center justify-center text-center px-4">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-black/60 z-10" />
-          <img
-            src="/assets/images/hero.jpg"
-            alt="Assam News Hero"
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <div className="relative z-10 max-w-4xl mx-auto space-y-4 pt-36 pb-14 md:pt-40 md:pb-18">
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white">
-            Latest News
-          </h1>
-          <p className="text-gray-200 text-lg md:text-xl">
-            Stay informed about culture, tourism, and events across Assam.
-          </p>
-        </div>
-      </header>
-
-      {/* News Grid Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="text-center mb-12 space-y-2">
-            <span className="text-emerald-700 font-bold text-sm uppercase tracking-wider">
-              Exclusive Updates
-            </span>
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">
-              Latest News &amp; Stories
-            </h2>
-            <p className="text-gray-500 text-base">
-              Discover what’s happening across Assam right now
-            </p>
-          </div>
-
-          {/* Top News Google Ad */}
-          <GoogleAd format="horizontal" responsive={true} className="max-w-4xl mx-auto mb-10" />
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {newsList.map((n) => {
-              const articleHref = `/news/${encodeURIComponent(n.url || String(n.id))}`;
-              const images = n.imageUrls ? n.imageUrls.split(",") : [];
-              const mainImage = images[0]
-                ? formatImageSrc(images[0])
-                : "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800&auto=format&fit=crop&q=60";
-
+    <main className="min-h-screen bg-slate-50 dark:bg-[#0b0e14] text-slate-900 dark:text-slate-100 font-sans pt-3 sm:pt-5 pb-16 transition-colors">
+      <div className="container mx-auto px-2 sm:px-4 max-w-7xl">
+        {/* State Quick Switcher */}
+        <div className="mb-4 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-2xl p-2.5 sm:p-3 shadow-sm">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none snap-x">
+            {NE_STATES.map((st) => {
+              const active = (state === "" && st.name === "All States") || state === st.name;
+              const href = st.name === "All States" ? "/news" : `/news?state=${encodeURIComponent(st.name)}`;
               return (
-                <article
-                  key={n.id}
-                  className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition duration-300 flex flex-col justify-between"
+                <Link
+                  key={st.name}
+                  href={href}
+                  className={`flex-shrink-0 snap-start flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                    active
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white border border-slate-200/80 dark:border-slate-700/60"
+                  }`}
                 >
-                  <div>
-                    <Link href={articleHref}>
-                      <img
-                        src={mainImage}
-                        alt={n.title}
-                        className="w-full h-60 object-cover hover:opacity-90 transition-opacity"
-                      />
-                    </Link>
-                    <div className="p-6 space-y-3">
-                      <div className="text-xs text-gray-500 font-medium">
-                        {n.category || "General"} &bull;{" "}
-                        {n.publishedDate
-                          ? new Date(n.publishedDate).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })
-                          : "Recent"}
-                      </div>
-                      <h3 className="text-xl font-bold text-gray-900 leading-snug line-clamp-2">
-                        <Link href={articleHref} className="hover:text-emerald-700 transition">
-                          {n.title}
-                        </Link>
-                      </h3>
-                      <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
-                        {stripHtml(n.content)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="p-6 pt-0">
-                    <Link
-                      href={articleHref}
-                      className="text-blue-600 font-bold hover:underline inline-flex items-center text-sm"
-                    >
-                      Read more &rarr;
-                    </Link>
-                  </div>
-                </article>
+                  <span>{st.icon}</span>
+                  <span>{st.name === "All States" ? "n:all" : `n:${st.name.toLowerCase().replace(/\s+/g, "")}`}</span>
+                </Link>
               );
             })}
           </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="mt-12 flex justify-center items-center space-x-2">
-              {pageNum > 1 && (
-                <Link
-                  href={`/news?page=${pageNum - 1}`}
-                  className="px-4 py-2 border rounded-lg bg-white hover:bg-gray-100 text-sm font-semibold"
-                >
-                  &larr; Previous
-                </Link>
-              )}
-              <span className="text-sm font-medium text-gray-600 px-4">
-                Page {pageNum} of {totalPages}
-              </span>
-              {pageNum < totalPages && (
-                <Link
-                  href={`/news?page=${pageNum + 1}`}
-                  className="px-4 py-2 border rounded-lg bg-white hover:bg-gray-100 text-sm font-semibold"
-                >
-                  Next &rarr;
-                </Link>
-              )}
-            </div>
-          )}
         </div>
-      </section>
+
+        {/* Top Header Card (Glossy) */}
+        <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                  Regional News
+                </span>
+              </div>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                Latest News &amp; Culture Stories
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                Stay updated with regional developments, culture, tourism, and community events across Northeast India
+              </p>
+            </div>
+
+            <div className="text-xs font-medium shrink-0">
+              <span className="px-3.5 py-1.5 bg-slate-100/90 dark:bg-slate-800/90 rounded-full border border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 shadow-xs">
+                <strong className="text-slate-900 dark:text-slate-100 font-bold">{totalResults}</strong> Articles
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Top News Google Ad */}
+        <GoogleAd format="horizontal" responsive={true} className="mb-6" />
+
+        {/* News Grid (Glossy Cards) */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {newsList.map((n) => {
+            const articleHref = `/news/${encodeURIComponent(n.url || String(n.id))}`;
+            const images = n.imageUrls ? n.imageUrls.split(",") : [];
+            const mainImage = images[0]
+              ? formatImageSrc(images[0])
+              : "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800&auto=format&fit=crop&q=60";
+
+            return (
+              <article
+                key={n.id}
+                className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:shadow-lg transition-all duration-200 flex flex-col justify-between group"
+              >
+                <div>
+                  <Link href={articleHref} className="block relative h-48 sm:h-52 bg-slate-100 dark:bg-slate-950 overflow-hidden">
+                    <img
+                      src={mainImage}
+                      alt={n.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <span className="absolute top-3 left-3 px-2.5 py-1 bg-slate-900/80 backdrop-blur-xs text-[10px] font-bold text-white border border-slate-700/60 rounded-md shadow-xs uppercase tracking-wider">
+                      {n.category || "General"}
+                    </span>
+                  </Link>
+                  <div className="p-5 space-y-2">
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                      {n.publishedDate
+                        ? new Date(n.publishedDate).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })
+                        : "Recent"}
+                    </div>
+                    <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2 leading-snug">
+                      <Link href={articleHref}>{n.title}</Link>
+                    </h2>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-3 leading-relaxed">
+                      {stripHtml(n.content)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-5 pt-0 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80 mt-2 pt-3">
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    Regional Story
+                  </span>
+                  <Link
+                    href={articleHref}
+                    className="px-3.5 py-1.5 bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-full border border-slate-300 dark:border-slate-700 transition"
+                  >
+                    Read Article &rarr;
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-10 flex justify-center items-center gap-2">
+            {pageNum > 1 && (
+              <Link
+                href={`/news?page=${pageNum - 1}${state ? `&state=${state}` : ""}`}
+                className="px-4 py-1.5 border border-slate-300 dark:border-slate-700 rounded-full bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 transition"
+              >
+                &larr; Prev
+              </Link>
+            )}
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 px-3">
+              Page {pageNum} of {totalPages}
+            </span>
+            {pageNum < totalPages && (
+              <Link
+                href={`/news?page=${pageNum + 1}${state ? `&state=${state}` : ""}`}
+                className="px-4 py-1.5 border border-slate-300 dark:border-slate-700 rounded-full bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 transition"
+              >
+                Next &rarr;
+              </Link>
+            )}
+          </div>
+        )}
+      </div>
     </main>
   );
 }

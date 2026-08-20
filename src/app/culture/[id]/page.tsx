@@ -87,162 +87,155 @@ export default async function CultureDetailPage({ params }: PageProps) {
   const mainImage = imageList[0] || "https://images.unsplash.com/photo-1698515959329-878121b965aa?w=900&auto=format&fit=crop&q=60";
 
   return (
-    <main className="w-full bg-gray-50 text-gray-900 font-sans min-h-screen">
-      {/* Full-screen Hero Section */}
-      <header className="relative min-h-[50vh] flex items-center justify-center text-center">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-900 via-purple-700 to-indigo-900 opacity-85 z-10" />
-          <img
-            src={mainImage}
-            alt={culture.name}
-            className="w-full h-full object-cover"
-          />
+    <main className="min-h-screen bg-[#090d16] text-slate-100 font-sans pt-4 sm:pt-6 pb-16">
+      <div className="container mx-auto px-3 sm:px-4 max-w-5xl">
+        {/* Navigation Breadcrumb */}
+        <div className="mb-4">
+          <Link
+            href="/culture"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>Back to Cultural Heritage</span>
+          </Link>
         </div>
 
-        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto pt-20">
-          <span className="px-4 py-1.5 bg-white/20 backdrop-blur-sm text-purple-200 rounded-full text-xs font-bold uppercase tracking-wider mb-4 inline-block">
-            {culture.type || "Cultural Heritage"}
-          </span>
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
+        {/* Top Header Card */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-sm mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-3 py-1 bg-emerald-950/80 text-emerald-400 text-xs font-bold rounded-full border border-emerald-800/60 uppercase tracking-wider">
+              {culture.type || "Cultural Heritage"}
+            </span>
+            {culture.district && (
+              <span className="text-xs text-slate-400 font-medium">
+                📍 {culture.district}, Assam
+              </span>
+            )}
+          </div>
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-100 leading-tight tracking-tight">
             {culture.name}
           </h1>
-          {culture.district && (
-            <p className="text-xl text-purple-200 mb-8 flex items-center justify-center">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              {culture.district}, Assam
-            </p>
-          )}
         </div>
-      </header>
 
-      {/* Main Content */}
-      <div className="py-16">
-        <div className="container mx-auto px-4 max-w-5xl">
-          <Link href="/culture" className="inline-flex items-center text-sm font-semibold text-purple-700 hover:underline mb-8">
-            &larr; Back to Cultural Heritage
-          </Link>
-
-          {/* 2-Column Details Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Left Main Card */}
-            <div className="md:col-span-2 space-y-8">
-              <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 space-y-6">
-                <h2 className="text-3xl font-bold text-gray-800 border-b pb-4">
-                  About {culture.name}
-                </h2>
-                <div className="text-gray-700 leading-relaxed text-base whitespace-pre-line space-y-4">
-                  <p>{culture.description || "Explore the rich cultural traditions and heritage of Assam."}</p>
-                </div>
+        {/* 2-Column Details Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Left Main Card */}
+          <div className="md:col-span-2 space-y-6">
+            <div className="bg-slate-900 rounded-2xl shadow-sm p-6 sm:p-8 border border-slate-800 space-y-4">
+              <h2 className="text-2xl font-bold text-slate-100 border-b border-slate-800 pb-3">
+                About {culture.name}
+              </h2>
+              <div className="text-slate-300 leading-relaxed text-sm whitespace-pre-line space-y-3">
+                <p>{culture.description || "Explore the rich cultural traditions and heritage of Assam."}</p>
               </div>
-
-              {/* Image Gallery */}
-              {imageList.length > 0 && (
-                <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-                  <h3 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">
-                    Photo Gallery
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {imageList.map((img, idx) => (
-                      <div key={idx} className="rounded-xl overflow-hidden shadow border border-gray-100">
-                        <img
-                          src={img}
-                          alt={`${culture.name} photo ${idx + 1}`}
-                          className="w-full h-56 object-cover hover:scale-105 transition duration-300"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
-            {/* Right Sidebar Info Card */}
-            <div className="space-y-6">
-              <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 space-y-6 sticky top-24">
-                <h3 className="text-xl font-bold text-gray-800 border-b pb-3">
-                  Heritage Highlights
+            {/* Image Gallery */}
+            {imageList.length > 0 && (
+              <div className="bg-slate-900 rounded-2xl shadow-sm p-6 sm:p-8 border border-slate-800">
+                <h3 className="text-xl font-bold text-slate-100 mb-4 border-b border-slate-800 pb-3">
+                  Photo Gallery
                 </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {imageList.map((img, idx) => (
+                    <div key={idx} className="rounded-xl overflow-hidden shadow-sm border border-slate-800 bg-slate-950">
+                      <img
+                        src={img}
+                        alt={`${culture.name} photo ${idx + 1}`}
+                        className="w-full h-52 object-cover hover:scale-105 transition duration-300"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
-                <div className="space-y-4 text-sm">
+          {/* Right Sidebar Info Card */}
+          <div className="space-y-6">
+            <div className="bg-slate-900 rounded-2xl shadow-sm p-6 border border-slate-800 space-y-5 sticky top-24">
+              <h3 className="text-lg font-bold text-slate-100 border-b border-slate-800 pb-3">
+                Heritage Highlights
+              </h3>
+
+              <div className="space-y-4 text-sm">
+                <div>
+                  <span className="text-xs text-slate-400 block uppercase font-bold tracking-wider">Type</span>
+                  <p className="font-semibold text-slate-200">{culture.type || "Traditional Festival"}</p>
+                </div>
+
+                {culture.district && (
                   <div>
-                    <span className="text-xs text-gray-500 block uppercase font-bold tracking-wider">Type</span>
-                    <p className="font-semibold text-gray-800">{culture.type || "Traditional Festival"}</p>
+                    <span className="text-xs text-slate-400 block uppercase font-bold tracking-wider">District / Region</span>
+                    <p className="font-semibold text-slate-200">{culture.district}, Assam</p>
                   </div>
+                )}
 
-                  {culture.district && (
-                    <div>
-                      <span className="text-xs text-gray-500 block uppercase font-bold tracking-wider">District / Region</span>
-                      <p className="font-semibold text-gray-800">{culture.district}, Assam</p>
-                    </div>
-                  )}
+                {culture.startDate && (
+                  <div>
+                    <span className="text-xs text-slate-400 block uppercase font-bold tracking-wider">Festival Dates</span>
+                    <p className="font-semibold text-slate-200">
+                      {new Date(culture.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      {culture.endDate && ` - ${new Date(culture.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
+                    </p>
+                  </div>
+                )}
+              </div>
 
-                  {culture.startDate && (
-                    <div>
-                      <span className="text-xs text-gray-500 block uppercase font-bold tracking-wider">Festival Dates</span>
-                      <p className="font-semibold text-gray-800">
-                        {new Date(culture.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                        {culture.endDate && ` - ${new Date(culture.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-4 border-t">
-                  <Link
-                    href="/contact"
-                    className="w-full bg-purple-700 text-white py-3 px-4 rounded-xl hover:bg-purple-800 transition font-bold text-center block shadow"
-                  >
-                    Inquire About Experience
-                  </Link>
-                </div>
+              <div className="pt-4 border-t border-slate-800">
+                <Link
+                  href="/contact"
+                  className="w-full bg-emerald-600 text-white py-2.5 px-4 rounded-xl hover:bg-emerald-500 transition font-bold text-center block text-sm shadow-sm"
+                >
+                  Inquire About Experience
+                </Link>
               </div>
             </div>
           </div>
-
-          {/* Universal Community Comments */}
-          <CommentSection
-            entityType="culture"
-            entityId={culture.id}
-            entityTitle={culture.name}
-            entityUrl={`/culture/${id}`}
-          />
-
-          {/* Similar Heritage Grid */}
-          {similarCulture.length > 0 && (
-            <div className="mt-16 pt-12 border-t border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">
-                More Cultural Traditions
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {similarCulture.map((item) => {
-                  const slug = item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-                  return (
-                    <div key={item.id} className="bg-white rounded-xl shadow border border-gray-100 overflow-hidden flex flex-col justify-between p-6">
-                      <div>
-                        <span className="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-semibold">
-                          {item.type || "Heritage"}
-                        </span>
-                        <h3 className="text-lg font-bold text-gray-800 mt-2 mb-1">
-                          {item.name}
-                        </h3>
-                        <p className="text-xs text-gray-500 line-clamp-2">{item.description}</p>
-                      </div>
-                      <Link
-                        href={`/culture/${slug}-${item.id}`}
-                        className="text-purple-700 font-bold text-xs hover:underline mt-4 block"
-                      >
-                        Explore &rarr;
-                      </Link>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* Universal Community Comments */}
+        <CommentSection
+          entityType="culture"
+          entityId={culture.id}
+          entityTitle={culture.name}
+          entityUrl={`/culture/${id}`}
+        />
+
+        {/* Similar Heritage Grid */}
+        {similarCulture.length > 0 && (
+          <div className="mt-12 pt-10 border-t border-slate-800">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-100 mb-6 text-center">
+              More Cultural Traditions
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {similarCulture.map((item) => {
+                const slug = item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+                return (
+                  <div key={item.id} className="bg-slate-900 rounded-2xl shadow-sm border border-slate-800 overflow-hidden flex flex-col justify-between p-5 hover:border-slate-700/80 transition">
+                    <div>
+                      <span className="px-2.5 py-1 bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 rounded-md text-xs font-semibold">
+                        {item.type || "Heritage"}
+                      </span>
+                      <h3 className="text-base font-bold text-slate-100 mt-2 mb-1">
+                        {item.name}
+                      </h3>
+                      <p className="text-xs text-slate-400 line-clamp-2">{item.description}</p>
+                    </div>
+                    <Link
+                      href={`/culture/${slug}-${item.id}`}
+                      className="text-emerald-400 font-semibold text-xs hover:text-emerald-300 mt-3 block"
+                    >
+                      Explore &rarr;
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );

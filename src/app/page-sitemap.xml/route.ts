@@ -9,6 +9,7 @@ export async function GET() {
 
   const staticPages = [
     { route: "", priority: 1.0, changeFrequency: "daily" as const },
+    { route: "/addas", priority: 0.9, changeFrequency: "daily" as const },
     { route: "/marketplace", priority: 0.9, changeFrequency: "hourly" as const },
     { route: "/marketplace/new", priority: 0.7, changeFrequency: "monthly" as const },
     { route: "/community", priority: 0.9, changeFrequency: "hourly" as const },
@@ -18,6 +19,7 @@ export async function GET() {
     { route: "/wildlife", priority: 0.8, changeFrequency: "weekly" as const },
     { route: "/adventure", priority: 0.8, changeFrequency: "weekly" as const },
     { route: "/directory", priority: 0.8, changeFrequency: "daily" as const },
+    { route: "/search", priority: 0.8, changeFrequency: "daily" as const },
     { route: "/contact", priority: 0.5, changeFrequency: "monthly" as const },
     { route: "/post-ads", priority: 0.7, changeFrequency: "monthly" as const },
   ];

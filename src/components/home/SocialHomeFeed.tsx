@@ -19,6 +19,141 @@ const NE_STATES = [
   { name: "Sikkim", icon: "❄️", tag: "Sikkim" },
 ];
 
+const INITIAL_ADDAS = [
+  {
+    id: "guwahati",
+    name: "n:guwahati",
+    title: "Guwahati City Adda",
+    icon: "🏙️",
+    count: 1343,
+    tag: "City Hub",
+    category: "Cities",
+    state: "Assam",
+    desc: "Capital hub, city life, hangouts, food spots & local events.",
+  },
+  {
+    id: "shillong",
+    name: "n:shillong",
+    title: "Shillong Hills & Music",
+    icon: "🌧️",
+    count: 256,
+    tag: "Music & Hills",
+    category: "Cities",
+    state: "Meghalaya",
+    desc: "Rock music, pine groves, cozy cafes & Khasi cultural vibes.",
+  },
+  {
+    id: "kaziranga",
+    name: "n:kaziranga",
+    title: "Kaziranga Wildlife Safari",
+    icon: "🦏",
+    count: 184,
+    tag: "Wildlife & Safari",
+    category: "Nature & Wildlife",
+    state: "Assam",
+    desc: "One-horned rhino sightings, safari bookings & nature stories.",
+  },
+  {
+    id: "nagaland",
+    name: "n:nagaland",
+    title: "Nagaland & Hornbill Adda",
+    icon: "🦅",
+    count: 201,
+    tag: "Hornbill & Culture",
+    category: "States",
+    state: "Nagaland",
+    desc: "Hornbill festival, tribal traditions, music & high hills.",
+  },
+  {
+    id: "sikkim",
+    name: "n:sikkim",
+    title: "Sikkim Himalayan Adda",
+    icon: "❄️",
+    count: 102,
+    tag: "Himalayas & Monasteries",
+    category: "States",
+    state: "Sikkim",
+    desc: "Kanchenjunga vistas, high mountain passes & monasteries.",
+  },
+  {
+    id: "tawang",
+    name: "n:tawang",
+    title: "Tawang & Arunachal Trails",
+    icon: "🏔️",
+    count: 203,
+    tag: "Mountain Trails",
+    category: "Nature & Wildlife",
+    state: "Arunachal Pradesh",
+    desc: "Sela Pass snow, Tawang Monastery & Arunachal exploration.",
+  },
+  {
+    id: "majuli",
+    name: "n:majuli",
+    title: "Majuli Island Heritage",
+    icon: "🎭",
+    count: 124,
+    tag: "River Island & Art",
+    category: "Culture",
+    state: "Assam",
+    desc: "World's largest river island, mask making & Vaishnavite Sattras.",
+  },
+  {
+    id: "dzukou",
+    name: "n:dzukou",
+    title: "Dzukou Valley Trekkers",
+    icon: "🌸",
+    count: 198,
+    tag: "Valley Trekking",
+    category: "Nature & Wildlife",
+    state: "Nagaland",
+    desc: "Trekking trails, seasonal lily blooms & mountain camping.",
+  },
+  {
+    id: "cherrapunji",
+    name: "n:cherrapunji",
+    title: "Sohra & Living Root Bridges",
+    icon: "🌊",
+    count: 224,
+    tag: "Root Bridges & Falls",
+    category: "Nature & Wildlife",
+    state: "Meghalaya",
+    desc: "Living root bridges, Nohkalikai falls & monsoon adventures.",
+  },
+  {
+    id: "food",
+    name: "n:food",
+    title: "NE Foodies & Cuisines",
+    icon: "🍲",
+    count: 542,
+    tag: "Food & Recipes",
+    category: "Topics",
+    state: "All States",
+    desc: "Smoked pork, bamboo shoot, authentic thalis & traditional recipes.",
+  },
+  {
+    id: "travel",
+    name: "n:travel",
+    title: "Backpackers & Road Trips",
+    icon: "🎒",
+    count: 610,
+    tag: "Travel & Backpacking",
+    category: "Topics",
+    state: "All States",
+    desc: "Road trips, homestay reviews, shared cabs & travel itineraries.",
+  },
+  {
+    id: "music",
+    name: "n:music",
+    title: "NE Indie Music & Bands",
+    icon: "🎸",
+    count: 385,
+    tag: "Music & Festivals",
+    category: "Topics",
+    state: "All States",
+    desc: "Ziro festival, rock bands, folk fusion & local gig alerts.",
+  },
+];
+
 interface SocialHomeFeedProps {
   initialPosts: any[];
   latestNews: any[];
@@ -37,7 +172,7 @@ function timeAgo(dateString: string): string {
   if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
+  const days = Math.floor(minutes / 24);
   if (days < 7) return `${days}d ago`;
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
@@ -52,8 +187,20 @@ export default function SocialHomeFeed({
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>(initialPosts);
   const [selectedState, setSelectedState] = useState("All States");
+  const [selectedAdda, setSelectedAdda] = useState<string | null>(null);
   const [feedTab, setFeedTab] = useState<"trending" | "latest" | "friends">("trending");
   const [loading, setLoading] = useState(false);
+
+  // Addas membership state
+  const [addasList, setAddasList] = useState(INITIAL_ADDAS);
+  const [joinedAddas, setJoinedAddas] = useState<string[]>(["n:guwahati", "n:shillong"]);
+  const [showAddasModal, setShowAddasModal] = useState(false);
+  const [addaSearchQuery, setAddaSearchQuery] = useState("");
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Active Adda real members
+  const [addaMembers, setAddaMembers] = useState<any[]>([]);
+  const [totalAddaMembers, setTotalAddaMembers] = useState(0);
 
   // Post composer state
   const [newContent, setNewContent] = useState("");
@@ -65,12 +212,90 @@ export default function SocialHomeFeed({
   // Active expanded comments
   const [expandedCommentsPostId, setExpandedCommentsPostId] = useState<number | null>(null);
 
+  // Friend requests state
+  const [friendRequestsSent, setFriendRequestsSent] = useState<Record<number, boolean>>({});
+
   // Auth modal
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
   useEffect(() => {
     fetchMe();
+    try {
+      const saved = localStorage.getItem("nec-joined-addas");
+      if (saved) {
+        setJoinedAddas(JSON.parse(saved));
+      }
+    } catch {
+      // Ignored
+    }
+
+    async function loadLiveCounts() {
+      try {
+        const res = await fetch("/api/community/addas");
+        const data = await res.json();
+        if (data.status === "success" && Array.isArray(data.addas)) {
+          setAddasList((prev) =>
+            prev.map((a) => {
+              const match = data.addas.find((s: any) => s.name === a.name);
+              return match ? { ...a, count: match.count } : a;
+            })
+          );
+        }
+      } catch {
+        // Ignored
+      }
+    }
+    loadLiveCounts();
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const addaParam = params.get("adda");
+      if (addaParam) {
+        setSelectedAdda(addaParam);
+        setTaggedLocation(addaParam);
+        fetchAddaMembers(addaParam);
+        loadPosts(selectedState, feedTab, addaParam);
+      }
+    }
   }, []);
+
+  function showToast(msg: string) {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3500);
+  }
+
+  // Handle direct navigation to post from notification hash (e.g. #post-123)
+  useEffect(() => {
+    function handlePostHash() {
+      if (typeof window === "undefined") return;
+      const hash = window.location.hash;
+      if (hash && hash.startsWith("#post-")) {
+        const postId = parseInt(hash.replace("#post-", ""), 10);
+        if (!isNaN(postId)) {
+          setExpandedCommentsPostId(postId);
+
+          // Allow DOM to settle and scroll to post
+          setTimeout(() => {
+            const element = document.getElementById(`post-${postId}`);
+            if (element) {
+              element.scrollIntoView({ behavior: "smooth", block: "center" });
+              // Highlight post card with subtle emerald glow
+              element.classList.add("ring-2", "ring-emerald-500", "ring-offset-2");
+              setTimeout(() => {
+                element.classList.remove("ring-2", "ring-emerald-500", "ring-offset-2");
+              }, 3000);
+            }
+          }, 350);
+        }
+      }
+    }
+
+    handlePostHash();
+    window.addEventListener("hashchange", handlePostHash);
+    return () => window.removeEventListener("hashchange", handlePostHash);
+  }, [posts]);
 
   async function fetchMe() {
     try {
@@ -84,12 +309,13 @@ export default function SocialHomeFeed({
     }
   }
 
-  async function loadPosts(state: string, tab: string) {
+  async function loadPosts(state: string, tab: string, adda: string | null = null) {
     try {
       setLoading(true);
       const queryParams = new URLSearchParams();
       if (tab === "friends") queryParams.set("filter", "friends");
       if (state !== "All States") queryParams.set("state", state);
+      if (adda) queryParams.set("adda", adda);
 
       const res = await fetch(`/api/community/posts?${queryParams.toString()}`);
       const data = await res.json();
@@ -105,7 +331,92 @@ export default function SocialHomeFeed({
 
   function handleStateChange(state: string) {
     setSelectedState(state);
-    loadPosts(state, feedTab);
+    setSelectedAdda(null);
+    loadPosts(state, feedTab, null);
+  }
+
+  async function fetchAddaMembers(addaName: string) {
+    try {
+      const res = await fetch(`/api/community/addas?adda=${encodeURIComponent(addaName)}`);
+      const data = await res.json();
+      if (data.status === "success") {
+        setAddaMembers(data.members || []);
+        setTotalAddaMembers(data.totalMembers || 0);
+      }
+    } catch {
+      // Ignored
+    }
+  }
+
+  function handleSelectAdda(addaName: string) {
+    if (selectedAdda === addaName) {
+      // Toggle off
+      setSelectedAdda(null);
+      setAddaMembers([]);
+      setTotalAddaMembers(0);
+      loadPosts(selectedState, feedTab, null);
+    } else {
+      setSelectedAdda(addaName);
+      setTaggedLocation(addaName);
+      fetchAddaMembers(addaName);
+      loadPosts(selectedState, feedTab, addaName);
+      // Smooth scroll to composer
+      const composer = document.getElementById("community-composer");
+      if (composer) {
+        composer.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  }
+
+  function handleToggleJoinAdda(addaName: string, e?: React.MouseEvent) {
+    if (e) e.stopPropagation();
+
+    if (!currentUser) {
+      setAuthModalOpen(true);
+      return;
+    }
+
+    const isCurrentlyJoined = joinedAddas.includes(addaName);
+    let updated: string[];
+
+    if (isCurrentlyJoined) {
+      updated = joinedAddas.filter((name) => name !== addaName);
+      showToast(`Left ${addaName}`);
+    } else {
+      updated = [...joinedAddas, addaName];
+      showToast(`🎉 You joined ${addaName}! (+15 XP)`);
+    }
+
+    setJoinedAddas(updated);
+    try {
+      localStorage.setItem("nec-joined-addas", JSON.stringify(updated));
+    } catch {
+      // Ignored
+    }
+  }
+
+  async function handleSendFriendRequest(targetUserId: number, targetUsername: string, e?: React.MouseEvent) {
+    if (e) e.stopPropagation();
+    if (!currentUser) {
+      setAuthModalOpen(true);
+      return;
+    }
+    try {
+      const res = await fetch("/api/friends", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUserId }),
+      });
+      const data = await res.json();
+      if (data.status === "success") {
+        setFriendRequestsSent((prev) => ({ ...prev, [targetUserId]: true }));
+        showToast(`✨ Friend request sent to @${targetUsername}!`);
+      } else {
+        showToast(data.message || "Request sent!");
+      }
+    } catch {
+      showToast("Failed to send friend request");
+    }
   }
 
   function handleTabChange(tab: "trending" | "latest" | "friends") {
@@ -114,7 +425,7 @@ export default function SocialHomeFeed({
       return;
     }
     setFeedTab(tab);
-    loadPosts(selectedState, tab);
+    loadPosts(selectedState, tab, selectedAdda);
   }
 
   async function handleCreatePost(e: React.FormEvent) {
@@ -128,12 +439,13 @@ export default function SocialHomeFeed({
 
     try {
       setSubmitting(true);
+      const postLocation = taggedLocation.trim() || selectedAdda || null;
       const res = await fetch("/api/community/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: newContent.trim(),
-          taggedLocation: taggedLocation.trim() || null,
+          taggedLocation: postLocation,
           mediaUrls: mediaUrl.trim() || null,
         }),
       });
@@ -141,9 +453,10 @@ export default function SocialHomeFeed({
       if (data.status === "success" && data.post) {
         setPosts([data.post, ...posts]);
         setNewContent("");
-        setTaggedLocation("");
+        if (!selectedAdda) setTaggedLocation("");
         setMediaUrl("");
         setShowMediaInput(false);
+        showToast("✨ Post published to adda feed!");
         fetchMe();
       }
     } catch (err) {
@@ -167,44 +480,50 @@ export default function SocialHomeFeed({
       }
     } else {
       navigator.clipboard.writeText(shareUrl);
-      alert("Post link copied to clipboard!");
+      showToast("📋 Post link copied to clipboard!");
     }
   }
 
+  // Filter posts if active adda is selected locally
+  const displayedPosts = selectedAdda
+    ? posts.filter((p) => {
+        const loc = (p.taggedLocation || "").toLowerCase();
+        const addaClean = selectedAdda.replace("n:", "").toLowerCase();
+        return loc.includes(addaClean) || (p.content || "").toLowerCase().includes(selectedAdda.toLowerCase());
+      })
+    : posts;
+
+  const currentActiveAddaObj = addasList.find((a) => a.name === selectedAdda);
+
   return (
-    <div className="min-h-screen bg-slate-50 text-gray-900 pt-16 md:pt-20 pb-16">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0b0e14] text-slate-900 dark:text-slate-100 pt-3 sm:pt-5 pb-16 transition-colors">
+      {/* Dynamic Toast Feedback */}
+      {toastMessage && (
+        <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-50 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-2.5 rounded-2xl shadow-2xl border border-slate-700 dark:border-slate-300 text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       <div className="container mx-auto px-2 sm:px-4 max-w-7xl">
         {/* ========================================================================= */}
-        {/* 1. TOP APP-STYLE REEL / STATE STORIES BAR                                */}
+        {/* TOP STATE PILLS BAR (Quick Regional Adda Switcher)                        */}
         {/* ========================================================================= */}
-        <div className="mb-4 bg-white/90 backdrop-blur-md border border-gray-200/90 rounded-3xl p-3 sm:p-4 shadow-xs">
-          <div className="flex items-center justify-between mb-2.5 px-1">
-            <div className="flex items-center gap-2">
-              <span className="text-base">📍</span>
-              <h2 className="text-xs sm:text-sm font-extrabold text-gray-900 tracking-tight">
-                Explore Northeast States
-              </h2>
-            </div>
-            <span className="text-[11px] text-emerald-700 font-semibold">
-              8 Sister States
-            </span>
-          </div>
-
+        <div className="mb-4 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-2xl p-2.5 sm:p-3 shadow-sm">
           <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none snap-x">
             {NE_STATES.map((st) => {
-              const active = selectedState === st.name;
+              const active = selectedState === st.name && !selectedAdda;
               return (
                 <button
                   key={st.name}
                   onClick={() => handleStateChange(st.name)}
-                  className={`flex-shrink-0 snap-start flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`flex-shrink-0 snap-start flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                     active
-                      ? "bg-gradient-to-r from-emerald-600 to-teal-700 text-white shadow-md shadow-emerald-600/20 scale-102"
-                      : "bg-gray-100/90 text-gray-700 hover:bg-gray-200 hover:text-gray-900 border border-gray-200/60"
+                      ? "bg-emerald-600 text-white shadow-xs"
+                      : "bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white border border-slate-200/80 dark:border-slate-700/60"
                   }`}
                 >
-                  <span className="text-sm">{st.icon}</span>
-                  <span>{st.name}</span>
+                  <span>{st.icon}</span>
+                  <span>{st.name === "All States" ? "n:all" : `n:${st.name.toLowerCase().replace(/\s+/g, "")}`}</span>
                 </button>
               );
             })}
@@ -212,16 +531,42 @@ export default function SocialHomeFeed({
         </div>
 
         {/* ========================================================================= */}
-        {/* 2. MAIN 3-COLUMN RESPONSIVE LAYOUT (1 Column in Mobile WebView)          */}
+        {/* MAIN 3-COLUMN ADDA LAYOUT (Glossy Cards)                                  */}
         {/* ========================================================================= */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           {/* ======================================================================= */}
-          {/* LEFT SIDEBAR (Desktop: User Quick Card & Exploration Shortcuts)          */}
+          {/* LEFT COLUMN: User Card, Joined Addas & Navigation                       */}
           {/* ======================================================================= */}
           <div className="hidden lg:block lg:col-span-3 space-y-4">
-            {/* User Quick Profile Card */}
-            {currentUser ? (
-              <div className="bg-white border border-gray-200/90 rounded-3xl p-5 shadow-sm text-center">
+            {/* 1. User Profile or Join CTA Card */}
+            {!currentUser ? (
+              <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] space-y-4">
+                <div>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight leading-snug">
+                    Join the North East Adda
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Connect with locals, join topic addas, share stories &amp; earn karma.
+                  </p>
+                </div>
+
+                <div className="space-y-2 pt-1">
+                  <button
+                    onClick={() => setAuthModalOpen(true)}
+                    className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-full shadow-xs transition cursor-pointer"
+                  >
+                    Sign In or Join Free
+                  </button>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <p className="text-[10px] text-slate-500 leading-relaxed">
+                    By joining, you can participate in all 8 state addas, comment, and post ads.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] text-center">
                 <Link href={`/profile/${currentUser.username}`}>
                   <img
                     src={
@@ -231,10 +576,10 @@ export default function SocialHomeFeed({
                     alt={currentUser.username}
                     className="w-16 h-16 rounded-2xl object-cover mx-auto border-2 border-emerald-500 shadow-sm mb-3"
                   />
-                  <h3 className="font-extrabold text-sm text-gray-900 hover:text-emerald-700 transition">
+                  <h3 className="font-extrabold text-sm text-slate-900 dark:text-slate-100 hover:text-emerald-500 dark:hover:text-emerald-400 transition">
                     {currentUser.fullName || currentUser.username}
                   </h3>
-                  <p className="text-xs text-gray-500 font-mono">@{currentUser.username}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">u/{currentUser.username}</p>
                 </Link>
                 <div className="mt-2.5 flex justify-center">
                   <RankBadge
@@ -245,108 +590,229 @@ export default function SocialHomeFeed({
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-gray-100 text-center">
+                <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-center">
                   <Link
                     href={`/profile/${currentUser.username}`}
-                    className="p-2 bg-gray-50 hover:bg-emerald-50 rounded-xl transition"
+                    className="p-2 bg-slate-100/80 dark:bg-slate-800/70 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition"
                   >
-                    <span className="block text-xs font-bold text-gray-900">
+                    <span className="block text-xs font-bold text-slate-900 dark:text-slate-100">
                       {currentUser.xpPoints || 0}
                     </span>
-                    <span className="text-[10px] text-gray-500 uppercase">XP Points</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase">XP Karma</span>
                   </Link>
                   <Link
                     href={`/profile/${currentUser.username}`}
-                    className="p-2 bg-gray-50 hover:bg-emerald-50 rounded-xl transition"
+                    className="p-2 bg-slate-100/80 dark:bg-slate-800/70 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-xl transition"
                   >
-                    <span className="block text-xs font-bold text-gray-900">
+                    <span className="block text-xs font-bold text-slate-900 dark:text-slate-100">
                       {currentUser.rankTier}
                     </span>
-                    <span className="text-[10px] text-gray-500 uppercase">Rank</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase">Rank</span>
                   </Link>
                 </div>
               </div>
-            ) : (
-              <div className="bg-gradient-to-br from-emerald-800 to-teal-900 text-white rounded-3xl p-5 shadow-sm">
-                <div className="text-2xl mb-2">🌿</div>
-                <h3 className="font-extrabold text-base mb-1">Northeast India Hub</h3>
-                <p className="text-xs text-emerald-100 leading-relaxed mb-4">
-                  Join regional discussions, connect with local explorers, and earn rewards.
-                </p>
-                <button
-                  onClick={() => setAuthModalOpen(true)}
-                  className="w-full py-2.5 bg-white text-emerald-900 hover:bg-emerald-50 text-xs font-bold rounded-xl shadow-sm transition cursor-pointer"
-                >
-                  Join Community (+20 XP)
-                </button>
-              </div>
             )}
 
-            {/* Quick Community Channels */}
-            <div className="bg-white border border-gray-200/90 rounded-3xl p-4 shadow-sm space-y-1">
-              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider px-2 py-1 mb-1">
-                Explore Channels
+            {/* 2. MY JOINED ADDAS (Dynamic & Interactive) */}
+            <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] space-y-1">
+              <div className="flex items-center justify-between px-2 py-1 mb-1">
+                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  My Addas ({joinedAddas.length})
+                </span>
+                <Link
+                  href="/addas"
+                  className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+                >
+                  + Explore
+                </Link>
+              </div>
+
+              {joinedAddas.length === 0 ? (
+                <div className="p-3 text-center text-xs text-slate-500">
+                  <p>You haven&apos;t joined any Addas yet.</p>
+                  <Link
+                    href="/addas"
+                    className="mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 underline block"
+                  >
+                    Browse Popular Addas
+                  </Link>
+                </div>
+              ) : (
+                joinedAddas.map((addaName) => {
+                  const addaObj = addasList.find((a) => a.name === addaName) || {
+                    id: addaName,
+                    name: addaName,
+                    title: addaName,
+                    icon: "💬",
+                    count: 0,
+                    tag: "Community",
+                    category: "General",
+                    state: "Northeast",
+                    desc: "Community Adda",
+                  };
+                  const active = selectedAdda === addaName;
+
+                  return (
+                    <button
+                      key={addaName}
+                      onClick={() => handleSelectAdda(addaName)}
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                        active
+                          ? "bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700/80 text-emerald-700 dark:text-emerald-300"
+                          : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        <span>{addaObj.icon}</span>
+                        <span className="truncate">{addaName}</span>
+                      </div>
+                      <span className="text-[10px] text-slate-400 font-mono shrink-0">
+                        {addaObj.count ? `${addaObj.count.toLocaleString()}` : addaObj.state}
+                      </span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+
+            {/* 3. Quick Community Hubs */}
+            <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] space-y-1">
+              <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-2 py-1 mb-1">
+                Explore Hubs
               </div>
               <Link
+                href="/"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-900 dark:text-slate-200 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60"
+              >
+                <span className="text-base">🏠</span>
+                <span>Main Community Feed</span>
+              </Link>
+              <Link
                 href="/directory"
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
               >
                 <span className="text-base">📇</span>
                 <span>Verified Directory</span>
               </Link>
               <Link
                 href="/news"
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
               >
                 <span className="text-base">📰</span>
                 <span>Regional News</span>
               </Link>
               <Link
                 href="/culture"
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
               >
                 <span className="text-base">🎭</span>
                 <span>Culture &amp; Heritage</span>
               </Link>
               <Link
                 href="/wildlife"
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
               >
                 <span className="text-base">🦏</span>
                 <span>Wildlife Sanctuaries</span>
               </Link>
               <Link
                 href="/adventure"
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
               >
                 <span className="text-base">🏔️</span>
                 <span>Adventure Trails</span>
               </Link>
               <Link
                 href="/marketplace"
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
               >
                 <span className="text-base">🛒</span>
                 <span>Marketplace Ads</span>
-              </Link>
-              <Link
-                href="/leaderboard"
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition"
-              >
-                <span className="text-base">🏆</span>
-                <span>Explorer Ranks</span>
               </Link>
             </div>
           </div>
 
           {/* ======================================================================= */}
-          {/* CENTER COLUMN (Live Social Community Feed & Composer)                   */}
+          {/* CENTER COLUMN: Reddit-style Social Community Feed & Composer            */}
           {/* ======================================================================= */}
           <div className="lg:col-span-6 space-y-4">
-            {/* Quick Post Composer */}
+            {/* Active Adda Header Banner (When filtering by an Adda) */}
+            {selectedAdda && currentActiveAddaObj && (
+              <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white rounded-3xl p-5 shadow-lg flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl shrink-0">
+                    {currentActiveAddaObj.icon}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-base sm:text-lg font-black tracking-tight truncate">
+                        {currentActiveAddaObj.name}
+                      </h2>
+                      <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold font-mono">
+                        {currentActiveAddaObj.count ? `${currentActiveAddaObj.count.toLocaleString()} members` : currentActiveAddaObj.tag}
+                      </span>
+                    </div>
+                    <p className="text-xs text-emerald-100 line-clamp-1 mt-0.5">
+                      {currentActiveAddaObj.desc}
+                    </p>
+
+                    {/* Real Members Avatar Stack */}
+                    {addaMembers.length > 0 && (
+                      <div className="flex items-center gap-2 mt-2 pt-2 border-t border-white/20">
+                        <div className="flex -space-x-2 overflow-hidden">
+                          {addaMembers.slice(0, 5).map((m) => (
+                            <Link
+                              key={m.id}
+                              href={`/profile/${m.username}`}
+                              title={`u/${m.username} (${m.fullName}) - ${m.city}`}
+                            >
+                              <img
+                                src={m.profileImageUrl}
+                                alt={m.username}
+                                className="w-6 h-6 rounded-full border-2 border-emerald-600 object-cover hover:scale-110 transition shrink-0"
+                              />
+                            </Link>
+                          ))}
+                        </div>
+                        <span className="text-[11px] text-emerald-100 font-medium">
+                          {totalAddaMembers > 0
+                            ? `${totalAddaMembers} real members (${currentActiveAddaObj.state})`
+                            : `${addaMembers.length} active members`}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={(e) => handleToggleJoinAdda(currentActiveAddaObj.name, e)}
+                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition cursor-pointer shadow-xs ${
+                      joinedAddas.includes(currentActiveAddaObj.name)
+                        ? "bg-white text-emerald-800 hover:bg-emerald-50"
+                        : "bg-emerald-950/80 hover:bg-emerald-950 text-white border border-white/40"
+                    }`}
+                  >
+                    {joinedAddas.includes(currentActiveAddaObj.name) ? "Joined ✓" : "+ Join Adda"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedAdda(null);
+                      loadPosts(selectedState, feedTab, null);
+                    }}
+                    className="p-1.5 bg-black/20 hover:bg-black/40 rounded-full text-white text-xs cursor-pointer"
+                    title="Clear filter"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Quick Post Composer (Glossy) */}
             <div
               id="community-composer"
-              className="bg-white border border-gray-200/90 rounded-3xl p-4 sm:p-5 shadow-sm"
+              className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]"
             >
               <div className="flex gap-3">
                 <img
@@ -355,317 +821,514 @@ export default function SocialHomeFeed({
                     `https://api.dicebear.com/7.x/bottts/svg?seed=${currentUser?.username || "explorer"}`
                   }
                   alt="Avatar"
-                  className="w-10 h-10 rounded-2xl object-cover border border-emerald-400 bg-gray-100 flex-shrink-0"
+                  className="w-10 h-10 rounded-2xl object-cover border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex-shrink-0"
                 />
                 <div className="flex-1">
                   <textarea
                     rows={2}
                     placeholder={
                       currentUser
-                        ? `Share a thought, travel tip, or question with the Northeast community...`
-                        : `Sign in to share stories, ask recommendations, or post travel moments...`
+                        ? selectedAdda
+                          ? `Post in ${selectedAdda}, u/${currentUser.username}...`
+                          : `Share a thought with the adda, u/${currentUser.username}...`
+                        : `Sign in to start a discussion, ask recommendations, or share travel stories...`
                     }
                     value={newContent}
                     onChange={(e) => setNewContent(e.target.value)}
-                    onClick={() => {
-                      if (!currentUser) setAuthModalOpen(true);
-                    }}
-                    className="w-full text-sm placeholder:text-gray-400 text-gray-900 border-0 focus:ring-0 p-0 resize-none outline-none leading-relaxed bg-transparent"
+                    className="w-full bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition resize-none"
                   />
 
                   {showMediaInput && (
-                    <div className="mt-3 pt-3 border-t border-gray-100 space-y-2">
+                    <div className="mt-2.5">
                       <input
                         type="url"
-                        placeholder="Image URL (e.g. https://...)"
+                        placeholder="Paste image or photo URL (e.g. https://...)"
                         value={mediaUrl}
                         onChange={(e) => setMediaUrl(e.target.value)}
-                        className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:border-emerald-500"
+                        className="w-full bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 transition"
                       />
                     </div>
                   )}
 
-                  <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1 sm:gap-2">
-                      {/* State Location Tag Selector */}
-                      <select
-                        value={taggedLocation}
-                        onChange={(e) => setTaggedLocation(e.target.value)}
-                        className="text-xs bg-gray-50 border border-gray-200 text-gray-700 rounded-xl px-2.5 py-1.5 outline-none font-medium cursor-pointer"
-                      >
-                        <option value="">📍 Tag State</option>
-                        {NE_STATES.slice(1).map((s) => (
-                          <option key={s.name} value={s.name}>
-                            {s.icon} {s.name}
-                          </option>
-                        ))}
-                      </select>
-
+                  <div className="mt-3 flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setShowMediaInput(!showMediaInput)}
-                        className={`p-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1 transition cursor-pointer ${
+                        className={`p-2 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
                           showMediaInput
-                            ? "bg-emerald-50 text-emerald-800 border-emerald-300"
-                            : "bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
+                            ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60"
+                            : "bg-slate-100/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/60"
                         }`}
                       >
                         <span>📷</span>
                         <span className="hidden sm:inline">Photo</span>
                       </button>
+
+                      {/* Adda Selector Dropdown */}
+                      <select
+                        value={taggedLocation || selectedAdda || ""}
+                        onChange={(e) => setTaggedLocation(e.target.value)}
+                        className="bg-slate-100/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none cursor-pointer"
+                      >
+                        <option value="">Choose Adda</option>
+                        {addasList.map((a) => (
+                          <option key={a.name} value={a.name}>
+                            {a.icon} {a.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     <button
                       onClick={handleCreatePost}
                       disabled={submitting || !newContent.trim()}
-                      className="px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs rounded-xl shadow-sm transition disabled:opacity-50 cursor-pointer flex items-center gap-1"
+                      className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-full shadow-xs transition cursor-pointer"
                     >
-                      {submitting ? "Posting..." : "Share (+20 XP)"}
+                      {submitting ? "Posting..." : "Post (+10 XP)"}
                     </button>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Feed Filter Tabs */}
-            <div className="bg-white border border-gray-200/90 rounded-2xl p-1.5 flex items-center justify-between gap-1 shadow-xs">
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => handleTabChange("trending")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-                    feedTab === "trending"
-                      ? "bg-emerald-600 text-white shadow-xs"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  🔥 Trending
-                </button>
-                <button
-                  onClick={() => handleTabChange("latest")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-                    feedTab === "latest"
-                      ? "bg-emerald-600 text-white shadow-xs"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  ⚡ Latest
-                </button>
-                <button
-                  onClick={() => handleTabChange("friends")}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
-                    feedTab === "friends"
-                      ? "bg-emerald-600 text-white shadow-xs"
-                      : "text-gray-600 hover:bg-gray-100"
-                  }`}
-                >
-                  👥 Friends Only
-                </button>
-              </div>
-
-              <span className="text-[11px] text-gray-400 font-mono pr-2">
-                {selectedState !== "All States" ? selectedState : "All NE"}
-              </span>
+            {/* Feed Sort Tabs (Trending / Latest / Friends) */}
+            <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-2xl p-1.5 flex items-center gap-1 shadow-xs">
+              <button
+                onClick={() => handleTabChange("trending")}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  feedTab === "trending"
+                    ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs"
+                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                <span>🔥</span>
+                <span>Trending</span>
+              </button>
+              <button
+                onClick={() => handleTabChange("latest")}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  feedTab === "latest"
+                    ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs"
+                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                <span>🕒</span>
+                <span>Latest</span>
+              </button>
+              <button
+                onClick={() => handleTabChange("friends")}
+                className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  feedTab === "friends"
+                    ? "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 shadow-xs"
+                    : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                <span>👥</span>
+                <span>Friends</span>
+              </button>
             </div>
 
-            {/* Live Feed Stream */}
+            {/* Feed Posts Stream (Glossy Reddit-Style Cards) */}
             {loading ? (
-              <div className="p-12 text-center bg-white rounded-3xl border border-gray-200">
-                <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                <p className="text-xs text-gray-500 font-medium">Loading community feed...</p>
+              <div className="py-20 text-center text-slate-400 text-xs">
+                <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                Loading community feed...
               </div>
-            ) : posts.length > 0 ? (
+            ) : displayedPosts.length === 0 ? (
+              <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-dashed border-slate-300 dark:border-slate-800 rounded-3xl p-10 text-center shadow-xs">
+                <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto text-xl mb-3">
+                  💬
+                </div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-1">
+                  {selectedAdda ? `No posts in ${selectedAdda} yet` : "No posts found in this feed"}
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                  {selectedAdda ? `Be the first to start the conversation in ${selectedAdda}!` : "Be the first explorer to share a story or recommendation!"}
+                </p>
+                <button
+                  onClick={() => {
+                    const comp = document.getElementById("community-composer");
+                    if (comp) comp.scrollIntoView({ behavior: "smooth" });
+                  }}
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-full shadow-xs transition cursor-pointer"
+                >
+                  Create First Post
+                </button>
+              </div>
+            ) : (
               <div className="space-y-4">
-                {posts.map((post, idx) => {
+                {displayedPosts.map((post, idx) => {
                   const isCommentsOpen = expandedCommentsPostId === post.id;
+                  const addaTag = post.taggedLocation?.startsWith("n:")
+                    ? post.taggedLocation
+                    : post.taggedLocation
+                    ? `n:${post.taggedLocation.toLowerCase().replace(/\s+/g, "")}`
+                    : null;
 
                   return (
                     <React.Fragment key={post.id}>
-                      {/* Social Post Card */}
                       <article
                         id={`post-${post.id}`}
-                        className="bg-white border border-gray-200/90 rounded-3xl p-4 sm:p-5 shadow-sm hover:shadow-md transition duration-150 animate-in fade-in"
+                        className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:shadow-lg transition-all duration-200 group"
                       >
-                        {/* Header */}
-                        <div className="flex items-start justify-between gap-3 mb-3">
-                          <Link
-                            href={`/profile/${post.user.username}`}
-                            className="flex items-center gap-3 group"
-                          >
-                            <img
-                              src={
-                                post.user.profileImageUrl ||
-                                `https://api.dicebear.com/7.x/bottts/svg?seed=${post.user.username}`
-                              }
-                              alt={post.user.username}
-                              className="w-10 h-10 rounded-2xl object-cover border border-gray-200 bg-gray-50 group-hover:border-emerald-500 transition"
-                            />
-                            <div>
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <h3 className="font-extrabold text-sm text-gray-900 group-hover:text-emerald-700 transition">
-                                  {post.user.fullName || post.user.username}
-                                </h3>
-                                <span className="text-xs text-gray-400 font-mono">
-                                  @{post.user.username}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                <RankBadge
-                                  rankTier={post.user.rankTier}
-                                  size="sm"
-                                  showLevel={false}
-                                />
-                                {post.taggedLocation && (
-                                  <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200/80">
-                                    📍 {post.taggedLocation}
+                        {/* Header: Author & Adda Metadata */}
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <Link href={`/profile/${post.user.username}`} className="shrink-0">
+                              <img
+                                src={
+                                  post.user.profileImageUrl ||
+                                  `https://api.dicebear.com/7.x/bottts/svg?seed=${post.user.username}`
+                                }
+                                alt={post.user.username}
+                                className="w-10 h-10 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 group-hover:scale-105 transition"
+                              />
+                            </Link>
+
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                {addaTag ? (
+                                  <button
+                                    onClick={() => handleSelectAdda(addaTag)}
+                                    className="font-extrabold text-xs text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+                                  >
+                                    {addaTag}
+                                  </button>
+                                ) : (
+                                  <span className="font-extrabold text-xs text-slate-700 dark:text-slate-300">
+                                    n:all
                                   </span>
                                 )}
+                                <span className="text-[11px] text-slate-400">•</span>
+                                <Link
+                                  href={`/profile/${post.user.username}`}
+                                  className="text-xs font-semibold text-slate-800 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 transition truncate"
+                                >
+                                  u/{post.user.username}
+                                </Link>
+                                <span className="text-[11px] text-slate-400">•</span>
+                                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                                  {timeAgo(post.createdAt)}
+                                </span>
                               </div>
                             </div>
-                          </Link>
+                          </div>
 
-                          <span className="text-[11px] text-gray-400 font-mono whitespace-nowrap">
-                            {timeAgo(post.createdAt)}
-                          </span>
+                          <div className="shrink-0">
+                            <RankBadge
+                              rankTier={post.user.rankTier}
+                              xpPoints={post.user.xpPoints}
+                              size="sm"
+                              showLevel={false}
+                            />
+                          </div>
                         </div>
 
                         {/* Content */}
-                        <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap mb-3">
+                        <div className="text-slate-800 dark:text-slate-200 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap mb-3.5">
                           {post.content}
-                        </p>
+                        </div>
 
-                        {/* Attached Media */}
+                        {/* Media Attachment */}
                         {post.mediaUrls && (
-                          <div className="mb-3 rounded-2xl overflow-hidden max-h-96 border border-gray-100 bg-gray-50">
+                          <div className="mb-4 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 max-h-96">
                             <img
-                              src={
-                                post.mediaUrls.startsWith("[")
-                                  ? JSON.parse(post.mediaUrls)[0]
-                                  : post.mediaUrls
-                              }
-                              alt="Attachment"
+                              src={post.mediaUrls}
+                              alt="Attached post media"
                               className="w-full h-full object-cover"
-                              loading="lazy"
                             />
                           </div>
                         )}
 
-                        {/* Interactive Footer */}
-                        <div className="flex items-center justify-between pt-3 border-t border-gray-100 text-xs font-semibold text-gray-500">
-                          <div className="flex items-center gap-4">
+                        {/* Footer Action Bar */}
+                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400">
+                          <div className="flex items-center gap-1.5 sm:gap-3">
                             <button
-                              onClick={() => {
-                                if (!currentUser) setAuthModalOpen(true);
-                              }}
-                              className="flex items-center gap-1.5 text-gray-600 hover:text-rose-600 transition cursor-pointer"
+                              onClick={() =>
+                                setExpandedCommentsPostId(isCommentsOpen ? null : post.id)
+                              }
+                              className={`px-3.5 py-1.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition cursor-pointer ${
+                                isCommentsOpen
+                                  ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60"
+                                  : "bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60"
+                              }`}
                             >
-                              <span>❤️</span>
-                              <span>{post.likesCount || 0}</span>
+                              <span>💬</span>
+                              <span>{post._count?.comments || 0} Comments</span>
                             </button>
 
                             <button
-                              onClick={() =>
-                                setExpandedCommentsPostId(
-                                  isCommentsOpen ? null : post.id
-                                )
-                              }
-                              className="flex items-center gap-1.5 text-gray-600 hover:text-emerald-700 transition cursor-pointer"
+                              onClick={() => handleShare(post)}
+                              className="px-3.5 py-1.5 bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full font-bold text-xs flex items-center gap-1.5 border border-slate-200 dark:border-slate-700/60 transition cursor-pointer"
                             >
-                              <span>💬</span>
-                              <span>{post.commentsCount || 0} comments</span>
+                              <span>↗</span>
+                              <span className="hidden sm:inline">Share</span>
                             </button>
                           </div>
 
-                          <button
-                            onClick={() => handleShare(post)}
-                            className="flex items-center gap-1 text-gray-400 hover:text-gray-700 transition cursor-pointer"
-                            title="Share post"
-                          >
-                            <span>🔗</span>
-                            <span className="hidden sm:inline">Share</span>
-                          </button>
+                          <div className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">
+                            ID: #{post.id}
+                          </div>
                         </div>
 
-                        {/* Expandable Comments Section */}
+                        {/* Expandable Universal Comment Section */}
                         {isCommentsOpen && (
-                          <div className="mt-4 pt-4 border-t border-gray-100">
+                          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 animate-in fade-in duration-200">
                             <CommentSection
                               entityType="post"
                               entityId={post.id}
                               entityTitle={`Post by @${post.user.username}`}
+                              entityUrl={`/community#post-${post.id}`}
                             />
                           </div>
                         )}
                       </article>
 
-                      {/* Clean Non-Intrusive In-Feed Ad after 3rd post */}
+                      {/* In-feed "Make Friends & Discover Explorers" Section */}
+                      {idx === 0 && topExplorers.length > 0 && (
+                        <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
+                          <div className="flex items-center justify-between mb-3.5">
+                            <div className="flex items-center gap-2">
+                              <span className="text-base">🤝</span>
+                              <h3 className="font-extrabold text-xs text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+                                Meet &amp; Make Friends
+                              </h3>
+                            </div>
+                            <Link
+                              href="/leaderboard"
+                              className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                            >
+                              Top Explorers &rarr;
+                            </Link>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {topExplorers.slice(0, 4).map((explorer: any) => {
+                              const isSent = friendRequestsSent[explorer.id];
+                              return (
+                                <div
+                                  key={explorer.id}
+                                  className="p-3 bg-slate-50/80 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between gap-3 hover:border-emerald-500/50 transition"
+                                >
+                                  <Link href={`/profile/${explorer.username}`} className="flex items-center gap-2.5 min-w-0">
+                                    <img
+                                      src={
+                                        explorer.profileImageUrl ||
+                                        `https://api.dicebear.com/7.x/bottts/svg?seed=${explorer.username}`
+                                      }
+                                      alt={explorer.username}
+                                      className="w-10 h-10 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+                                    />
+                                    <div className="min-w-0">
+                                      <h4 className="font-extrabold text-xs text-slate-900 dark:text-slate-100 truncate hover:text-emerald-600">
+                                        {explorer.fullName || explorer.username}
+                                      </h4>
+                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate font-mono">
+                                        📍 {explorer.city || explorer.state || "Northeast"}
+                                      </p>
+                                    </div>
+                                  </Link>
+
+                                  <button
+                                    onClick={(e) => handleSendFriendRequest(explorer.id, explorer.username, e)}
+                                    disabled={isSent}
+                                    className={`px-3 py-1 text-[11px] font-bold rounded-full transition cursor-pointer shrink-0 ${
+                                      isSent
+                                        ? "bg-slate-200 dark:bg-slate-700 text-slate-500 cursor-not-allowed"
+                                        : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs"
+                                    }`}
+                                  >
+                                    {isSent ? "Sent ✓" : "+ Connect"}
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* In-feed Sponsored placement */}
                       {idx === 2 && (
-                        <GoogleAd
-                          format="horizontal"
-                          responsive={true}
-                          className="max-w-xl mx-auto my-3"
-                        />
+                        <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
+                          <span className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400 mb-2 block">
+                            Sponsored
+                          </span>
+                          <GoogleAd format="horizontal" responsive={true} />
+                        </div>
                       )}
                     </React.Fragment>
                   );
                 })}
               </div>
-            ) : (
-              <div className="p-12 text-center bg-white rounded-3xl border border-dashed border-gray-300">
-                <div className="text-4xl mb-2">🌿</div>
-                <h3 className="font-extrabold text-base text-gray-900 mb-1">
-                  Be the first to share!
-                </h3>
-                <p className="text-xs text-gray-500 mb-4">
-                  No community posts found for {selectedState}. Start the conversation!
-                </p>
-                <button
-                  onClick={() => {
-                    if (!currentUser) setAuthModalOpen(true);
-                    else {
-                      const input = document.querySelector("#community-composer textarea") as HTMLTextAreaElement;
-                      if (input) input.focus();
-                    }
-                  }}
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition"
-                >
-                  Write Post (+20 XP)
-                </button>
-              </div>
             )}
           </div>
 
           {/* ======================================================================= */}
-          {/* RIGHT SIDEBAR (Desktop: News, Directory, Leaderboard Traffic Feeders)    */}
+          {/* RIGHT COLUMN: POPULAR ADDAS, TRENDING NEWS & FOOTER                    */}
           {/* ======================================================================= */}
           <div className="hidden lg:block lg:col-span-3 space-y-4">
-            {/* 1. Trending News Feeder */}
-            <div className="bg-white border border-gray-200/90 rounded-3xl p-5 shadow-sm">
+            {/* 1. POPULAR ADDAS CARD (Fully Interactive Join/Leave & Filter) */}
+            <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-extrabold text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  Popular Addas
+                </h3>
+                <Link
+                  href="/addas"
+                  className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+                >
+                  All ({addasList.length})
+                </Link>
+              </div>
+
+              <div className="space-y-3">
+                {addasList.slice(0, 6).map((comm) => {
+                  const isJoined = joinedAddas.includes(comm.name);
+                  const isFiltered = selectedAdda === comm.name;
+
+                  return (
+                    <div
+                      key={comm.name}
+                      onClick={() => handleSelectAdda(comm.name)}
+                      className={`flex items-center justify-between gap-3 p-2 rounded-2xl transition cursor-pointer ${
+                        isFiltered
+                          ? "bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800/60"
+                          : "hover:bg-slate-100/80 dark:hover:bg-slate-800/60"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-sm shrink-0">
+                          {comm.icon}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 hover:text-emerald-600 dark:hover:text-emerald-400 transition truncate">
+                            {comm.name}
+                          </h4>
+                          <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                            <span className="font-bold text-slate-700 dark:text-slate-300">
+                              {comm.count ? `${comm.count.toLocaleString()} members` : ""}
+                            </span>
+                            {comm.count ? <span>•</span> : null}
+                            <span className="truncate">{comm.tag}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={(e) => handleToggleJoinAdda(comm.name, e)}
+                        className={`px-3 py-1 text-xs font-bold rounded-full transition cursor-pointer shrink-0 shadow-xs ${
+                          isJoined
+                            ? "bg-emerald-600 hover:bg-rose-600 text-white"
+                            : "bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700"
+                        }`}
+                        title={isJoined ? "Click to leave" : "Click to join"}
+                      >
+                        {isJoined ? "Joined" : "Join"}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <Link
+                  href="/addas"
+                  className="w-full py-2 bg-slate-100/80 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-full border border-slate-200 dark:border-slate-700 transition cursor-pointer block text-center"
+                >
+                  See more addas &rarr;
+                </Link>
+              </div>
+            </div>
+
+            {/* 2. MAKE FRIENDS CARD (Sidebar Recommended Explorers) */}
+            {topExplorers.length > 0 && (
+              <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
+                <div className="flex items-center justify-between mb-3.5">
+                  <div className="flex items-center gap-1.5">
+                    <span>👥</span>
+                    <h3 className="font-extrabold text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      Make Friends
+                    </h3>
+                  </div>
+                  <Link
+                    href="/leaderboard"
+                    className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                  >
+                    All &rarr;
+                  </Link>
+                </div>
+
+                <div className="space-y-3">
+                  {topExplorers.slice(0, 4).map((explorer: any) => {
+                    const isSent = friendRequestsSent[explorer.id];
+                    return (
+                      <div key={explorer.id} className="flex items-center justify-between gap-3">
+                        <Link href={`/profile/${explorer.username}`} className="flex items-center gap-2.5 min-w-0">
+                          <img
+                            src={
+                              explorer.profileImageUrl ||
+                              `https://api.dicebear.com/7.x/bottts/svg?seed=${explorer.username}`
+                            }
+                            alt={explorer.username}
+                            className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 hover:text-emerald-600 transition truncate">
+                              {explorer.fullName || explorer.username}
+                            </h4>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono truncate">
+                              📍 {explorer.city || explorer.state || "Assam"}
+                            </p>
+                          </div>
+                        </Link>
+
+                        <button
+                          onClick={(e) => handleSendFriendRequest(explorer.id, explorer.username, e)}
+                          disabled={isSent}
+                          className={`px-3 py-1 text-xs font-bold rounded-full transition cursor-pointer shrink-0 shadow-xs ${
+                            isSent
+                              ? "bg-slate-200 dark:bg-slate-700 text-slate-500 cursor-not-allowed"
+                              : "bg-emerald-600 hover:bg-emerald-500 text-white"
+                          }`}
+                        >
+                          {isSent ? "Sent ✓" : "+ Connect"}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 2. Northeast News Highlights (Glossy) */}
+            <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
               <div className="flex items-center justify-between mb-3.5">
                 <div className="flex items-center gap-1.5">
                   <span>📰</span>
-                  <h3 className="font-extrabold text-xs text-gray-900 uppercase tracking-wider">
-                    Northeast News
+                  <h3 className="font-extrabold text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                    Trending News
                   </h3>
                 </div>
                 <Link
                   href="/news"
-                  className="text-[11px] font-bold text-emerald-700 hover:underline"
+                  className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
                 >
                   All News &rarr;
                 </Link>
               </div>
 
               <div className="space-y-3">
-                {latestNews.slice(0, 4).map((item) => (
+                {latestNews.slice(0, 3).map((item) => (
                   <Link
                     key={item.id}
                     href={`/news/${item.id}`}
                     className="block group"
                   >
-                    <h4 className="text-xs font-bold text-gray-800 group-hover:text-emerald-700 transition line-clamp-2 leading-snug">
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition line-clamp-2 leading-snug">
                       {item.title}
                     </h4>
-                    <span className="text-[10px] text-gray-400 font-mono mt-0.5 block">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 block">
                       {timeAgo(item.publishedDate || item.createdAt)} • {item.category || "News"}
                     </span>
                   </Link>
@@ -673,132 +1336,134 @@ export default function SocialHomeFeed({
               </div>
             </div>
 
-            {/* 2. Top Verified Businesses */}
-            <div className="bg-white border border-gray-200/90 rounded-3xl p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-3.5">
-                <div className="flex items-center gap-1.5">
-                  <span>📇</span>
-                  <h3 className="font-extrabold text-xs text-gray-900 uppercase tracking-wider">
-                    Top Verified Spots
-                  </h3>
-                </div>
-                <Link
-                  href="/directory"
-                  className="text-[11px] font-bold text-emerald-700 hover:underline"
-                >
-                  Directory &rarr;
-                </Link>
+            {/* 3. Minimal Footer */}
+            <div className="p-2 text-[11px] text-slate-500 space-y-2">
+              <div className="flex flex-wrap gap-x-3 gap-y-1">
+                <Link href="/" className="hover:text-slate-800 dark:hover:text-slate-300">Home</Link>
+                <Link href="/news" className="hover:text-slate-800 dark:hover:text-slate-300">News</Link>
+                <Link href="/directory" className="hover:text-slate-800 dark:hover:text-slate-300">Directory</Link>
+                <Link href="/culture" className="hover:text-slate-800 dark:hover:text-slate-300">Culture</Link>
+                <Link href="/wildlife" className="hover:text-slate-800 dark:hover:text-slate-300">Wildlife</Link>
+                <Link href="/adventure" className="hover:text-slate-800 dark:hover:text-slate-300">Adventure</Link>
+                <Link href="/marketplace" className="hover:text-slate-800 dark:hover:text-slate-300">Marketplace</Link>
               </div>
-
-              <div className="space-y-3">
-                {featuredDirectory.slice(0, 3).map((biz) => (
-                  <Link
-                    key={biz.id}
-                    href={`/listing/${biz.id}`}
-                    className="flex items-center gap-3 group p-2 hover:bg-gray-50 rounded-2xl transition"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm flex-shrink-0">
-                      {biz.businessName[0]}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <h4 className="text-xs font-bold text-gray-900 group-hover:text-emerald-700 truncate">
-                        {biz.businessName}
-                      </h4>
-                      <p className="text-[10px] text-gray-500 font-mono">
-                        {biz.district || "Assam"} • {biz.category || "Local"}
-                      </p>
-                    </div>
-                  </Link>
-                ))}
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px]">
+                <Link href="/contact" className="hover:text-slate-800 dark:hover:text-slate-300">Privacy Policy</Link>
+                <Link href="/contact" className="hover:text-slate-800 dark:hover:text-slate-300">User Agreement</Link>
+                <Link href="/contact" className="hover:text-slate-800 dark:hover:text-slate-300">Guidelines</Link>
+              </div>
+              <div className="pt-2 text-[10px] text-slate-400 dark:text-slate-600">
+                North East Connect, Inc. © 2026. All rights reserved.
               </div>
             </div>
-
-            {/* 3. Community Leaderboard Preview */}
-            <div className="bg-white border border-gray-200/90 rounded-3xl p-5 shadow-sm">
-              <div className="flex items-center justify-between mb-3.5">
-                <div className="flex items-center gap-1.5">
-                  <span>🏆</span>
-                  <h3 className="font-extrabold text-xs text-gray-900 uppercase tracking-wider">
-                    Top Explorers
-                  </h3>
-                </div>
-                <Link
-                  href="/leaderboard"
-                  className="text-[11px] font-bold text-emerald-700 hover:underline"
-                >
-                  Ranks &rarr;
-                </Link>
-              </div>
-
-              <div className="space-y-2.5">
-                {topExplorers.slice(0, 3).map((user, i) => (
-                  <Link
-                    key={user.id}
-                    href={`/profile/${user.username}`}
-                    className="flex items-center justify-between gap-2 p-1.5 hover:bg-gray-50 rounded-xl transition"
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-bold text-xs text-gray-400 w-4">#{i + 1}</span>
-                      <img
-                        src={
-                          user.profileImageUrl ||
-                          `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`
-                        }
-                        alt={user.username}
-                        className="w-7 h-7 rounded-full object-cover border border-emerald-400"
-                      />
-                      <span className="text-xs font-bold text-gray-800 truncate">
-                        {user.fullName || user.username}
-                      </span>
-                    </div>
-                    <span className="text-[11px] font-mono font-bold text-emerald-700 whitespace-nowrap">
-                      {user.xpPoints || 0} XP
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* 4. Local Marketplace Deals */}
-            {marketplaceDeals && marketplaceDeals.length > 0 && (
-              <div className="bg-white border border-gray-200/90 rounded-3xl p-5 shadow-sm">
-                <div className="flex items-center justify-between mb-3.5">
-                  <div className="flex items-center gap-1.5">
-                    <span>🛒</span>
-                    <h3 className="font-extrabold text-xs text-gray-900 uppercase tracking-wider">
-                      Marketplace Deals
-                    </h3>
-                  </div>
-                  <Link
-                    href="/marketplace"
-                    className="text-[11px] font-bold text-emerald-700 hover:underline"
-                  >
-                    All Ads &rarr;
-                  </Link>
-                </div>
-
-                <div className="space-y-2.5">
-                  {marketplaceDeals.slice(0, 3).map((ad) => (
-                    <Link
-                      key={ad.id}
-                      href={`/marketplace/${ad.id}`}
-                      className="block group"
-                    >
-                      <h4 className="text-xs font-bold text-gray-800 group-hover:text-emerald-700 truncate">
-                        {ad.title}
-                      </h4>
-                      <div className="flex justify-between items-center text-[10px] text-gray-500 mt-0.5">
-                        <span className="font-bold text-emerald-700">₹{ad.price?.toLocaleString("en-IN")}</span>
-                        <span>{ad.state || "Northeast"}</span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
+
+      {/* ========================================================================= */}
+      {/* "DISCOVER & JOIN ADDAS" MODAL                                             */}
+      {/* ========================================================================= */}
+      {showAddasModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowAddasModal(false);
+          }}
+        >
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <div>
+                <h3 className="font-black text-lg text-slate-900 dark:text-slate-100">
+                  Discover Northeast Addas
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Join state communities, city groups, wildlife hubs, and topic addas.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowAddasModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center cursor-pointer font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Search Input */}
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40">
+              <input
+                type="text"
+                placeholder="Search addas (e.g. guwahati, food, travel, kaziranga)..."
+                value={addaSearchQuery}
+                onChange={(e) => setAddaSearchQuery(e.target.value)}
+                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+
+            {/* List */}
+            <div className="p-5 overflow-y-auto space-y-3 flex-1">
+              {addasList
+                .filter(
+                  (a) =>
+                    a.name.toLowerCase().includes(addaSearchQuery.toLowerCase()) ||
+                    a.title.toLowerCase().includes(addaSearchQuery.toLowerCase()) ||
+                    a.desc.toLowerCase().includes(addaSearchQuery.toLowerCase())
+                )
+                .map((adda) => {
+                  const isJoined = joinedAddas.includes(adda.name);
+
+                  return (
+                    <div
+                      key={adda.name}
+                      className="p-4 bg-slate-50/80 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between gap-4 transition"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-11 h-11 rounded-2xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 flex items-center justify-center text-xl shrink-0">
+                          {adda.icon}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
+                              {adda.name}
+                            </h4>
+                            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                              • {adda.count ? `${adda.count.toLocaleString()} members` : adda.tag} • {adda.state}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-1 mt-0.5">
+                            {adda.desc}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => {
+                            handleSelectAdda(adda.name);
+                            setShowAddasModal(false);
+                          }}
+                          className="px-3.5 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-full transition cursor-pointer"
+                        >
+                          Visit Feed
+                        </button>
+                        <button
+                          onClick={(e) => handleToggleJoinAdda(adda.name, e)}
+                          className={`px-4 py-1.5 text-xs font-bold rounded-full transition cursor-pointer shadow-xs ${
+                            isJoined
+                              ? "bg-emerald-600 hover:bg-rose-600 text-white"
+                              : "bg-emerald-600 hover:bg-emerald-500 text-white"
+                          }`}
+                        >
+                          {isJoined ? "Joined ✓" : "+ Join"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Global Auth Modal */}
       <AuthModal

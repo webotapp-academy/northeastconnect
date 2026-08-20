@@ -89,97 +89,99 @@ export default async function AdventureDetailPage({ params }: PageProps) {
   }
 
   return (
-    <main className="w-full bg-white text-gray-900 font-sans">
-      {/* Full-screen Hero Section */}
-      <header className="relative min-h-[50vh] flex items-center justify-center">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-orange-600 to-red-700 opacity-80 z-10" />
-          <img
-            src="/assets/images/hero.jpg"
-            alt="Adventure Details"
-            className="w-full h-full object-cover"
-          />
+    <main className="min-h-screen bg-[#090d16] text-slate-100 font-sans pt-4 sm:pt-6 pb-16">
+      <div className="container mx-auto px-3 sm:px-4 max-w-5xl">
+        {/* Navigation Breadcrumb */}
+        <div className="mb-4">
+          <Link
+            href="/adventure"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>Back to Outdoor Adventures</span>
+          </Link>
         </div>
 
-        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto pt-20">
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+        {/* Top Header Card */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-sm mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-3 py-1 bg-emerald-950/80 text-emerald-400 text-xs font-bold rounded-full border border-emerald-800/60 uppercase tracking-wider">
+              {activity.type || "Adventure Experience"}
+            </span>
+            {activity.district && (
+              <span className="text-xs text-slate-400 font-medium">
+                📍 {activity.district}, Assam
+              </span>
+            )}
+          </div>
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-100 leading-tight tracking-tight">
             {activity.name}
           </h1>
-          <p className="text-xl md:text-2xl text-gray-200 mb-12">
-            {activity.type || "Adventure Experience"}
-          </p>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <div className="py-16">
-        <div className="container mx-auto px-4 max-w-5xl">
-          <Link href="/adventure" className="inline-flex items-center text-sm font-semibold text-orange-600 hover:underline mb-8">
-            &larr; Back to Outdoor Adventures
-          </Link>
+        <div className="bg-slate-900 rounded-2xl sm:rounded-3xl shadow-sm p-6 sm:p-8 border border-slate-800 space-y-8">
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-100 mb-4 border-b border-slate-800 pb-4">
+              About {activity.name}
+            </h2>
+            <p className="text-slate-300 leading-relaxed text-base whitespace-pre-line">
+              {activity.description}
+            </p>
+          </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-800">
             <div>
-              <h2 className="text-3xl font-bold text-gray-800 mb-4 border-b pb-4">
-                About {activity.name}
-              </h2>
-              <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-line">
-                {activity.description}
-              </p>
+              <h3 className="text-lg font-bold text-slate-100 mb-1">Location</h3>
+              <p className="text-slate-400 text-sm">{activity.location}</p>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t">
-              <div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Location</h3>
-                <p className="text-gray-600">{activity.location}</p>
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Difficulty</h3>
-                <span className="inline-block bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-semibold">
-                  {activity.difficultyLevel || "Moderate"}
-                </span>
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Best Season</h3>
-                <p className="text-gray-600">{activity.bestSeason || "October - April"}</p>
-              </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-100 mb-1">Difficulty</h3>
+              <span className="inline-block bg-amber-950/80 text-amber-400 border border-amber-800/60 px-3 py-1 rounded-full text-xs font-semibold">
+                {activity.difficultyLevel || "Moderate"}
+              </span>
             </div>
-
-            {images.length > 0 && (
-              <div className="pt-6 border-t">
-                <h3 className="text-2xl font-bold text-gray-800 mb-6">Photo Gallery</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {images.map((img, idx) => (
-                    <div key={idx} className="rounded-xl overflow-hidden shadow">
-                      <img
-                        src={img}
-                        alt={`${activity.name} photo ${idx + 1}`}
-                        className="w-full h-64 object-cover hover:scale-105 transition duration-300"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="pt-6 border-t flex justify-end">
-              <Link
-                href="/contact"
-                className="bg-orange-600 text-white px-8 py-3 rounded-full hover:bg-orange-700 transition font-bold"
-              >
-                Book This Experience
-              </Link>
+            <div>
+              <h3 className="text-lg font-bold text-slate-100 mb-1">Best Season</h3>
+              <p className="text-slate-400 text-sm">{activity.bestSeason || "October - April"}</p>
             </div>
           </div>
 
-          {/* Universal Community Comments */}
-          <CommentSection
-            entityType="adventure"
-            entityId={activity.id}
-            entityTitle={activity.name}
-            entityUrl={`/adventure/${id}`}
-          />
+          {images.length > 0 && (
+            <div className="pt-6 border-t border-slate-800">
+              <h3 className="text-xl font-bold text-slate-100 mb-4">Photo Gallery</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {images.map((img, idx) => (
+                  <div key={idx} className="rounded-xl overflow-hidden shadow-sm border border-slate-800 bg-slate-950">
+                    <img
+                      src={img}
+                      alt={`${activity.name} photo ${idx + 1}`}
+                      className="w-full h-60 object-cover hover:scale-105 transition duration-300"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="pt-6 border-t border-slate-800 flex justify-end">
+            <Link
+              href="/contact"
+              className="bg-emerald-600 text-white px-7 py-3 rounded-2xl hover:bg-emerald-500 transition font-bold text-sm shadow-sm"
+            >
+              Book This Experience
+            </Link>
+          </div>
         </div>
+
+        {/* Universal Community Comments */}
+        <CommentSection
+          entityType="adventure"
+          entityId={activity.id}
+          entityTitle={activity.name}
+          entityUrl={`/adventure/${id}`}
+        />
       </div>
     </main>
   );

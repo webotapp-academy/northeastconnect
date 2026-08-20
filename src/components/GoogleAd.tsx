@@ -33,8 +33,8 @@ export default function GoogleAd({
 
   return (
     <div className={`google-ad-wrapper my-6 overflow-hidden w-full max-w-full ${className}`}>
-      <div className="bg-gray-50/80 border border-gray-200/90 rounded-2xl p-3 text-center shadow-xs">
-        <div className="text-[10px] text-gray-400 font-semibold tracking-wider uppercase mb-1.5 select-none flex items-center justify-center gap-1">
+      <div className="bg-slate-900/80 border border-slate-800/90 rounded-2xl p-3 text-center shadow-xs">
+        <div className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase mb-1.5 select-none flex items-center justify-center gap-1">
           <span>📢</span>
           <span>Sponsored Banner</span>
         </div>

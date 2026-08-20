@@ -40,6 +40,37 @@ export default function CommunityFeedPage() {
     fetchMe();
   }, []);
 
+  // Handle direct navigation to post from notification hash (e.g. #post-123)
+  useEffect(() => {
+    function handlePostHash() {
+      if (typeof window === "undefined") return;
+      const hash = window.location.hash;
+      if (hash && hash.startsWith("#post-")) {
+        const postId = parseInt(hash.replace("#post-", ""), 10);
+        if (!isNaN(postId)) {
+          setExpandedCommentsPostId(postId);
+
+          // Allow DOM to settle and scroll to post
+          setTimeout(() => {
+            const element = document.getElementById(`post-${postId}`);
+            if (element) {
+              element.scrollIntoView({ behavior: "smooth", block: "center" });
+              // Highlight post card with subtle emerald glow
+              element.classList.add("ring-2", "ring-emerald-500", "ring-offset-2");
+              setTimeout(() => {
+                element.classList.remove("ring-2", "ring-emerald-500", "ring-offset-2");
+              }, 3000);
+            }
+          }, 350);
+        }
+      }
+    }
+
+    handlePostHash();
+    window.addEventListener("hashchange", handlePostHash);
+    return () => window.removeEventListener("hashchange", handlePostHash);
+  }, [posts]);
+
   useEffect(() => {
     fetchPosts();
   }, [filter, selectedState]);
@@ -114,23 +145,23 @@ export default function CommunityFeedPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-gray-900 pt-24 pb-16 px-4">
+    <div className="min-h-screen bg-[#090d16] text-slate-100 pt-24 pb-16 px-4">
       {/* Top Banner */}
       <div className="container mx-auto max-w-6xl mb-8">
-        <div className="bg-gradient-to-r from-emerald-800 via-teal-800 to-indigo-900 border border-emerald-700/30 rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-lg text-white">
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-sm text-slate-100">
           <div className="relative z-10 max-w-2xl">
-            <span className="px-3 py-1 bg-white/20 text-emerald-100 text-xs font-semibold rounded-full border border-white/30 backdrop-blur">
+            <span className="px-3 py-1 bg-emerald-950/80 text-emerald-400 text-xs font-semibold rounded-full border border-emerald-800/60 backdrop-blur">
               🌿 Northeast Community Hub
             </span>
-            <h1 className="text-2xl md:text-4xl font-extrabold text-white mt-3 tracking-tight">
+            <h1 className="text-2xl md:text-4xl font-extrabold text-slate-100 mt-3 tracking-tight">
               Explorer Social Feed
             </h1>
-            <p className="text-xs md:text-sm text-emerald-100/90 mt-2 leading-relaxed">
+            <p className="text-xs md:text-sm text-slate-400 mt-2 leading-relaxed">
               Connect with travelers, locals, and business owners across the Eight Sister States.
               Share travel updates, regional tips, hidden gems, and level up your Explorer Rank!
             </p>
           </div>
-          <div className="absolute -right-8 -bottom-8 text-9xl opacity-15 select-none pointer-events-none">
+          <div className="absolute -right-8 -bottom-8 text-9xl opacity-10 select-none pointer-events-none">
             🏔️
           </div>
         </div>
@@ -141,7 +172,7 @@ export default function CommunityFeedPage() {
         {/* Left 2 Columns: Feed */}
         <div className="lg:col-span-2 space-y-6">
           {/* Post Composer Card */}
-          <div className="bg-white border border-gray-200/80 rounded-3xl p-5 sm:p-6 shadow-sm hover:shadow-md transition">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm hover:border-slate-700/80 transition">
             <form onSubmit={handleCreatePost}>
               <div className="flex items-start gap-3.5">
                 <img
@@ -150,7 +181,7 @@ export default function CommunityFeedPage() {
                     `https://api.dicebear.com/7.x/bottts/svg?seed=${currentUser?.username || "guest"}`
                   }
                   alt="Avatar"
-                  className="w-11 h-11 rounded-2xl object-cover border border-emerald-300 bg-emerald-50 flex-shrink-0"
+                  className="w-11 h-11 rounded-2xl object-cover border border-slate-700 bg-slate-800 flex-shrink-0"
                 />
                 <div className="flex-1">
                   <textarea
@@ -165,7 +196,7 @@ export default function CommunityFeedPage() {
                     onClick={() => {
                       if (!currentUser) setAuthModalOpen(true);
                     }}
-                    className="w-full px-4 py-3 bg-gray-50 hover:bg-gray-50/80 focus:bg-white rounded-2xl border border-gray-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 text-gray-900 text-sm outline-none transition resize-none placeholder:text-gray-400"
+                    className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-800/80 focus:bg-slate-900 rounded-2xl border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-100 text-sm outline-none transition resize-none placeholder-slate-500"
                   />
 
                   {/* Optional Media URL input */}
@@ -176,21 +207,21 @@ export default function CommunityFeedPage() {
                         placeholder="Image URL (e.g. https://images.unsplash.com/...)"
                         value={mediaUrl}
                         onChange={(e) => setMediaUrl(e.target.value)}
-                        className="flex-1 px-3.5 py-2 bg-white rounded-xl border border-gray-300 text-xs text-gray-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                        className="flex-1 px-3.5 py-2 bg-slate-800 rounded-xl border border-slate-700 text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                       />
                     </div>
                   )}
 
                   {/* Composer Tools */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 mt-3 pt-3 border-t border-gray-100">
+                  <div className="flex flex-wrap items-center justify-between gap-3 mt-3 pt-3 border-t border-slate-800">
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setShowMediaInput(!showMediaInput)}
                         className={`text-xs px-3.5 py-2 rounded-xl border font-medium transition flex items-center gap-1.5 cursor-pointer ${
                           showMediaInput
-                            ? "bg-emerald-50 border-emerald-300 text-emerald-800"
-                            : "bg-gray-100 border-gray-200 text-gray-700 hover:bg-gray-200"
+                            ? "bg-emerald-950/80 border-emerald-800/80 text-emerald-400"
+                            : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
                         }`}
                       >
                         <span>📷</span> Photo
@@ -201,20 +232,20 @@ export default function CommunityFeedPage() {
                         placeholder="📍 Tag location..."
                         value={taggedLocation}
                         onChange={(e) => setTaggedLocation(e.target.value)}
-                        className="px-3.5 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 outline-none focus:border-emerald-500 focus:bg-white max-w-[170px]"
+                        className="px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-emerald-500 focus:bg-slate-900 max-w-[170px]"
                       />
                     </div>
 
                     <div className="flex items-center gap-3">
                       {currentUser && (
-                        <span className="text-xs text-emerald-700 font-semibold hidden sm:inline">
+                        <span className="text-xs text-emerald-400 font-semibold hidden sm:inline">
                           ✨ +20 XP
                         </span>
                       )}
                       <button
                         type="submit"
                         disabled={submitting || !newPostContent.trim()}
-                        className="px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white text-xs font-bold rounded-xl shadow-md hover:shadow-lg transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                        className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-sm transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                       >
                         {submitting ? "Posting..." : "Share Post"}
                       </button>
@@ -226,12 +257,12 @@ export default function CommunityFeedPage() {
           </div>
 
           {/* Feed Filter Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-white border border-gray-200/80 p-3 rounded-2xl shadow-sm">
-            <div className="flex items-center gap-1.5 bg-gray-100 p-1 rounded-xl text-xs">
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-3 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-1.5 bg-slate-800 p-1 rounded-xl text-xs">
               <button
                 onClick={() => setFilter("all")}
                 className={`px-3.5 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
-                  filter === "all" ? "bg-white text-emerald-800 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                  filter === "all" ? "bg-slate-900 text-emerald-400 shadow-sm border border-slate-700" : "text-slate-400 hover:text-slate-200"
                 }`}
               >
                 🌐 All Explorers
@@ -245,7 +276,7 @@ export default function CommunityFeedPage() {
                   setFilter("friends");
                 }}
                 className={`px-3.5 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
-                  filter === "friends" ? "bg-white text-emerald-800 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                  filter === "friends" ? "bg-slate-900 text-emerald-400 shadow-sm border border-slate-700" : "text-slate-400 hover:text-slate-200"
                 }`}
               >
                 👥 Friends Only
@@ -255,7 +286,7 @@ export default function CommunityFeedPage() {
             <select
               value={selectedState}
               onChange={(e) => setSelectedState(e.target.value)}
-              className="px-3.5 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-800 outline-none focus:border-emerald-500 font-medium"
+              className="px-3.5 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-200 outline-none focus:border-emerald-500 font-medium cursor-pointer"
             >
               {NE_STATES.map((st) => (
                 <option key={st} value={st}>
@@ -267,15 +298,15 @@ export default function CommunityFeedPage() {
 
           {/* Posts List */}
           {loading ? (
-            <div className="py-16 text-center text-gray-400 text-xs">
-              <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+            <div className="py-16 text-center text-slate-400 text-xs">
+              <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
               Loading feed...
             </div>
           ) : posts.length === 0 ? (
-            <div className="text-center py-16 bg-white border border-dashed border-gray-300 rounded-3xl p-6 shadow-sm">
+            <div className="text-center py-16 bg-slate-900 border border-dashed border-slate-800 rounded-3xl p-6 shadow-sm">
               <div className="text-4xl mb-2">🌿</div>
-              <h3 className="font-bold text-gray-800 text-base">No posts in this feed yet</h3>
-              <p className="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
+              <h3 className="font-bold text-slate-100 text-base">No posts in this feed yet</h3>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
                 Be the first to share an update, travel recommendation, or local question!
               </p>
             </div>
@@ -283,7 +314,8 @@ export default function CommunityFeedPage() {
             posts.map((post) => (
               <div
                 key={post.id}
-                className="bg-white border border-gray-200/80 rounded-3xl p-5 sm:p-6 shadow-sm hover:shadow-md transition"
+                id={`post-${post.id}`}
+                className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm hover:border-slate-700/80 transition"
               >
                 {/* Author Info Header */}
                 <div className="flex items-center justify-between mb-3.5">
@@ -295,14 +327,14 @@ export default function CommunityFeedPage() {
                           `https://api.dicebear.com/7.x/bottts/svg?seed=${post.user.username}`
                         }
                         alt={post.user.username}
-                        className="w-11 h-11 rounded-2xl object-cover border border-gray-200 bg-gray-50 hover:scale-105 transition"
+                        className="w-11 h-11 rounded-2xl object-cover border border-slate-700 bg-slate-800 hover:scale-105 transition"
                       />
                     </Link>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
                         <Link
                           href={`/profile/${post.user.username}`}
-                          className="font-bold text-sm text-gray-900 hover:text-emerald-700 transition"
+                          className="font-bold text-sm text-slate-100 hover:text-emerald-400 transition"
                         >
                           {post.user.fullName || post.user.username}
                         </Link>
@@ -313,14 +345,14 @@ export default function CommunityFeedPage() {
                           showLevel={false}
                         />
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
-                        <span className="font-mono text-gray-400">@{post.user.username}</span>
+                      <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                        <span className="font-mono text-slate-500">@{post.user.username}</span>
                         <span>•</span>
                         <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                         {post.taggedLocation && (
                           <>
                             <span>•</span>
-                            <span className="text-emerald-700 font-medium bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 text-[11px]">
+                            <span className="text-emerald-400 font-medium bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-800/60 text-[11px]">
                               📍 {post.taggedLocation}
                             </span>
                           </>
@@ -331,13 +363,13 @@ export default function CommunityFeedPage() {
                 </div>
 
                 {/* Post Content */}
-                <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed mb-4">
+                <p className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed mb-4">
                   {post.content}
                 </p>
 
                 {/* Attached Media */}
                 {post.mediaUrls && (
-                  <div className="mb-4 rounded-2xl overflow-hidden border border-gray-200 max-h-96">
+                  <div className="mb-4 rounded-2xl overflow-hidden border border-slate-800 max-h-96 bg-slate-950">
                     <img
                       src={post.mediaUrls}
                       alt="Post Attachment"
@@ -347,14 +379,14 @@ export default function CommunityFeedPage() {
                 )}
 
                 {/* Post Footer (Discussion toggle) */}
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100 text-xs">
+                <div className="flex items-center justify-between pt-3 border-t border-slate-800 text-xs">
                   <button
                     onClick={() =>
                       setExpandedCommentsPostId(
                         expandedCommentsPostId === post.id ? null : post.id
                       )
                     }
-                    className="flex items-center gap-1.5 text-emerald-700 hover:text-emerald-800 font-semibold cursor-pointer py-1"
+                    className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 font-semibold cursor-pointer py-1"
                   >
                     <span>💬</span>
                     <span>
@@ -365,7 +397,7 @@ export default function CommunityFeedPage() {
                   </button>
                   <Link
                     href={`/profile/${post.user.username}`}
-                    className="text-gray-500 hover:text-gray-800 font-medium"
+                    className="text-slate-400 hover:text-slate-200 font-medium"
                   >
                     View @{post.user.username}&apos;s Profile &rarr;
                   </Link>
@@ -373,7 +405,7 @@ export default function CommunityFeedPage() {
 
                 {/* Embedded Comment Section for this post */}
                 {expandedCommentsPostId === post.id && (
-                  <div className="mt-4 pt-2 border-t border-gray-100">
+                  <div className="mt-4 pt-2 border-t border-slate-800">
                     <CommentSection
                       entityType="post"
                       entityId={post.id}
@@ -390,7 +422,7 @@ export default function CommunityFeedPage() {
         <div className="space-y-6">
           {/* User Status Card */}
           {currentUser ? (
-            <div className="bg-white border border-gray-200/80 rounded-3xl p-6 shadow-sm">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-sm">
               <div className="flex items-center gap-3.5 mb-4">
                 <img
                   src={
@@ -401,10 +433,10 @@ export default function CommunityFeedPage() {
                   className="w-13 h-13 rounded-2xl object-cover border-2 border-emerald-500"
                 />
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-bold text-sm text-gray-900 truncate">
+                  <h3 className="font-bold text-sm text-slate-100 truncate">
                     {currentUser.fullName || currentUser.username}
                   </h3>
-                  <p className="text-xs text-gray-500 font-mono">@{currentUser.username}</p>
+                  <p className="text-xs text-slate-400 font-mono">@{currentUser.username}</p>
                 </div>
               </div>
 
@@ -418,41 +450,41 @@ export default function CommunityFeedPage() {
 
               {currentUser.rankProgress && (
                 <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-slate-400">
                     <span>XP: {currentUser.xpPoints}</span>
                     <span>Next: {currentUser.rankProgress.nextRank?.tier || "Max"}</span>
                   </div>
-                  <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500"
                       style={{ width: `${currentUser.rankProgress.progressPercent}%` }}
                     />
                   </div>
                 </div>
               )}
 
-              <div className="mt-5 pt-4 border-t border-gray-100 flex justify-between text-xs font-semibold">
+              <div className="mt-5 pt-4 border-t border-slate-800 flex justify-between text-xs font-semibold">
                 <Link
                   href={`/profile/${currentUser.username}`}
-                  className="text-emerald-700 hover:underline"
+                  className="text-emerald-400 hover:underline"
                 >
                   My Profile Wall &rarr;
                 </Link>
-                <Link href="/profile/edit" className="text-gray-500 hover:text-gray-800">
+                <Link href="/profile/edit" className="text-slate-400 hover:text-slate-200">
                   Settings
                 </Link>
               </div>
             </div>
           ) : (
-            <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/70 rounded-3xl p-6 shadow-sm text-center">
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-sm text-center">
               <div className="text-3xl mb-2">🎁</div>
-              <h3 className="font-bold text-gray-900 text-base">Join the Community</h3>
-              <p className="text-xs text-gray-600 mt-1 mb-4 leading-relaxed">
+              <h3 className="font-bold text-slate-100 text-base">Join the Community</h3>
+              <p className="text-xs text-slate-400 mt-1 mb-4 leading-relaxed">
                 Sign in or register to share travel posts, add friends, and comment across all directory listings.
               </p>
               <button
                 onClick={() => setAuthModalOpen(true)}
-                className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white text-xs font-bold rounded-xl shadow-md cursor-pointer"
+                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-sm cursor-pointer"
               >
                 Sign In / Join (+20 XP)
               </button>
@@ -460,36 +492,36 @@ export default function CommunityFeedPage() {
           )}
 
           {/* How to Earn XP / Level Up */}
-          <div className="bg-white border border-gray-200/80 rounded-3xl p-6 shadow-sm">
-            <h3 className="font-bold text-gray-900 text-sm flex items-center gap-2 mb-3.5">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-sm">
+            <h3 className="font-bold text-slate-100 text-sm flex items-center gap-2 mb-3.5">
               <span>⚡</span> How to Level Up Your Rank
             </h3>
-            <ul className="space-y-2.5 text-xs text-gray-700">
-              <li className="flex items-center justify-between bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+            <ul className="space-y-2.5 text-xs text-slate-300">
+              <li className="flex items-center justify-between bg-slate-800 p-2.5 rounded-xl border border-slate-700/80">
                 <span>💬 Comment on any page</span>
-                <span className="font-bold text-emerald-700">+10 XP</span>
+                <span className="font-bold text-emerald-400">+10 XP</span>
               </li>
-              <li className="flex items-center justify-between bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+              <li className="flex items-center justify-between bg-slate-800 p-2.5 rounded-xl border border-slate-700/80">
                 <span>📝 Post in Community Feed</span>
-                <span className="font-bold text-emerald-700">+20 XP</span>
+                <span className="font-bold text-emerald-400">+20 XP</span>
               </li>
-              <li className="flex items-center justify-between bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+              <li className="flex items-center justify-between bg-slate-800 p-2.5 rounded-xl border border-slate-700/80">
                 <span>🤝 Connect with a friend</span>
-                <span className="font-bold text-emerald-700">+15 XP</span>
+                <span className="font-bold text-emerald-400">+15 XP</span>
               </li>
-              <li className="flex items-center justify-between bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+              <li className="flex items-center justify-between bg-slate-800 p-2.5 rounded-xl border border-slate-700/80">
                 <span>❤️ Receive a like on comment</span>
-                <span className="font-bold text-emerald-700">+5 XP</span>
+                <span className="font-bold text-emerald-400">+5 XP</span>
               </li>
-              <li className="flex items-center justify-between bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+              <li className="flex items-center justify-between bg-slate-800 p-2.5 rounded-xl border border-slate-700/80">
                 <span>👤 Complete your profile</span>
-                <span className="font-bold text-emerald-700">+50 XP</span>
+                <span className="font-bold text-emerald-400">+50 XP</span>
               </li>
             </ul>
 
             <Link
               href="/leaderboard"
-              className="mt-4 block text-center py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold rounded-xl transition"
+              className="mt-4 block text-center py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition border border-slate-700"
             >
               View Full Leaderboard &rarr;
             </Link>

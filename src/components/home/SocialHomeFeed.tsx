@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import RankBadge from "@/components/profile/RankBadge";
 import CommentSection from "@/components/comments/CommentSection";
@@ -207,7 +207,12 @@ export default function SocialHomeFeed({
   const [taggedLocation, setTaggedLocation] = useState("");
   const [mediaUrl, setMediaUrl] = useState("");
   const [showMediaInput, setShowMediaInput] = useState(false);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [composerAddaDropdownOpen, setComposerAddaDropdownOpen] = useState(false);
+  const [composerAddaSearch, setComposerAddaSearch] = useState("");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const addaPopoverRef = useRef<HTMLDivElement | null>(null);
 
   // Active expanded comments
   const [expandedCommentsPostId, setExpandedCommentsPostId] = useState<number | null>(null);
@@ -217,6 +222,54 @@ export default function SocialHomeFeed({
 
   // Auth modal
   const [authModalOpen, setAuthModalOpen] = useState(false);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (addaPopoverRef.current && !addaPopoverRef.current.contains(e.target as Node)) {
+        setComposerAddaDropdownOpen(false);
+      }
+    }
+    if (composerAddaDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [composerAddaDropdownOpen]);
+
+  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (!currentUser) {
+      setAuthModalOpen(true);
+      return;
+    }
+
+    try {
+      setUploadingMedia(true);
+      const formData = new FormData();
+      formData.append("files", files[0]);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.status === "success" && data.urls && data.urls[0]) {
+        setMediaUrl(data.urls[0]);
+        setShowMediaInput(false);
+        showToast("📸 Photo attached successfully!");
+      } else {
+        showToast(data.message || "Failed to upload photo");
+      }
+    } catch {
+      showToast("Error uploading photo");
+    } finally {
+      setUploadingMedia(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  }
 
   useEffect(() => {
     fetchMe();
@@ -815,10 +868,10 @@ export default function SocialHomeFeed({
               </div>
             )}
 
-            {/* Quick Post Composer (Glossy) */}
+            {/* Quick Post Composer (Modern Reddit / Threads Style) */}
             <div
               id="community-composer"
-              className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]"
+              className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] transition-all"
             >
               <div className="flex gap-3">
                 <img
@@ -827,72 +880,242 @@ export default function SocialHomeFeed({
                     `https://api.dicebear.com/7.x/bottts/svg?seed=${currentUser?.username || "explorer"}`
                   }
                   alt="Avatar"
-                  className="w-10 h-10 rounded-2xl object-cover border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex-shrink-0"
+                  className="w-10 h-10 rounded-2xl object-cover border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0"
                 />
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <textarea
                     rows={2}
                     placeholder={
                       currentUser
-                        ? selectedAdda
-                          ? `Post in ${selectedAdda}, u/${currentUser.username}...`
-                          : `Share a thought with the adda, u/${currentUser.username}...`
+                        ? (taggedLocation || selectedAdda)
+                          ? `Post in ${taggedLocation || selectedAdda}, u/${currentUser.username}...`
+                          : `Share a thought with the Northeast community, u/${currentUser.username}...`
                         : `Sign in to start a discussion, ask recommendations, or share travel stories...`
                     }
                     value={newContent}
                     onChange={(e) => setNewContent(e.target.value)}
-                    className="w-full bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-2xl p-3 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition resize-none"
+                    className="w-full bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-3 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition resize-none"
                   />
 
-                  {showMediaInput && (
-                    <div className="mt-2.5">
-                      <input
-                        type="url"
-                        placeholder="Paste image or photo URL (e.g. https://...)"
-                        value={mediaUrl}
-                        onChange={(e) => setMediaUrl(e.target.value)}
-                        className="w-full bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 transition"
-                      />
+                  {/* Real-time Attached Photo Preview */}
+                  {mediaUrl && (
+                    <div className="relative mt-2.5 inline-block group">
+                      <div className="relative rounded-2xl overflow-hidden border border-emerald-500/30 bg-slate-100 dark:bg-slate-800 shadow-sm max-w-xs">
+                        <img
+                          src={mediaUrl}
+                          alt="Post attachment"
+                          className="h-28 sm:h-32 w-auto max-w-full object-cover rounded-2xl"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setMediaUrl("")}
+                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-900/85 hover:bg-rose-600 text-white flex items-center justify-center text-xs font-bold shadow-md cursor-pointer transition"
+                          title="Remove photo"
+                        >
+                          ✕
+                        </button>
+                      </div>
                     </div>
                   )}
 
-                  <div className="mt-3 flex items-center justify-between flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80">
-                    <div className="flex items-center gap-2">
+                  {/* Media URL Input Expandable */}
+                  {showMediaInput && (
+                    <div className="mt-2.5 flex items-center gap-2 animate-in fade-in zoom-in-95 duration-150">
+                      <input
+                        type="url"
+                        placeholder="Paste image link (e.g. https://...)"
+                        value={mediaUrl}
+                        onChange={(e) => setMediaUrl(e.target.value)}
+                        className="w-full bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 transition"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowMediaInput(false)}
+                        className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-bold"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Modern Action Bar */}
+                  <div className="mt-3 flex items-center justify-between flex-wrap gap-2 pt-2.5 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Photo Upload with Native File Picker */}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!currentUser) {
+                            setAuthModalOpen(true);
+                            return;
+                          }
+                          fileInputRef.current?.click();
+                        }}
+                        disabled={uploadingMedia}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer border ${
+                          mediaUrl
+                            ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700"
+                            : "bg-slate-100/90 dark:bg-slate-800/90 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-600 dark:hover:text-emerald-400 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700/80"
+                        }`}
+                        title="Upload a photo"
+                      >
+                        {uploadingMedia ? (
+                          <svg className="w-3.5 h-3.5 animate-spin text-emerald-500" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                          </svg>
+                        ) : (
+                          <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        )}
+                        <span>{uploadingMedia ? "Uploading..." : mediaUrl ? "Photo Added ✓" : "Photo"}</span>
+                      </button>
+
+                      {/* URL Attachment Toggle */}
                       <button
                         type="button"
                         onClick={() => setShowMediaInput(!showMediaInput)}
-                        className={`p-2 rounded-xl text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 ${
-                          showMediaInput
-                            ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60"
-                            : "bg-slate-100/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700/60"
-                        }`}
+                        className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                        title="Attach via Image URL"
                       >
-                        <span>📷</span>
-                        <span className="hidden sm:inline">Photo</span>
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        </svg>
                       </button>
 
-                      {/* Adda Selector Dropdown */}
-                      <select
-                        value={taggedLocation || selectedAdda || ""}
-                        onChange={(e) => setTaggedLocation(e.target.value)}
-                        className="bg-slate-100/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none cursor-pointer"
-                      >
-                        <option value="">Choose Adda</option>
-                        {addasList.map((a) => (
-                          <option key={a.name} value={a.name}>
-                            {a.icon} {a.name}
-                          </option>
-                        ))}
-                      </select>
+                      {/* Modern Adda Selector Pill Popover */}
+                      <div className="relative" ref={addaPopoverRef}>
+                        {(() => {
+                          const currentTag = taggedLocation || selectedAdda;
+                          const activeAddaItem = addasList.find((a) => a.name === currentTag);
+                          return (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => setComposerAddaDropdownOpen(!composerAddaDropdownOpen)}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer border ${
+                                  currentTag
+                                    ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700/80 shadow-xs"
+                                    : "bg-slate-100/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border-slate-200 dark:border-slate-700/80"
+                                }`}
+                              >
+                                <span>{activeAddaItem ? activeAddaItem.icon : "🌿"}</span>
+                                <span className="font-mono text-[11px] sm:text-xs">
+                                  {currentTag || "Choose Adda"}
+                                </span>
+                                <svg
+                                  className={`w-3 h-3 text-slate-400 transition-transform ${composerAddaDropdownOpen ? "rotate-180" : ""}`}
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                              </button>
+
+                              {/* Modern Dropdown Popover */}
+                              {composerAddaDropdownOpen && (
+                                <div className="absolute left-0 mt-2 w-72 sm:w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                                  <div className="p-1.5 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                                    <svg className="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                    <input
+                                      type="text"
+                                      placeholder="Search addas (e.g. guwahati, kaziranga)..."
+                                      value={composerAddaSearch}
+                                      onChange={(e) => setComposerAddaSearch(e.target.value)}
+                                      className="w-full bg-transparent text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
+                                    />
+                                    {composerAddaSearch && (
+                                      <button
+                                        type="button"
+                                        onClick={() => setComposerAddaSearch("")}
+                                        className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                      >
+                                        ✕
+                                      </button>
+                                    )}
+                                  </div>
+
+                                  <div className="max-h-56 overflow-y-auto p-1 space-y-1 scrollbar-none">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setTaggedLocation("");
+                                        setComposerAddaDropdownOpen(false);
+                                      }}
+                                      className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-xl text-xs text-left transition cursor-pointer ${
+                                        !currentTag
+                                          ? "bg-slate-100 dark:bg-slate-800 font-bold text-slate-900 dark:text-slate-100"
+                                          : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                      }`}
+                                    >
+                                      <span>🌐 General Feed (All Northeast)</span>
+                                      {!currentTag && <span className="text-emerald-500 font-bold">✓</span>}
+                                    </button>
+
+                                    {addasList
+                                      .filter((a) =>
+                                        a.name.toLowerCase().includes(composerAddaSearch.toLowerCase()) ||
+                                        a.state.toLowerCase().includes(composerAddaSearch.toLowerCase()) ||
+                                        a.title.toLowerCase().includes(composerAddaSearch.toLowerCase())
+                                      )
+                                      .map((a) => (
+                                        <button
+                                          key={a.name}
+                                          type="button"
+                                          onClick={() => {
+                                            setTaggedLocation(a.name);
+                                            setComposerAddaDropdownOpen(false);
+                                          }}
+                                          className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs text-left transition cursor-pointer ${
+                                            currentTag === a.name
+                                              ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 font-bold"
+                                              : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                          }`}
+                                        >
+                                          <div className="flex items-center gap-2 truncate">
+                                            <span className="text-base">{a.icon}</span>
+                                            <div className="min-w-0">
+                                              <p className="font-bold text-xs truncate">{a.name}</p>
+                                              <p className="text-[10px] text-slate-400">{a.state} &bull; {a.tag}</p>
+                                            </div>
+                                          </div>
+                                          {currentTag === a.name && (
+                                            <span className="text-emerald-500 font-bold ml-2">✓</span>
+                                          )}
+                                        </button>
+                                      ))}
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
                     </div>
 
-                    <button
-                      onClick={handleCreatePost}
-                      disabled={submitting || !newContent.trim()}
-                      className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-full shadow-xs transition cursor-pointer"
-                    >
-                      {submitting ? "Posting..." : "Post (+10 XP)"}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 rounded-full hidden sm:inline-block">
+                        ✨ +10 XP
+                      </span>
+                      <button
+                        onClick={handleCreatePost}
+                        disabled={submitting || !newContent.trim()}
+                        className="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-full shadow-md shadow-emerald-600/20 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition cursor-pointer"
+                      >
+                        {submitting ? "Posting..." : "Post (+10 XP)"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -196,6 +196,25 @@ export async function POST(request: Request) {
           },
         });
       }
+    } else if (entityType === "post") {
+      // If commenting on a community post, notify the author of the post
+      const post = await db.communityPost.findUnique({
+        where: { id: numericEntityId },
+        select: { userId: true },
+      });
+
+      if (post && post.userId !== currentUser.id) {
+        await db.notification.create({
+          data: {
+            userId: post.userId,
+            actorId: currentUser.id,
+            type: "POST_COMMENT",
+            title: "New Comment on Your Post 💬",
+            message: `@${currentUser.username} commented on your post: "${content.trim().slice(0, 75)}..."`,
+            linkUrl: "/community",
+          },
+        });
+      }
     }
 
     return NextResponse.json({

@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import AuthModal from "@/components/auth/AuthModal";
 import RankBadge from "@/components/profile/RankBadge";
+import NotificationDropdown from "@/components/notifications/NotificationDropdown";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -126,103 +127,123 @@ export default function Navbar() {
           {/* User Account / Auth Section */}
           <div className="hidden md:flex items-center space-x-3">
             {currentUser ? (
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                  className="flex items-center gap-2.5 p-1.5 pr-3 rounded-full bg-black/40 hover:bg-black/60 border border-white/20 transition-all cursor-pointer text-white text-xs"
-                >
-                  <img
-                    src={
-                      currentUser.profileImageUrl ||
-                      `https://api.dicebear.com/7.x/bottts/svg?seed=${currentUser.username}`
-                    }
-                    alt={currentUser.username}
-                    className="w-7 h-7 rounded-full object-cover border border-emerald-400"
-                  />
-                  <div className="flex flex-col items-start leading-tight">
-                    <span className="font-bold max-w-[100px] truncate">{currentUser.fullName || currentUser.username}</span>
-                    <span className="text-[10px] text-emerald-300 font-semibold">{currentUser.rankTier}</span>
-                  </div>
-                  <svg className="w-3.5 h-3.5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
+              <>
+                {/* Notification Dropdown */}
+                <NotificationDropdown
+                  currentUser={currentUser}
+                  onNotificationUpdate={fetchMe}
+                />
 
-                {/* Dropdown Menu */}
-                {profileDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 z-50 text-gray-800 animate-in fade-in slide-in-from-top-2 duration-150">
-                    <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="font-bold text-sm text-gray-900">{currentUser.fullName || currentUser.username}</p>
-                      <p className="text-xs text-gray-500 font-mono">@{currentUser.username}</p>
-                      <div className="mt-2">
-                        <RankBadge rankTier={currentUser.rankTier} xpPoints={currentUser.xpPoints} size="sm" />
-                      </div>
-                      {currentUser.rankProgress && (
+                {/* Profile Pill Dropdown */}
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                    className="flex items-center gap-2.5 p-1.5 pr-3 rounded-full bg-black/40 hover:bg-black/60 border border-white/20 transition-all cursor-pointer text-white text-xs"
+                  >
+                    <img
+                      src={
+                        currentUser.profileImageUrl ||
+                        `https://api.dicebear.com/7.x/bottts/svg?seed=${currentUser.username}`
+                      }
+                      alt={currentUser.username}
+                      className="w-7 h-7 rounded-full object-cover border border-emerald-400"
+                    />
+                    <div className="flex flex-col items-start leading-tight">
+                      <span className="font-bold max-w-[100px] truncate">{currentUser.fullName || currentUser.username}</span>
+                      <span className="text-[10px] text-emerald-300 font-semibold">{currentUser.rankTier}</span>
+                    </div>
+                    <svg className="w-3.5 h-3.5 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {profileDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 z-50 text-gray-800 animate-in fade-in slide-in-from-top-2 duration-150">
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <p className="font-bold text-sm text-gray-900">{currentUser.fullName || currentUser.username}</p>
+                        <p className="text-xs text-gray-500 font-mono">@{currentUser.username}</p>
                         <div className="mt-2">
-                          <div className="flex justify-between text-[10px] text-gray-500 mb-1">
-                            <span>XP: {currentUser.xpPoints}</span>
-                            <span>Next: {currentUser.rankProgress.nextRank?.tier || "Max"}</span>
-                          </div>
-                          <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full transition-all duration-500"
-                              style={{ width: `${currentUser.rankProgress.progressPercent}%` }}
-                            />
-                          </div>
+                          <RankBadge rankTier={currentUser.rankTier} xpPoints={currentUser.xpPoints} size="sm" />
                         </div>
-                      )}
-                    </div>
+                        {currentUser.rankProgress && (
+                          <div className="mt-2">
+                            <div className="flex justify-between text-[10px] text-gray-500 mb-1">
+                              <span>XP: {currentUser.xpPoints}</span>
+                              <span>Next: {currentUser.rankProgress.nextRank?.tier || "Max"}</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full transition-all duration-500"
+                                style={{ width: `${currentUser.rankProgress.progressPercent}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
 
-                    <div className="py-1">
-                      <Link
-                        href={`/profile/${currentUser.username}`}
-                        onClick={() => setProfileDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors"
-                      >
-                        <span>👤</span> My Profile & Wall
-                      </Link>
-                      <Link
-                        href="/profile/edit"
-                        onClick={() => setProfileDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors"
-                      >
-                        <span>⚙️</span> Edit Profile & State
-                      </Link>
-                      <Link
-                        href="/community"
-                        onClick={() => setProfileDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition"
-                      >
-                        <span>🌿</span> Community Feed
-                      </Link>
+                      <div className="py-1">
+                        <Link
+                          href={`/profile/${currentUser.username}`}
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors"
+                        >
+                          <span>👤</span> My Profile & Wall
+                        </Link>
+                        <Link
+                          href="/profile/edit"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors"
+                        >
+                          <span>⚙️</span> Edit Profile & State
+                        </Link>
+                        <Link
+                          href="/community"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition"
+                        >
+                          <span>🌿</span> Community Feed
+                        </Link>
 
-                      <Link
-                        href="/marketplace/my-ads"
-                        onClick={() => setProfileDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition"
-                      >
-                        <span>🛒</span> My Marketplace Ads
-                      </Link>
-                      <Link
-                        href="/leaderboard"
-                        onClick={() => setProfileDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors"
-                      >
-                        <span>🏆</span> Leaderboard & Ranks
-                      </Link>
-                    </div>
+                        <Link
+                          href="/marketplace/my-ads"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-xs text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition"
+                        >
+                          <span>🛒</span> My Marketplace Ads
+                        </Link>
+                        <Link
+                          href="/leaderboard"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 transition-colors"
+                        >
+                          <span>🏆</span> Leaderboard & Ranks
+                        </Link>
 
-                    <div className="border-t border-gray-100 pt-1">
-                      <button
-                        onClick={handleLogout}
-                        className="w-full text-left flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-                      >
-                        <span>🚪</span> Log Out
-                      </button>
+                        {/* Admin Link if role is Admin */}
+                        {((currentUser.role || "").toLowerCase() === "admin" || (currentUser.role || "").toLowerCase() === "superadmin") && (
+                          <Link
+                            href="/admin"
+                            onClick={() => setProfileDropdownOpen(false)}
+                            className="flex items-center gap-2.5 px-4 py-2 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 transition-colors"
+                          >
+                            <span>⚡</span> Admin Control Panel
+                          </Link>
+                        )}
+                      </div>
+
+                      <div className="border-t border-gray-100 pt-1">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full text-left flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                        >
+                          <span>🚪</span> Log Out
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              </>
             ) : (
               <div className="flex items-center space-x-2">
                 <button
@@ -247,17 +268,25 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile Hamburger Button */}
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="lg:hidden p-2 rounded-xl bg-white/10 text-white hover:bg-white/20 transition cursor-pointer"
-            aria-label="Open menu"
-            type="button"
-          >
-            <span className="block w-6 h-0.5 bg-white my-1" />
-            <span className="block w-6 h-0.5 bg-white my-1" />
-            <span className="block w-6 h-0.5 bg-white my-1" />
-          </button>
+          {/* Mobile Right Bar: Notifications & Hamburger Button */}
+          <div className="flex lg:hidden items-center gap-2">
+            {currentUser && (
+              <NotificationDropdown
+                currentUser={currentUser}
+                onNotificationUpdate={fetchMe}
+              />
+            )}
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="p-2 rounded-xl bg-white/10 text-white hover:bg-white/20 transition cursor-pointer"
+              aria-label="Open menu"
+              type="button"
+            >
+              <span className="block w-6 h-0.5 bg-white my-1" />
+              <span className="block w-6 h-0.5 bg-white my-1" />
+              <span className="block w-6 h-0.5 bg-white my-1" />
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -272,7 +301,7 @@ export default function Navbar() {
           <div className="bg-white w-full max-w-sm rounded-3xl p-6 relative shadow-2xl animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setMobileOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none w-8 h-8 flex items-center justify-center rounded-full bg-gray-100"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl font-bold focus:outline-none w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 cursor-pointer"
               aria-label="Close menu"
             >
               &times;
@@ -305,7 +334,7 @@ export default function Navbar() {
                       setAuthTab("login");
                       setAuthModalOpen(true);
                     }}
-                    className="py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-900 text-xs font-semibold rounded-xl"
+                    className="py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-900 text-xs font-semibold rounded-xl cursor-pointer"
                   >
                     Sign In
                   </button>
@@ -315,7 +344,7 @@ export default function Navbar() {
                       setAuthTab("register");
                       setAuthModalOpen(true);
                     }}
-                    className="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl"
+                    className="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-xl cursor-pointer"
                   >
                     Join Free
                   </button>
@@ -389,7 +418,7 @@ export default function Navbar() {
                       onClick={() => setMobileOpen(false)}
                       className="py-2.5 px-4 bg-gray-50 text-gray-800 rounded-xl font-medium text-sm hover:bg-emerald-50 flex items-center gap-2 mb-2"
                     >
-                      <span>👤</span> My Profile
+                      <span>👤</span> My Profile & Connections
                     </Link>
                     <Link
                       href="/profile/edit"
@@ -398,12 +427,21 @@ export default function Navbar() {
                     >
                       <span>⚙️</span> Edit Profile
                     </Link>
+                    {((currentUser.role || "").toLowerCase() === "admin" || (currentUser.role || "").toLowerCase() === "superadmin") && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setMobileOpen(false)}
+                        className="py-2.5 px-4 bg-emerald-50 text-emerald-800 rounded-xl font-bold text-sm hover:bg-emerald-100 flex items-center gap-2 mb-2"
+                      >
+                        <span>⚡</span> Admin Control Panel
+                      </Link>
+                    )}
                     <button
                       onClick={() => {
                         setMobileOpen(false);
                         handleLogout();
                       }}
-                      className="w-full py-2.5 px-4 bg-red-50 text-red-700 rounded-xl font-medium text-sm text-left flex items-center gap-2"
+                      className="w-full py-2.5 px-4 bg-red-50 text-red-700 rounded-xl font-medium text-sm text-left flex items-center gap-2 cursor-pointer"
                     >
                       <span>🚪</span> Log Out
                     </button>

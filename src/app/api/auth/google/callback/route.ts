@@ -121,8 +121,11 @@ export async function GET(request: Request) {
 
     if (user) {
       const updateData: any = {};
-      if (!user.profileImageUrl && profileImageUrl) {
+      if (profileImageUrl) {
         updateData.profileImageUrl = profileImageUrl;
+      }
+      if (!user.fullName && fullName) {
+        updateData.fullName = fullName;
       }
       if (!user.isVerified) {
         updateData.isVerified = true;

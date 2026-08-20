@@ -113,10 +113,13 @@ export async function POST(request: Request) {
     let isNewUser = false;
 
     if (user) {
-      // Update missing profile image or verification status
+      // Sync Google profile photo & full name
       const updateData: any = {};
-      if (!user.profileImageUrl && profileImageUrl) {
+      if (profileImageUrl) {
         updateData.profileImageUrl = profileImageUrl;
+      }
+      if (!user.fullName && fullName) {
+        updateData.fullName = fullName;
       }
       if (!user.isVerified) {
         updateData.isVerified = true;

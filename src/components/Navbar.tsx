@@ -265,28 +265,40 @@ export default function Navbar() {
                           onClick={() => setProfileDropdownOpen(false)}
                           className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
                         >
-                          Profile & Wall
+                          <span>👤</span>
+                          <span>Profile & Wall</span>
                         </Link>
                         <Link
-                          href="/profile/edit"
+                          href="/profile/my-businesses"
                           onClick={() => setProfileDropdownOpen(false)}
                           className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
                         >
-                          Account Settings
+                          <span>🏢</span>
+                          <span>My Businesses & Leads</span>
                         </Link>
                         <Link
                           href="/marketplace/my-ads"
                           onClick={() => setProfileDropdownOpen(false)}
                           className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
                         >
-                          My Listings
+                          <span>🛍️</span>
+                          <span>My Marketplace Ads & Leads</span>
+                        </Link>
+                        <Link
+                          href="/profile/edit"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
+                        >
+                          <span>⚙️</span>
+                          <span>Account Settings</span>
                         </Link>
                         <Link
                           href="/leaderboard"
                           onClick={() => setProfileDropdownOpen(false)}
                           className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
                         >
-                          Leaderboard
+                          <span>🏆</span>
+                          <span>Explorer Leaderboard</span>
                         </Link>
 
                         {((currentUser.role || "").toLowerCase() === "admin" ||

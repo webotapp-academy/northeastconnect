@@ -207,17 +207,35 @@ export default function UserProfilePage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center justify-center md:justify-end gap-3">
+                <div className="flex items-center justify-center md:justify-end gap-2 flex-wrap">
                   {isOwnProfile ? (
-                    <Link
-                      href="/profile/edit"
-                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition flex items-center gap-1.5 shadow-sm"
-                    >
-                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                      Edit Profile
-                    </Link>
+                    <>
+                      <Link
+                        href="/profile/my-businesses"
+                        className="px-3.5 py-2 bg-emerald-600/15 hover:bg-emerald-600/25 text-emerald-400 text-xs font-bold rounded-xl border border-emerald-500/30 transition flex items-center gap-1.5 shadow-sm"
+                        title="View customer leads & business traffic"
+                      >
+                        <span>🏢</span>
+                        <span>My Businesses & Leads</span>
+                      </Link>
+                      <Link
+                        href="/marketplace/my-ads"
+                        className="px-3.5 py-2 bg-indigo-600/15 hover:bg-indigo-600/25 text-indigo-400 text-xs font-bold rounded-xl border border-indigo-500/30 transition flex items-center gap-1.5 shadow-sm"
+                        title="View marketplace buyer leads & active ads"
+                      >
+                        <span>🛍️</span>
+                        <span>My Marketplace Ads</span>
+                      </Link>
+                      <Link
+                        href="/profile/edit"
+                        className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition flex items-center gap-1.5 shadow-sm"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                        Edit Profile
+                      </Link>
+                    </>
                   ) : (
                     <FriendActionButton
                       targetUserId={profile.id}

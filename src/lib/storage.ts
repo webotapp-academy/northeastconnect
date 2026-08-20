@@ -184,3 +184,61 @@ export async function uploadMediaFile(
     format,
   };
 }
+
+/**
+ * Downloads a remote image URL, compresses it to WebP, and uploads to Cloudflare R2 / storage.
+ * If already an R2 URL or local asset, leaves it as is.
+ */
+export async function uploadRemoteImageToR2(
+  imageUrl: string,
+  options?: UploadOptions
+): Promise<string> {
+  if (!imageUrl || !imageUrl.trim()) return imageUrl;
+  const trimmed = imageUrl.trim();
+
+  // If already hosted on R2 or local uploads, don't re-download
+  const r2Domain = process.env.R2_PUBLIC_DOMAIN || "";
+  if (r2Domain && trimmed.includes(r2Domain)) return trimmed;
+  if (trimmed.startsWith("/uploads/") || trimmed.startsWith("/assets/")) return trimmed;
+
+  if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+
+  try {
+    const res = await fetch(trimmed, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; NorthEastConnectBot/1.0)",
+      },
+      signal: AbortSignal.timeout(12000),
+    });
+
+    if (!res.ok) return trimmed;
+    const contentType = res.headers.get("content-type") || "";
+    if (!contentType.includes("image") && !contentType.includes("octet-stream")) {
+      return trimmed;
+    }
+
+    const arrayBuffer = await res.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    let filename = "news_img";
+    try {
+      filename = path.basename(new URL(trimmed).pathname) || "news_img";
+    } catch {
+      filename = "news_img";
+    }
+
+    const result = await uploadMediaFile(buffer, filename, {
+      folder: options?.folder || "news",
+      maxWidth: options?.maxWidth || 1920,
+      quality: options?.quality || 82,
+    });
+
+    return result.url;
+  } catch (err) {
+    console.warn("Failed to upload remote image to R2, keeping original URL:", err);
+    return trimmed;
+  }
+}
+

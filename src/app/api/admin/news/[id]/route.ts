@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { uploadRemoteImageToR2 } from "@/lib/storage";
 
 export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
   try {
@@ -21,6 +22,15 @@ export async function PUT(request: Request, props: { params: Promise<{ id: strin
     const numericId = parseInt(id, 10);
     const body = await request.json();
 
+    let processedImageUrls = body.imageUrls || null;
+    if (body.imageUrls && typeof body.imageUrls === "string") {
+      const urlList = body.imageUrls.split(",").map((u: string) => u.trim()).filter(Boolean);
+      const uploadedList = await Promise.all(
+        urlList.map((u: string) => uploadRemoteImageToR2(u, { folder: "news" }))
+      );
+      processedImageUrls = uploadedList.join(",");
+    }
+
     const updated = await db.news.update({
       where: { id: numericId },
       data: {
@@ -29,7 +39,7 @@ export async function PUT(request: Request, props: { params: Promise<{ id: strin
         content: body.content,
         author: body.author,
         source: body.source,
-        imageUrls: body.imageUrls,
+        imageUrls: processedImageUrls,
         tags: body.tags,
         status: body.status,
       },

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { uploadRemoteImageToR2 } from "@/lib/storage";
 
 export async function GET(request: Request) {
   try {
@@ -51,6 +52,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ status: "error", message: "Title is required" }, { status: 400 });
     }
 
+    // Process and upload images to R2 if remote URL provided
+    let processedImageUrls = imageUrls || null;
+    if (imageUrls && typeof imageUrls === "string") {
+      const urlList = imageUrls.split(",").map((u: string) => u.trim()).filter(Boolean);
+      const uploadedList = await Promise.all(
+        urlList.map((u: string) => uploadRemoteImageToR2(u, { folder: "news" }))
+      );
+      processedImageUrls = uploadedList.join(",");
+    }
+
     const created = await db.news.create({
       data: {
         title,
@@ -58,7 +69,7 @@ export async function POST(request: Request) {
         content: content || null,
         author: author || "Editor",
         source: source || null,
-        imageUrls: imageUrls || null,
+        imageUrls: processedImageUrls,
         tags: tags || null,
         status: status || "Published",
         publishedDate: new Date(),

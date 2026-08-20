@@ -203,6 +203,38 @@ export async function POST(request: Request) {
       }
     }
 
+    // Extract mentions (@handle) and send notifications to mentioned users
+    const mentionMatches = content.match(/@([a-zA-Z0-9_]+)/g);
+    if (mentionMatches && mentionMatches.length > 0) {
+      const handles: string[] = Array.from(
+        new Set(mentionMatches.map((m: string) => m.replace(/^@/, "").toLowerCase().trim()))
+      );
+
+      for (const handle of handles) {
+        try {
+          const mentionedUser = await db.user.findUnique({
+            where: { username: handle },
+            select: { id: true },
+          });
+
+          if (mentionedUser && mentionedUser.id !== currentUser.id) {
+            await db.notification.create({
+              data: {
+                userId: mentionedUser.id,
+                actorId: currentUser.id,
+                type: "MENTION",
+                title: "You were mentioned in a post! 💬",
+                message: `@${currentUser.username} mentioned you in a community post.`,
+                linkUrl: `/community#post-${post.id}`,
+              },
+            });
+          }
+        } catch (e) {
+          console.warn("Mention notification error for:", handle, e);
+        }
+      }
+    }
+
     // Award +20 XP
     await awardUserXp(currentUser.id, "POST", 20, "Shared a community post");
 

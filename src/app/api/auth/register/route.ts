@@ -2,17 +2,29 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { hashPassword, setAuthCookie } from "@/lib/auth";
 import { awardUserXp } from "@/lib/gamification";
+import { verifyCaptchaToken } from "@/lib/captcha";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { username, email, password, fullName, state, city } = body;
+    const { username, email, password, fullName, state, city, captchaAnswer, captchaKey } = body;
 
     if (!email || !password || !username) {
       return NextResponse.json(
         { status: "error", message: "Username, email, and password are required." },
         { status: 400 }
       );
+    }
+
+    // Verify Captcha if key is provided (or mandatory)
+    if (captchaKey !== undefined) {
+      const isCaptchaValid = verifyCaptchaToken(captchaAnswer || "", captchaKey || "");
+      if (!isCaptchaValid) {
+        return NextResponse.json(
+          { status: "error", message: "Incorrect security captcha code. Please try again." },
+          { status: 400 }
+        );
+      }
     }
 
     const cleanUsername = username.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");

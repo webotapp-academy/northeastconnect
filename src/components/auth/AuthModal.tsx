@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 interface AuthModalProps {
@@ -39,9 +39,36 @@ export default function AuthModal({
   const [regPassword, setRegPassword] = useState("");
   const [regFullName, setRegFullName] = useState("");
   const [regState, setRegState] = useState("");
+  const [captchaSvg, setCaptchaSvg] = useState("");
+  const [captchaKey, setCaptchaKey] = useState("");
+  const [captchaAnswer, setCaptchaAnswer] = useState("");
+  const [loadingCaptcha, setLoadingCaptcha] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  async function fetchCaptcha() {
+    try {
+      setLoadingCaptcha(true);
+      const res = await fetch("/api/auth/captcha");
+      const data = await res.json();
+      if (data.status === "success") {
+        setCaptchaSvg(data.svg);
+        setCaptchaKey(data.captchaKey);
+        setCaptchaAnswer("");
+      }
+    } catch {
+      // Ignored
+    } finally {
+      setLoadingCaptcha(false);
+    }
+  }
+
+  useEffect(() => {
+    if (tab === "register") {
+      fetchCaptcha();
+    }
+  }, [tab]);
 
   if (!isOpen) return null;
 
@@ -84,10 +111,15 @@ export default function AuthModal({
           password: regPassword,
           fullName: regFullName,
           state: regState,
+          captchaAnswer,
+          captchaKey,
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to register");
+      if (!res.ok) {
+        fetchCaptcha();
+        throw new Error(data.message || "Failed to register");
+      }
 
       if (onSuccess) onSuccess();
       onClose();
@@ -304,6 +336,42 @@ export default function AuthModal({
                   onChange={(e) => setRegPassword(e.target.value)}
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-700 bg-slate-800 focus:bg-slate-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-slate-100 placeholder-slate-500"
                 />
+              </div>
+
+              {/* Security Captcha Challenge */}
+              <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-2xl">
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-slate-300">
+                    Security Verification
+                  </label>
+                  <button
+                    type="button"
+                    onClick={fetchCaptcha}
+                    disabled={loadingCaptcha}
+                    className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer"
+                    title="Generate new captcha"
+                  >
+                    <span>↻</span> {loadingCaptcha ? "Loading..." : "New Code"}
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div
+                    className="rounded-xl overflow-hidden shadow-xs border border-slate-700 bg-slate-950 flex items-center justify-center shrink-0 cursor-pointer"
+                    onClick={fetchCaptcha}
+                    title="Click to refresh"
+                    dangerouslySetInnerHTML={{ __html: captchaSvg || "<div class='p-2 text-xs text-white'>Loading...</div>" }}
+                  />
+                  <input
+                    type="text"
+                    required
+                    maxLength={6}
+                    placeholder="Enter 4 characters"
+                    value={captchaAnswer}
+                    onChange={(e) => setCaptchaAnswer(e.target.value)}
+                    className="flex-1 px-3.5 py-2 rounded-xl bg-slate-800 border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-100 placeholder:text-slate-500 outline-none text-xs font-mono font-bold tracking-widest uppercase transition"
+                  />
+                </div>
               </div>
 
               <button

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
@@ -24,8 +24,33 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState("");
   const [state, setState] = useState("");
   const [password, setPassword] = useState("");
+  const [captchaSvg, setCaptchaSvg] = useState("");
+  const [captchaKey, setCaptchaKey] = useState("");
+  const [captchaAnswer, setCaptchaAnswer] = useState("");
+  const [loadingCaptcha, setLoadingCaptcha] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  async function fetchCaptcha() {
+    try {
+      setLoadingCaptcha(true);
+      const res = await fetch("/api/auth/captcha");
+      const data = await res.json();
+      if (data.status === "success") {
+        setCaptchaSvg(data.svg);
+        setCaptchaKey(data.captchaKey);
+        setCaptchaAnswer("");
+      }
+    } catch {
+      // Ignored
+    } finally {
+      setLoadingCaptcha(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchCaptcha();
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -42,10 +67,15 @@ export default function RegisterPage() {
           fullName,
           state,
           password,
+          captchaAnswer,
+          captchaKey,
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to create account");
+      if (!res.ok) {
+        fetchCaptcha(); // Refresh captcha on failure
+        throw new Error(data.message || "Failed to create account");
+      }
 
       router.push(`/profile/${data.user.username}`);
       router.refresh();
@@ -167,6 +197,42 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-300 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100 text-gray-900 placeholder:text-gray-400 outline-none text-xs transition"
             />
+          </div>
+
+          {/* Security Captcha Challenge */}
+          <div className="p-3 bg-slate-900/5 dark:bg-slate-800/40 border border-gray-200 dark:border-slate-700 rounded-2xl">
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-bold text-gray-700 dark:text-slate-200">
+                Security Verification (Captcha)
+              </label>
+              <button
+                type="button"
+                onClick={fetchCaptcha}
+                disabled={loadingCaptcha}
+                className="text-[11px] font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1 cursor-pointer"
+                title="Generate new captcha"
+              >
+                <span>↻</span> {loadingCaptcha ? "Loading..." : "New Code"}
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div
+                className="rounded-xl overflow-hidden shadow-xs border border-slate-700 bg-slate-950 flex items-center justify-center shrink-0 cursor-pointer"
+                onClick={fetchCaptcha}
+                title="Click to refresh"
+                dangerouslySetInnerHTML={{ __html: captchaSvg || "<div class='p-2 text-xs text-white'>Loading...</div>" }}
+              />
+              <input
+                type="text"
+                required
+                maxLength={6}
+                placeholder="Enter 4 characters"
+                value={captchaAnswer}
+                onChange={(e) => setCaptchaAnswer(e.target.value)}
+                className="flex-1 px-3.5 py-2.5 rounded-xl bg-white border border-gray-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 text-gray-900 placeholder:text-gray-400 outline-none text-xs font-mono font-bold tracking-widest uppercase transition"
+              />
+            </div>
           </div>
 
           <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-2 text-emerald-800 text-xs">

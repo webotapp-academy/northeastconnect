@@ -7,6 +7,7 @@ import CommentSection from "@/components/comments/CommentSection";
 import AuthModal from "@/components/auth/AuthModal";
 import GoogleAd from "@/components/GoogleAd";
 import AddaAutocompleteInput from "@/components/common/AddaAutocompleteInput";
+import PostMediaCarousel from "@/components/common/PostMediaCarousel";
 
 const NE_STATES = [
   { name: "All States", icon: "🌿", tag: "All" },
@@ -209,7 +210,8 @@ export default function SocialHomeFeed({
   // Post composer state
   const [newContent, setNewContent] = useState("");
   const [taggedLocation, setTaggedLocation] = useState("");
-  const [mediaUrl, setMediaUrl] = useState("");
+  const [attachedPhotos, setAttachedPhotos] = useState<string[]>([]);
+  const [manualMediaUrl, setManualMediaUrl] = useState("");
   const [showMediaInput, setShowMediaInput] = useState(false);
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -251,17 +253,20 @@ export default function SocialHomeFeed({
     try {
       setUploadingMedia(true);
       const formData = new FormData();
-      formData.append("files", files[0]);
+      const count = Math.min(files.length, 6);
+      for (let i = 0; i < count; i++) {
+        formData.append("files", files[i]);
+      }
 
-      const res = await fetch("/api/upload", {
+      const res = await fetch("/api/upload?folder=community", {
         method: "POST",
         body: formData,
       });
       const data = await res.json();
-      if (data.status === "success" && data.urls && data.urls[0]) {
-        setMediaUrl(data.urls[0]);
+      if (data.status === "success" && Array.isArray(data.urls) && data.urls.length > 0) {
+        setAttachedPhotos((prev) => [...prev, ...data.urls].slice(0, 6));
         setShowMediaInput(false);
-        showToast("📸 Photo attached successfully!");
+        showToast(`📸 ${data.urls.length > 1 ? `${data.urls.length} photos` : "Photo"} attached!`);
       } else {
         showToast(data.message || "Failed to upload photo");
       }
@@ -563,13 +568,17 @@ export default function SocialHomeFeed({
     try {
       setSubmitting(true);
       const postLocation = taggedLocation.trim() || selectedAdda || null;
+      const finalMedia = attachedPhotos.length > 0
+        ? attachedPhotos.join(",")
+        : manualMediaUrl.trim() || null;
+
       const res = await fetch("/api/community/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: newContent.trim(),
           taggedLocation: postLocation,
-          mediaUrls: mediaUrl.trim() || null,
+          mediaUrls: finalMedia,
         }),
       });
       const data = await res.json();
@@ -577,9 +586,10 @@ export default function SocialHomeFeed({
         setPosts([data.post, ...posts]);
         setNewContent("");
         if (!selectedAdda) setTaggedLocation("");
-        setMediaUrl("");
+        setAttachedPhotos([]);
+        setManualMediaUrl("");
         setShowMediaInput(false);
-        showToast("✨ Post published to adda feed!");
+        showToast("✨ Post published with photo carousel! (+20 XP)");
         fetchMe();
       }
     } catch (err) {
@@ -967,24 +977,41 @@ export default function SocialHomeFeed({
                     className="w-full bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-3 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition resize-none"
                   />
 
-                  {/* Real-time Attached Photo Preview */}
-                  {mediaUrl && (
-                    <div className="relative mt-2.5 inline-block group">
-                      <div className="relative rounded-2xl overflow-hidden border border-emerald-500/30 bg-slate-100 dark:bg-slate-800 shadow-sm max-w-xs">
-                        <img
-                          src={mediaUrl}
-                          alt="Post attachment"
-                          className="h-28 sm:h-32 w-auto max-w-full object-cover rounded-2xl"
-                        />
+                  {/* Real-time Attached Photo Carousel Strip Preview */}
+                  {attachedPhotos.length > 0 && (
+                    <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                      {attachedPhotos.map((url, idx) => (
+                        <div key={idx} className="relative rounded-2xl overflow-hidden border border-emerald-500/40 bg-slate-100 dark:bg-slate-800 shadow-sm shrink-0 group">
+                          <img
+                            src={url}
+                            alt={`Attachment ${idx + 1}`}
+                            className="h-20 w-20 sm:h-24 sm:w-24 object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setAttachedPhotos((prev) => prev.filter((_, i) => i !== idx))
+                            }
+                            className="absolute top-1 right-1 w-5 h-5 rounded-full bg-slate-950/85 hover:bg-rose-600 text-white flex items-center justify-center text-[10px] font-bold shadow-md cursor-pointer transition"
+                            title="Remove photo"
+                          >
+                            ✕
+                          </button>
+                          <span className="absolute bottom-1 left-1 bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded text-[9px] font-mono text-white">
+                            {idx + 1}
+                          </span>
+                        </div>
+                      ))}
+                      {attachedPhotos.length < 6 && (
                         <button
                           type="button"
-                          onClick={() => setMediaUrl("")}
-                          className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-900/85 hover:bg-rose-600 text-white flex items-center justify-center text-xs font-bold shadow-md cursor-pointer transition"
-                          title="Remove photo"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-500 flex flex-col items-center justify-center text-slate-400 hover:text-emerald-500 text-xs font-bold transition shrink-0 cursor-pointer"
                         >
-                          ✕
+                          <span className="text-base">+</span>
+                          <span>Add More</span>
                         </button>
-                      </div>
+                      )}
                     </div>
                   )}
 
@@ -994,16 +1021,22 @@ export default function SocialHomeFeed({
                       <input
                         type="url"
                         placeholder="Paste image link (e.g. https://...)"
-                        value={mediaUrl}
-                        onChange={(e) => setMediaUrl(e.target.value)}
+                        value={manualMediaUrl}
+                        onChange={(e) => setManualMediaUrl(e.target.value)}
                         className="w-full bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 transition"
                       />
                       <button
                         type="button"
-                        onClick={() => setShowMediaInput(false)}
-                        className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-bold"
+                        onClick={() => {
+                          if (manualMediaUrl.trim()) {
+                            setAttachedPhotos((prev) => [...prev, manualMediaUrl.trim()].slice(0, 6));
+                            setManualMediaUrl("");
+                          }
+                          setShowMediaInput(false);
+                        }}
+                        className="px-3 py-2 bg-emerald-600 text-white rounded-xl text-xs font-bold shrink-0"
                       >
-                        ✕
+                        Attach
                       </button>
                     </div>
                   )}
@@ -1011,11 +1044,12 @@ export default function SocialHomeFeed({
                   {/* Modern Action Bar */}
                   <div className="mt-3 flex items-center justify-between flex-wrap gap-2 pt-2.5 border-t border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-2 flex-wrap">
-                      {/* Photo Upload with Native File Picker */}
+                      {/* Photo Upload with Native Multi-File Picker */}
                       <input
                         ref={fileInputRef}
                         type="file"
                         accept="image/*"
+                        multiple
                         onChange={handleFileUpload}
                         className="hidden"
                       />
@@ -1030,11 +1064,11 @@ export default function SocialHomeFeed({
                         }}
                         disabled={uploadingMedia}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer border ${
-                          mediaUrl
+                          attachedPhotos.length > 0
                             ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-700"
                             : "bg-slate-100/90 dark:bg-slate-800/90 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-600 dark:hover:text-emerald-400 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700/80"
                         }`}
-                        title="Upload a photo"
+                        title="Upload photos (up to 6)"
                       >
                         {uploadingMedia ? (
                           <svg className="w-3.5 h-3.5 animate-spin text-emerald-500" fill="none" viewBox="0 0 24 24">
@@ -1046,7 +1080,13 @@ export default function SocialHomeFeed({
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
                         )}
-                        <span>{uploadingMedia ? "Uploading..." : mediaUrl ? "Photo Added ✓" : "Photo"}</span>
+                        <span>
+                          {uploadingMedia
+                            ? "Compressing & Uploading..."
+                            : attachedPhotos.length > 0
+                            ? `${attachedPhotos.length} Photo${attachedPhotos.length > 1 ? "s" : ""} ✓`
+                            : "Photos"}
+                        </span>
                       </button>
 
                       {/* URL Attachment Toggle */}
@@ -1442,15 +1482,9 @@ export default function SocialHomeFeed({
                           {renderPostContent(post.content)}
                         </div>
 
-                        {/* Media Attachment */}
+                        {/* Media Attachment Carousel & Lightbox Zoom */}
                         {post.mediaUrls && (
-                          <div className="mb-4 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 max-h-96">
-                            <img
-                              src={post.mediaUrls}
-                              alt="Attached post media"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
+                          <PostMediaCarousel mediaUrls={post.mediaUrls} />
                         )}
 
                         {/* Footer Action Bar */}

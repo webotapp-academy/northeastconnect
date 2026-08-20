@@ -354,8 +354,23 @@ export default function SocialHomeFeed({
 
     handlePostHash();
     window.addEventListener("hashchange", handlePostHash);
-    return () => window.removeEventListener("hashchange", handlePostHash);
-  }, [posts]);
+
+    function handleExternalPostCreated(e: any) {
+      if (e?.detail) {
+        setPosts((prev) => [e.detail, ...prev]);
+        setToastMessage("🎉 Post published (+10 XP)!");
+        setTimeout(() => setToastMessage(null), 3000);
+      } else {
+        loadPosts(selectedState, feedTab, selectedAdda, selectedHashtag);
+      }
+    }
+    window.addEventListener("northeast-post-created", handleExternalPostCreated);
+
+    return () => {
+      window.removeEventListener("hashchange", handlePostHash);
+      window.removeEventListener("northeast-post-created", handleExternalPostCreated);
+    };
+  }, [posts, selectedState, feedTab, selectedAdda, selectedHashtag]);
 
   async function fetchMe() {
     try {

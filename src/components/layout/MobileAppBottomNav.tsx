@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import AuthModal from "@/components/auth/AuthModal";
+import CreatePostModal from "@/components/community/CreatePostModal";
 
 export default function MobileAppBottomNav() {
   const pathname = usePathname();
@@ -11,6 +12,7 @@ export default function MobileAppBottomNav() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [createPostModalOpen, setCreatePostModalOpen] = useState(false);
 
   // Hide bottom nav on admin panel
   if (pathname?.startsWith("/admin")) {
@@ -51,17 +53,7 @@ export default function MobileAppBottomNav() {
       setAuthModalOpen(true);
       return;
     }
-    // If on homepage or community, focus composer or scroll to top
-    if (pathname === "/" || pathname === "/community") {
-      const composer = document.getElementById("community-composer");
-      if (composer) {
-        composer.scrollIntoView({ behavior: "smooth", block: "center" });
-        const input = composer.querySelector("textarea");
-        if (input) input.focus();
-        return;
-      }
-    }
-    router.push("/community");
+    setCreatePostModalOpen(true);
   }
 
   const isFeed = pathname === "/" || pathname === "/community";
@@ -185,6 +177,19 @@ export default function MobileAppBottomNav() {
         defaultTab="login"
         onClose={() => setAuthModalOpen(false)}
         onSuccess={() => fetchSessionAndAlerts()}
+      />
+
+      <CreatePostModal
+        currentUser={currentUser}
+        isOpen={createPostModalOpen}
+        onClose={() => setCreatePostModalOpen(false)}
+        onPostCreated={() => {
+          if (pathname === "/" || pathname === "/community") {
+            router.refresh();
+          } else {
+            router.push("/community");
+          }
+        }}
       />
     </>
   );

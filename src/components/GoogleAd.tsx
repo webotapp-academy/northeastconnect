@@ -12,7 +12,7 @@ interface GoogleAdProps {
 }
 
 export default function GoogleAd({
-  slot,
+  slot = process.env.NEXT_PUBLIC_ADSENSE_DEFAULT_SLOT || "",
   format = "auto",
   responsive = true,
   className = "",
@@ -35,7 +35,7 @@ export default function GoogleAd({
       } catch (err) {
         console.warn("AdSense push notice:", err);
       }
-    }, 150);
+    }, 200);
 
     // Watch for AdSense fill status
     const observer = new MutationObserver(() => {
@@ -53,16 +53,15 @@ export default function GoogleAd({
       observer.observe(adRef.current, { attributes: true, attributeFilter: ["data-ad-status"] });
     }
 
-    // Safety timeout: if after 3.5s AdSense hasn't filled, show clean fallback spotlight
+    // Safety timeout: if after 2.5s AdSense hasn't filled, show clean fallback spotlight
     const fallbackTimer = setTimeout(() => {
       if (adStatus === "loading" && adRef.current?.getAttribute("data-ad-status") !== "filled") {
-        // If no iframe loaded with content, treat as fallback
         const hasIframe = adRef.current?.querySelector("iframe");
         if (!hasIframe) {
           setAdStatus("unfilled");
         }
       }
-    }, 3500);
+    }, 2500);
 
     return () => {
       clearTimeout(timer);
@@ -87,8 +86,8 @@ export default function GoogleAd({
           </Link>
         </div>
 
-        {/* AdSense In-Place Container */}
-        <div className="overflow-hidden flex justify-center min-h-[90px] max-w-full items-center">
+        {/* AdSense In-Place Container (Hidden if unfilled to prevent empty void) */}
+        <div className={adStatus === "unfilled" ? "hidden" : "overflow-hidden flex justify-center min-h-[90px] max-w-full items-center"}>
           <ins
             ref={adRef}
             className="adsbygoogle"
@@ -96,7 +95,7 @@ export default function GoogleAd({
               ...style,
               display: "block",
               width: "100%",
-              minHeight: "90px",
+              minHeight: adStatus === "filled" ? "auto" : "90px",
             }}
             data-ad-client="ca-pub-9957106792444386"
             {...(slot ? { "data-ad-slot": slot } : {})}
@@ -105,9 +104,9 @@ export default function GoogleAd({
           />
         </div>
 
-        {/* Beautiful Native Fallback when AdSense is unfilled / local */}
+        {/* Native Spotlight when AdSense is unfilled / local */}
         {adStatus === "unfilled" && (
-          <div className="py-3 px-4 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-left animate-in fade-in duration-200">
+          <div className="py-3.5 px-4 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-left animate-in fade-in duration-200">
             <div>
               <div className="flex items-center gap-1.5 text-xs font-black text-slate-900 dark:text-slate-100">
                 <span>🌿</span>
@@ -119,7 +118,7 @@ export default function GoogleAd({
             </div>
             <Link
               href="/marketplace/new"
-              className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-full shadow-xs shrink-0 transition"
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-full shadow-xs shrink-0 transition"
             >
               Post Free Ad &rarr;
             </Link>

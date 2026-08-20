@@ -40,7 +40,7 @@ export default async function Home() {
       }),
       db.directory.findMany({
         where: { status: "Active" },
-        orderBy: { rating: "desc" },
+        orderBy: [{ viewsCount: "desc" }, { rating: "desc" }],
         take: 5,
         select: {
           id: true,

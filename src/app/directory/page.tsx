@@ -17,7 +17,14 @@ const NE_STATES = [
 ];
 
 interface PageProps {
-  searchParams: Promise<{ category?: string; district?: string; term?: string; page?: string; state?: string }>;
+  searchParams: Promise<{
+    category?: string;
+    district?: string;
+    term?: string;
+    page?: string;
+    state?: string;
+    sort?: string;
+  }>;
 }
 
 function formatImageSrc(imgStr: string): string {
@@ -41,7 +48,14 @@ function stripHtml(htmlStr: string | null | undefined): string {
 }
 
 export default async function DirectoryPage({ searchParams }: PageProps) {
-  const { category = "", district = "", term = "", page = "1", state = "" } = await searchParams;
+  const {
+    category = "",
+    district = "",
+    term = "",
+    page = "1",
+    state = "",
+    sort = "views",
+  } = await searchParams;
 
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
   const perPage = 12;
@@ -70,10 +84,22 @@ export default async function DirectoryPage({ searchParams }: PageProps) {
     ];
   }
 
+  let orderBy: any = [{ viewsCount: "desc" }, { id: "desc" }];
+  if (sort === "newest") {
+    orderBy = [{ id: "desc" }];
+  } else if (sort === "rating") {
+    orderBy = [{ rating: "desc" }, { reviewsCount: "desc" }, { viewsCount: "desc" }];
+  } else if (sort === "alpha") {
+    orderBy = [{ businessName: "asc" }];
+  } else {
+    // Default: Sort by most viewed listings on top
+    orderBy = [{ viewsCount: "desc" }, { id: "desc" }];
+  }
+
   const [directoryList, totalResults, categories, districts] = await Promise.all([
     db.directory.findMany({
       where,
-      orderBy: { id: "desc" },
+      orderBy,
       skip: (pageNum - 1) * perPage,
       take: perPage,
     }),
@@ -199,6 +225,17 @@ export default async function DirectoryPage({ searchParams }: PageProps) {
                 ))}
               </select>
 
+              <select
+                name="sort"
+                defaultValue={sort}
+                className="px-3.5 py-2.5 bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 rounded-full text-xs sm:text-sm text-slate-800 dark:text-slate-200 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:border-emerald-500 transition cursor-pointer font-medium"
+              >
+                <option value="views">🔥 Most Viewed (Default)</option>
+                <option value="newest">🆕 Newest Added</option>
+                <option value="rating">⭐ Highest Rated</option>
+                <option value="alpha">🔤 Name (A-Z)</option>
+              </select>
+
               <button
                 type="submit"
                 className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-full text-xs sm:text-sm font-bold transition cursor-pointer shrink-0 shadow-xs"
@@ -209,12 +246,17 @@ export default async function DirectoryPage({ searchParams }: PageProps) {
           </form>
 
           {/* Active Filter Badges */}
-          {(category || district || term || (state && state !== "All States")) && (
+          {(category || district || term || (state && state !== "All States") || (sort && sort !== "views")) && (
             <div className="flex items-center gap-2 mt-3 flex-wrap text-xs">
               <span className="text-slate-500 dark:text-slate-400 font-semibold">Active:</span>
               {state && state !== "All States" && (
                 <span className="px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 rounded-full font-bold">
                   📍 {state}
+                </span>
+              )}
+              {sort && sort !== "views" && (
+                <span className="px-2.5 py-0.5 bg-amber-50 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60 rounded-full font-bold">
+                  ⚡ Sorted: {sort === "newest" ? "Newest" : sort === "rating" ? "Highest Rated" : "Name (A-Z)"}
                 </span>
               )}
               {category && (
@@ -300,11 +342,17 @@ export default async function DirectoryPage({ searchParams }: PageProps) {
                           <Link href={detailUrl} className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition leading-snug">
                             {item.businessName}
                           </Link>
-                          {item.rating && Number(item.rating) > 0 && (
-                            <span className="text-amber-600 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/70 border border-amber-200 dark:border-amber-800/60 px-2.5 py-0.5 rounded-full text-xs font-bold shrink-0">
-                              ★ {Number(item.rating).toFixed(1)}
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 flex items-center gap-1">
+                              <span>👁️</span>
+                              <span>{(item.viewsCount || 0).toLocaleString()}</span>
                             </span>
-                          )}
+                            {item.rating && Number(item.rating) > 0 && (
+                              <span className="text-amber-600 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/70 border border-amber-200 dark:border-amber-800/60 px-2.5 py-0.5 rounded-full text-xs font-bold">
+                                ★ {Number(item.rating).toFixed(1)}
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 mt-2 leading-relaxed">
@@ -343,7 +391,7 @@ export default async function DirectoryPage({ searchParams }: PageProps) {
               <div className="flex justify-center items-center gap-2 pt-4">
                 {pageNum > 1 && (
                   <Link
-                    href={`/directory?page=${pageNum - 1}${category ? `&category=${category}` : ""}${district ? `&district=${district}` : ""}${term ? `&term=${term}` : ""}${state ? `&state=${state}` : ""}`}
+                    href={`/directory?page=${pageNum - 1}${category ? `&category=${category}` : ""}${district ? `&district=${district}` : ""}${term ? `&term=${term}` : ""}${state ? `&state=${state}` : ""}${sort ? `&sort=${sort}` : ""}`}
                     className="px-4 py-1.5 bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-full text-xs font-bold text-slate-800 dark:text-slate-200 transition"
                   >
                     &larr; Prev
@@ -354,7 +402,7 @@ export default async function DirectoryPage({ searchParams }: PageProps) {
                 </span>
                 {pageNum < totalPages && (
                   <Link
-                    href={`/directory?page=${pageNum + 1}${category ? `&category=${category}` : ""}${district ? `&district=${district}` : ""}${term ? `&term=${term}` : ""}${state ? `&state=${state}` : ""}`}
+                    href={`/directory?page=${pageNum + 1}${category ? `&category=${category}` : ""}${district ? `&district=${district}` : ""}${term ? `&term=${term}` : ""}${state ? `&state=${state}` : ""}${sort ? `&sort=${sort}` : ""}`}
                     className="px-4 py-1.5 bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-full text-xs font-bold text-slate-800 dark:text-slate-200 transition"
                   >
                     Next &rarr;

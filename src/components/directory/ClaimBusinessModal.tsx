@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 interface ClaimBusinessModalProps {
   directoryId: number;
@@ -17,6 +18,7 @@ export default function ClaimBusinessModal({
   onClose,
   onSuccess,
 }: ClaimBusinessModalProps) {
+  const [mounted, setMounted] = useState(false);
   const [claimantName, setClaimantName] = useState("");
   const [claimantEmail, setClaimantEmail] = useState("");
   const [claimantPhone, setClaimantPhone] = useState("");
@@ -33,7 +35,22 @@ export default function ClaimBusinessModal({
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  if (!isOpen || !mounted) return null;
 
   async function handleFileUpload(
     file: File,
@@ -59,10 +76,10 @@ export default function ClaimBusinessModal({
         else if (type === "utility") setUtilityBillUrl(url);
         else if (type === "id") setIdProofUrl(url);
       } else {
-        setErrorMsg(data.message || "Failed to upload document");
+        setErrorMsg(data.message || "File upload failed");
       }
     } catch {
-      setErrorMsg("Error uploading document to secure storage");
+      setErrorMsg("File upload error");
     } finally {
       if (type === "registration") setUploadingRegDoc(false);
       else if (type === "utility") setUploadingUtilityDoc(false);
@@ -73,9 +90,20 @@ export default function ClaimBusinessModal({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrorMsg("");
+    setSuccessMsg("");
 
-    if (!registrationProofUrl || !utilityBillUrl) {
-      setErrorMsg("Please upload both Business Registration Proof and Utility Bill.");
+    if (!claimantName.trim() || !claimantEmail.trim() || !claimantPhone.trim()) {
+      setErrorMsg("Please provide your name, official email, and phone number.");
+      return;
+    }
+
+    if (!registrationProofUrl) {
+      setErrorMsg("Please upload your Business Registration Certificate (GST, MSME, Trade License, etc.).");
+      return;
+    }
+
+    if (!utilityBillUrl) {
+      setErrorMsg("Please upload a Utility / Electricity Bill or location proof.");
       return;
     }
 
@@ -112,42 +140,49 @@ export default function ClaimBusinessModal({
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+  const modalContent = (
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-[999999] flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200"
+      style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0 }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-xl bg-slate-900 border border-slate-700/80 rounded-3xl p-6 sm:p-7 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col text-slate-100 my-auto"
+      >
         {/* Modal Header */}
-        <div className="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-start justify-between pb-4 border-b border-slate-800 shrink-0">
           <div>
-            <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 mb-1.5">
+            <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-1.5">
               Official Ownership Transfer
             </span>
-            <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+            <h3 className="text-lg sm:text-xl font-black text-white">
               Claim &ldquo;{businessName}&rdquo;
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-400 mt-0.5">
               Verify your ownership to manage leads, view real-time traffic, and update details.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+            className="p-1.5 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
           >
             ✕
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="overflow-y-auto py-4 space-y-4 pr-1 scrollbar-thin">
+        <div className="overflow-y-auto py-4 space-y-4 pr-1 scrollbar-thin flex-1">
           {errorMsg && (
-            <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2">
+            <div className="p-3.5 rounded-2xl bg-rose-950/60 border border-rose-800/80 text-xs font-bold text-rose-300 flex items-center gap-2">
               <span>⚠️</span>
               <span>{errorMsg}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+            <div className="p-3.5 rounded-2xl bg-emerald-950/60 border border-emerald-800/80 text-xs font-bold text-emerald-300 flex items-center gap-2">
               <span>✅</span>
               <span>{successMsg}</span>
             </div>
@@ -157,67 +192,67 @@ export default function ClaimBusinessModal({
             {/* Contact Person Details */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
-                  Your Full Name *
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                  Full Name / Owner Name *
                 </label>
                 <input
                   type="text"
                   required
+                  placeholder="e.g. Rahul Sharma"
                   value={claimantName}
                   onChange={(e) => setClaimantName(e.target.value)}
-                  placeholder="e.g. Rahul Sharma"
-                  className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-2xl px-3.5 py-2.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
-                  Mobile Number *
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
+                  Phone Number *
                 </label>
                 <input
                   type="tel"
                   required
+                  placeholder="+91 98765 43210"
                   value={claimantPhone}
                   onChange={(e) => setClaimantPhone(e.target.value)}
-                  placeholder="+91 98765 43210"
-                  className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-2xl px-3.5 py-2.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                 Official Business Email *
               </label>
               <input
                 type="email"
                 required
+                placeholder="contact@yourbusiness.com"
                 value={claimantEmail}
                 onChange={(e) => setClaimantEmail(e.target.value)}
-                placeholder="contact@yourbusiness.com"
-                className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500"
+                className="w-full bg-slate-800 border border-slate-700 rounded-2xl px-3.5 py-2.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
               />
             </div>
 
-            {/* Document Upload Section */}
-            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-3">
-              <h4 className="text-xs font-black text-slate-900 dark:text-slate-100 uppercase tracking-wider">
+            {/* Document Uploads Section */}
+            <div className="space-y-3 pt-2">
+              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
                 Verification Proof Documents
               </h4>
 
-              {/* 1. Registration Proof */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/80">
+              {/* 1. Business Registration Certificate */}
+              <div className="p-3.5 bg-slate-800/80 border border-slate-700 rounded-2xl">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    <span className="text-xs font-bold text-white block">
                       1. Business Registration Certificate *
-                    </p>
-                    <p className="text-[10px] text-slate-400">
+                    </span>
+                    <span className="text-[11px] text-slate-400">
                       GST Certificate, Trade License, MSME/Udyam, or Incorporation Document.
-                    </p>
+                    </span>
                   </div>
                   {registrationProofUrl ? (
-                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-700">
+                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-700">
                       Attached ✓
                     </span>
                   ) : null}
@@ -227,28 +262,29 @@ export default function ClaimBusinessModal({
                   <input
                     type="file"
                     accept="image/*,application/pdf"
+                    required={!registrationProofUrl}
                     onChange={(e) => {
                       if (e.target.files?.[0]) handleFileUpload(e.target.files[0], "registration");
                     }}
-                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer"
+                    className="text-xs text-slate-400 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer"
                   />
-                  {uploadingRegDoc && <span className="text-[10px] text-emerald-500 animate-pulse">Uploading...</span>}
+                  {uploadingRegDoc && <span className="text-[10px] text-emerald-400 animate-pulse">Uploading...</span>}
                 </div>
               </div>
 
-              {/* 2. Utility Bill */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/80">
+              {/* 2. Utility Bill / Electricity Bill */}
+              <div className="p-3.5 bg-slate-800/80 border border-slate-700 rounded-2xl">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                      2. Utility / Electricity Bill / Tax Receipt *
-                    </p>
-                    <p className="text-[10px] text-slate-400">
-                      Recent electricity, water, telecom bill, or municipal property tax receipt.
-                    </p>
+                    <span className="text-xs font-bold text-white block">
+                      2. Utility / Electricity Bill *
+                    </span>
+                    <span className="text-[11px] text-slate-400">
+                      Recent electricity bill, water bill, or lease deed showing business address.
+                    </span>
                   </div>
                   {utilityBillUrl ? (
-                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-700">
+                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-700">
                       Attached ✓
                     </span>
                   ) : null}
@@ -258,28 +294,29 @@ export default function ClaimBusinessModal({
                   <input
                     type="file"
                     accept="image/*,application/pdf"
+                    required={!utilityBillUrl}
                     onChange={(e) => {
                       if (e.target.files?.[0]) handleFileUpload(e.target.files[0], "utility");
                     }}
-                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer"
+                    className="text-xs text-slate-400 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer"
                   />
-                  {uploadingUtilityDoc && <span className="text-[10px] text-emerald-500 animate-pulse">Uploading...</span>}
+                  {uploadingUtilityDoc && <span className="text-[10px] text-emerald-400 animate-pulse">Uploading...</span>}
                 </div>
               </div>
 
-              {/* 3. Optional ID Proof */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-700/80">
+              {/* 3. Government ID (Optional) */}
+              <div className="p-3.5 bg-slate-800/80 border border-slate-700 rounded-2xl">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                    <span className="text-xs font-bold text-slate-300 block">
                       3. Owner Government ID (Optional)
-                    </p>
-                    <p className="text-[10px] text-slate-400">
-                      PAN Card, Aadhaar, or Passport for priority verification.
-                    </p>
+                    </span>
+                    <span className="text-[11px] text-slate-400">
+                      Aadhaar, PAN card, or Passport of authorized signatory.
+                    </span>
                   </div>
                   {idProofUrl ? (
-                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-700">
+                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-700">
                       Attached ✓
                     </span>
                   ) : null}
@@ -292,7 +329,7 @@ export default function ClaimBusinessModal({
                     onChange={(e) => {
                       if (e.target.files?.[0]) handleFileUpload(e.target.files[0], "id");
                     }}
-                    className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-700 file:text-white hover:file:bg-slate-800 cursor-pointer"
+                    className="text-xs text-slate-400 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-700 file:text-white hover:file:bg-slate-600 cursor-pointer"
                   />
                   {uploadingIdDoc && <span className="text-[10px] text-slate-400 animate-pulse">Uploading...</span>}
                 </div>
@@ -300,7 +337,7 @@ export default function ClaimBusinessModal({
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                 Additional Notes / Statement
               </label>
               <textarea
@@ -308,7 +345,7 @@ export default function ClaimBusinessModal({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Mention any additional details or relationship with the business..."
-                className="w-full bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500"
+                className="w-full bg-slate-800 border border-slate-700 rounded-2xl px-3.5 py-2.5 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
               />
             </div>
 
@@ -317,7 +354,7 @@ export default function ClaimBusinessModal({
               <button
                 type="submit"
                 disabled={submitting || uploadingRegDoc || uploadingUtilityDoc}
-                className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40 transition transform active:scale-98 cursor-pointer disabled:opacity-50"
+                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40 transition transform active:scale-98 cursor-pointer disabled:opacity-50"
               >
                 {submitting ? "Submitting for Admin Verification..." : "Submit Claim for Verification 🏢"}
               </button>
@@ -327,4 +364,6 @@ export default function ClaimBusinessModal({
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

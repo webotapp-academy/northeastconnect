@@ -47,6 +47,7 @@ model User {
   isVerified        Boolean   @default(false) @map("is_verified")
   verificationToken String?   @map("verification_token")
   resetToken        String?   @map("reset_token")
+  resetTokenExpiry  DateTime? @map("reset_token_expiry")
   status            String    @default("Active")
   acceptedTerms     Boolean   @default(true) @map("accepted_terms")
   termsAcceptedAt   DateTime? @default(now()) @map("terms_accepted_at")

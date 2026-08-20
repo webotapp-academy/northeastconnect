@@ -13,7 +13,7 @@ export default function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 animate-pulse" />
+      <div className="w-6.5 h-6.5 sm:w-8 sm:h-8 rounded-full bg-slate-200 dark:bg-slate-800 animate-pulse shrink-0" />
     );
   }
 
@@ -27,7 +27,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer shadow-xs border ${
+      className={`w-6.5 h-6.5 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-300 cursor-pointer shadow-xs border shrink-0 ${
         isDark
           ? "bg-slate-800 hover:bg-slate-700 text-amber-300 border-slate-700 hover:border-amber-400/50"
           : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300 hover:border-slate-400"
@@ -37,7 +37,7 @@ export default function ThemeToggle() {
     >
       {isDark ? (
         <svg
-          className="w-4 h-4 transition-transform duration-300 hover:rotate-12"
+          className="w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-300 hover:rotate-12"
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -45,7 +45,7 @@ export default function ThemeToggle() {
         </svg>
       ) : (
         <svg
-          className="w-4 h-4 transition-transform duration-300 hover:rotate-45"
+          className="w-3 h-3 sm:w-4 sm:h-4 transition-transform duration-300 hover:rotate-45"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

@@ -283,12 +283,12 @@ export default function NotificationDropdown({
           if (!isOpen) loadNotifications();
         }}
         type="button"
-        className="relative w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition cursor-pointer flex items-center justify-center shrink-0"
+        className="relative w-6.5 h-6.5 sm:w-8 sm:h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition cursor-pointer flex items-center justify-center shrink-0"
         aria-label="Notifications"
         title="Notifications"
       >
         <svg
-          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${unreadCount > 0 ? "animate-pulse" : ""}`}
+          className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform ${unreadCount > 0 ? "animate-pulse" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"

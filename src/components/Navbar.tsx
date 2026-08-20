@@ -115,15 +115,15 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full bg-white/90 dark:bg-[#0b0e14]/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 transition-colors">
-        <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 h-12 sm:h-14 flex items-center justify-between gap-1.5 sm:gap-6">
+      <header className="sticky top-0 z-50 w-full max-w-full overflow-hidden bg-white/90 dark:bg-[#0b0e14]/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 transition-colors">
+        <div className="w-full max-w-7xl mx-auto px-2.5 sm:px-6 h-12 sm:h-14 flex items-center justify-between gap-1 sm:gap-4">
           {/* 1. Brand Logo (Unique Typography Wordmark) */}
           <Link
             href="/"
             className="flex items-center shrink-0 group select-none py-1"
             style={{ fontFamily: "'Outfit', 'Space Grotesk', sans-serif" }}
           >
-            <span className="font-black text-sm min-[390px]:text-base sm:text-2xl tracking-[-0.03em] text-slate-900 dark:text-white transition-transform group-hover:scale-[1.02] whitespace-nowrap">
+            <span className="font-black text-[14px] min-[360px]:text-[15px] min-[400px]:text-base sm:text-2xl tracking-[-0.03em] text-slate-900 dark:text-white transition-transform group-hover:scale-[1.02] whitespace-nowrap">
               NorthEast<span className="text-emerald-500 font-black ml-0.5">Connect</span>
             </span>
           </Link>

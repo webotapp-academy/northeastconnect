@@ -418,6 +418,18 @@ model CommunityPost {
   @@map("community_posts")
 }
 
+model Hashtag {
+  id        Int      @id @default(autoincrement())
+  tag       String   @unique
+  count     Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tag])
+  @@index([count])
+  @@map("hashtags")
+}
+
 model UserActivityLog {
   id         Int      @id @default(autoincrement())
   userId     Int      @map("user_id")

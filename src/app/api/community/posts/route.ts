@@ -10,6 +10,7 @@ export async function GET(request: Request) {
     const filter = searchParams.get("filter") || "all"; // all, friends
     const state = searchParams.get("state");
     const adda = searchParams.get("adda");
+    const hashtag = searchParams.get("hashtag");
 
     const currentUser = await getCurrentUser();
 
@@ -32,6 +33,10 @@ export async function GET(request: Request) {
     const whereClause: any = { status: "Active" };
     if (userIdsFilter) whereClause.userId = { in: userIdsFilter };
     if (state && state !== "All States") whereClause.user = { state };
+    if (hashtag) {
+      const cleanTag = hashtag.replace(/^#/, "").toLowerCase();
+      whereClause.content = { contains: `#${cleanTag}`, mode: "insensitive" };
+    }
     if (adda) {
       const cleanAdda = adda.replace(/^n:/, "");
       whereClause.OR = [
@@ -178,6 +183,25 @@ export async function POST(request: Request) {
         },
       },
     });
+
+    // Extract hashtags (#tag) and upsert into database with usage counts
+    const hashtagMatches = content.match(/#([a-zA-Z0-9_]+)/g);
+    if (hashtagMatches && hashtagMatches.length > 0) {
+      const tagsArray: string[] = hashtagMatches.map((t: string) => t.replace(/^#/, "").toLowerCase().trim());
+      const uniqueTags: string[] = Array.from(new Set(tagsArray)).filter((t: string) => t.length > 0 && t.length <= 40);
+
+      for (const tag of uniqueTags) {
+        try {
+          await db.hashtag.upsert({
+            where: { tag },
+            update: { count: { increment: 1 } },
+            create: { tag, count: 1 },
+          });
+        } catch (e) {
+          console.warn("Hashtag upsert error for tag:", tag, e);
+        }
+      }
+    }
 
     // Award +20 XP
     await awardUserXp(currentUser.id, "POST", 20, "Shared a community post");

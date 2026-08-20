@@ -204,6 +204,7 @@ export default function SocialHomeFeed({
   const [totalAddaMembers, setTotalAddaMembers] = useState(0);
   const [relatedAddaNews, setRelatedAddaNews] = useState<any[]>([]);
   const [relatedAddaDirectory, setRelatedAddaDirectory] = useState<any[]>([]);
+  const [selectedHashtag, setSelectedHashtag] = useState<string | null>(null);
 
   // Post composer state
   const [newContent, setNewContent] = useState("");
@@ -371,13 +372,19 @@ export default function SocialHomeFeed({
     }
   }
 
-  async function loadPosts(state: string, tab: string, adda: string | null = null) {
+  async function loadPosts(
+    state: string,
+    tab: string,
+    adda: string | null = null,
+    hashtag: string | null = null
+  ) {
     try {
       setLoading(true);
       const queryParams = new URLSearchParams();
       if (tab === "friends") queryParams.set("filter", "friends");
       if (state !== "All States") queryParams.set("state", state);
       if (adda) queryParams.set("adda", adda);
+      if (hashtag) queryParams.set("hashtag", hashtag);
 
       const res = await fetch(`/api/community/posts?${queryParams.toString()}`);
       const data = await res.json();
@@ -393,10 +400,62 @@ export default function SocialHomeFeed({
     }
   }
 
+  function handleSelectHashtag(tag: string) {
+    const cleanTag = tag.replace(/^#/, "");
+    if (selectedHashtag === cleanTag) {
+      setSelectedHashtag(null);
+      loadPosts(selectedState, feedTab, selectedAdda, null);
+    } else {
+      setSelectedHashtag(cleanTag);
+      loadPosts(selectedState, feedTab, selectedAdda, cleanTag);
+    }
+  }
+
+  function renderPostContent(content: string) {
+    if (!content) return null;
+    const tokens = content.split(/(#[a-zA-Z0-9_]+|n:[a-zA-Z0-9_]+)/g);
+
+    return tokens.map((token, i) => {
+      if (token.startsWith("#")) {
+        const tag = token.slice(1);
+        return (
+          <button
+            key={i}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSelectHashtag(tag);
+            }}
+            className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer bg-emerald-50/70 dark:bg-emerald-950/50 px-1 py-0.5 rounded text-xs sm:text-sm"
+          >
+            {token}
+          </button>
+        );
+      }
+      if (token.startsWith("n:")) {
+        return (
+          <button
+            key={i}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleSelectAdda(token);
+            }}
+            className="font-bold text-teal-600 dark:text-teal-400 hover:underline cursor-pointer bg-teal-50/70 dark:bg-teal-950/50 px-1 py-0.5 rounded font-mono text-xs sm:text-sm"
+          >
+            {token}
+          </button>
+        );
+      }
+      return token;
+    });
+  }
+
   function handleStateChange(state: string) {
     setSelectedState(state);
     setSelectedAdda(null);
-    loadPosts(state, feedTab, null);
+    setSelectedHashtag(null);
+    loadPosts(state, feedTab, null, null);
   }
 
   async function fetchAddaMembers(addaName: string) {
@@ -418,12 +477,12 @@ export default function SocialHomeFeed({
       setSelectedAdda(null);
       setAddaMembers([]);
       setTotalAddaMembers(0);
-      loadPosts(selectedState, feedTab, null);
+      loadPosts(selectedState, feedTab, null, selectedHashtag);
     } else {
       setSelectedAdda(addaName);
       setTaggedLocation(addaName);
       fetchAddaMembers(addaName);
-      loadPosts(selectedState, feedTab, addaName);
+      loadPosts(selectedState, feedTab, addaName, selectedHashtag);
       // Smooth scroll to composer
       const composer = document.getElementById("community-composer");
       if (composer) {
@@ -894,9 +953,9 @@ export default function SocialHomeFeed({
                     placeholder={
                       currentUser
                         ? (taggedLocation || selectedAdda)
-                          ? `Post in ${taggedLocation || selectedAdda}, u/${currentUser.username}... (type n:adda to mention)`
-                          : `Share a thought with the Northeast community... (type n:gu for auto-suggest)`
-                        : `Sign in to start a discussion, ask recommendations, or share travel stories...`
+                          ? `Post in ${taggedLocation || selectedAdda}, u/${currentUser.username}... (type #tag or n:adda)`
+                          : `Share with Northeast explorers... (type #hashtag or n:adda for suggestions)`
+                        : `Sign in to share stories, ask recommendations, or tag #places...`
                     }
                     value={newContent}
                     onChange={(val) => setNewContent(val)}
@@ -1169,6 +1228,36 @@ export default function SocialHomeFeed({
               </button>
             </div>
 
+            {/* Active Filter Banner */}
+            {(selectedHashtag || selectedAdda) && (
+              <div className="mb-4 flex items-center justify-between bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700/80 rounded-2xl px-4 py-2.5 shadow-xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm">{selectedHashtag ? "🏷️" : "🌿"}</span>
+                  <span className="text-xs text-slate-700 dark:text-slate-200">
+                    Filtering by:{" "}
+                    <strong className="text-emerald-700 dark:text-emerald-300 font-mono">
+                      {selectedHashtag ? `#${selectedHashtag}` : selectedAdda}
+                    </strong>
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedHashtag) {
+                      setSelectedHashtag(null);
+                      loadPosts(selectedState, feedTab, selectedAdda, null);
+                    } else if (selectedAdda) {
+                      setSelectedAdda(null);
+                      loadPosts(selectedState, feedTab, null, selectedHashtag);
+                    }
+                  }}
+                  className="text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:text-rose-500 transition flex items-center gap-1 cursor-pointer"
+                >
+                  <span>✕ Clear</span>
+                </button>
+              </div>
+            )}
+
             {/* Feed Posts Stream (Glossy Reddit-Style Cards) */}
             {loading ? (
               <div className="py-20 text-center text-slate-400 text-xs">
@@ -1350,7 +1439,7 @@ export default function SocialHomeFeed({
 
                         {/* Content */}
                         <div className="text-slate-800 dark:text-slate-200 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap mb-3.5">
-                          {post.content}
+                          {renderPostContent(post.content)}
                         </div>
 
                         {/* Media Attachment */}

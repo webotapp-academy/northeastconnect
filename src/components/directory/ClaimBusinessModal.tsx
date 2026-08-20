@@ -354,9 +354,22 @@ export default function ClaimBusinessModal({
               <button
                 type="submit"
                 disabled={submitting || uploadingRegDoc || uploadingUtilityDoc}
-                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40 transition transform active:scale-98 cursor-pointer disabled:opacity-50"
+                className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/20 hover:shadow-emerald-600/40 transition transform active:scale-98 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {submitting ? "Submitting for Admin Verification..." : "Submit Claim for Verification 🏢"}
+                {submitting ? (
+                  <>
+                    <svg className="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                    </svg>
+                    <span>Submitting for Admin Verification...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>🏢</span>
+                    <span>Submit Claim for Verification</span>
+                  </>
+                )}
               </button>
             </div>
           </form>

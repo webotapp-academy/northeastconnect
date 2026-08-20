@@ -536,3 +536,4 @@ model MarketplaceListing {
   @@index([createdAt])
   @@map("marketplace_listings")
 }
+

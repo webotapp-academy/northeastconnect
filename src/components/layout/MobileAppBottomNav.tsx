@@ -81,33 +81,33 @@ export default function MobileAppBottomNav() {
     <>
       <nav
         aria-label="Mobile Navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#0b0e14]/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white shadow-2xl px-1 py-1 pb-[max(0.375rem,env(safe-area-inset-bottom))] transition-colors"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#0b0e14]/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white shadow-2xl px-0.5 py-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] transition-colors"
       >
-        <div className="grid grid-cols-5 items-center justify-items-center w-full max-w-lg mx-auto">
+        <div className="grid grid-cols-5 items-center justify-items-center w-full mx-auto">
           {/* 1. Feed / Home */}
           <Link
             href="/"
-            className={`flex flex-col items-center justify-center w-full py-1 text-center transition-all ${
+            className={`flex flex-col items-center justify-center w-full py-0.5 text-center transition-all ${
               isFeed
                 ? "text-emerald-600 dark:text-emerald-400 font-bold"
                 : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium"
             }`}
           >
-            <span className="text-xl leading-none mb-1">🌿</span>
-            <span className="text-[10px] tracking-tight truncate max-w-full">Community</span>
+            <span className="text-lg leading-none mb-0.5">🌿</span>
+            <span className="text-[9px] leading-tight tracking-tight whitespace-nowrap">Community</span>
           </Link>
 
           {/* 2. Explore Hub */}
           <Link
             href="/directory"
-            className={`flex flex-col items-center justify-center w-full py-1 text-center transition-all ${
+            className={`flex flex-col items-center justify-center w-full py-0.5 text-center transition-all ${
               isExplore
                 ? "text-emerald-600 dark:text-emerald-400 font-bold"
                 : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium"
             }`}
           >
-            <span className="text-xl leading-none mb-1">🧭</span>
-            <span className="text-[10px] tracking-tight truncate max-w-full">Explore</span>
+            <span className="text-lg leading-none mb-0.5">🧭</span>
+            <span className="text-[9px] leading-tight tracking-tight whitespace-nowrap">Explore</span>
           </Link>
 
           {/* 3. Center Create Post Action Button (Exact Mathematical Center) */}
@@ -115,42 +115,42 @@ export default function MobileAppBottomNav() {
             <button
               onClick={handleCreatePostClick}
               type="button"
-              className="flex flex-col items-center justify-center -mt-5 cursor-pointer group"
+              className="flex flex-col items-center justify-center -mt-4 cursor-pointer group"
               aria-label="Create Post"
             >
-              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-500 via-teal-500 to-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/30 border-2 border-white dark:border-slate-900 group-active:scale-95 transition-transform">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-500 via-teal-500 to-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/30 border-2 border-white dark:border-slate-900 group-active:scale-95 transition-transform">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                 </svg>
               </div>
-              <span className="text-[9px] text-emerald-600 dark:text-emerald-300 font-bold mt-0.5">Post</span>
+              <span className="text-[9px] leading-tight text-emerald-600 dark:text-emerald-300 font-bold mt-0.5">Post</span>
             </button>
           </div>
 
           {/* 4. News & Marketplace */}
           <Link
             href="/news"
-            className={`flex flex-col items-center justify-center w-full py-1 text-center transition-all ${
+            className={`flex flex-col items-center justify-center w-full py-0.5 text-center transition-all ${
               isNewsMarket
                 ? "text-emerald-600 dark:text-emerald-400 font-bold"
                 : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium"
             }`}
           >
-            <span className="text-xl leading-none mb-1">📰</span>
-            <span className="text-[10px] tracking-tight truncate max-w-full">News</span>
+            <span className="text-lg leading-none mb-0.5">📰</span>
+            <span className="text-[9px] leading-tight tracking-tight whitespace-nowrap">News</span>
           </Link>
 
           {/* 5. Profile / Account */}
           {currentUser ? (
             <Link
               href={`/profile/${currentUser.username}`}
-              className={`flex flex-col items-center justify-center w-full py-1 text-center transition-all relative ${
+              className={`flex flex-col items-center justify-center w-full py-0.5 text-center transition-all relative ${
                 isProfile
                   ? "text-emerald-600 dark:text-emerald-400 font-bold"
                   : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium"
               }`}
             >
-              <div className="relative mb-1 flex items-center justify-center">
+              <div className="relative mb-0.5 flex items-center justify-center">
                 <img
                   src={
                     currentUser.profileImageUrl ||
@@ -162,19 +162,19 @@ export default function MobileAppBottomNav() {
                   }`}
                 />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full border border-white dark:border-slate-900"></span>
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full border border-white dark:border-slate-900"></span>
                 )}
               </div>
-              <span className="text-[10px] tracking-tight truncate max-w-full">Profile</span>
+              <span className="text-[9px] leading-tight tracking-tight whitespace-nowrap">Profile</span>
             </Link>
           ) : (
             <button
               onClick={() => setAuthModalOpen(true)}
               type="button"
-              className="flex flex-col items-center justify-center w-full py-1 text-center transition-all text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium cursor-pointer"
+              className="flex flex-col items-center justify-center w-full py-0.5 text-center transition-all text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium cursor-pointer"
             >
-              <span className="text-xl leading-none mb-1">👤</span>
-              <span className="text-[10px] tracking-tight truncate max-w-full">Sign In</span>
+              <span className="text-lg leading-none mb-0.5">👤</span>
+              <span className="text-[9px] leading-tight tracking-tight whitespace-nowrap">Sign In</span>
             </button>
           )}
         </div>

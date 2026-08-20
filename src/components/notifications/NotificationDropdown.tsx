@@ -283,12 +283,12 @@ export default function NotificationDropdown({
           if (!isOpen) loadNotifications();
         }}
         type="button"
-        className="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-slate-100 transition cursor-pointer flex items-center justify-center border border-slate-700/80"
+        className="relative w-7.5 h-7.5 sm:w-8 sm:h-8 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition cursor-pointer flex items-center justify-center shrink-0"
         aria-label="Notifications"
         title="Notifications"
       >
         <svg
-          className={`w-5 h-5 transition-transform ${unreadCount > 0 ? "animate-pulse" : ""}`}
+          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${unreadCount > 0 ? "animate-pulse" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -302,7 +302,7 @@ export default function NotificationDropdown({
         </svg>
 
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-rose-500 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center border-2 border-slate-900 shadow-xs animate-in zoom-in-50">
+          <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-0.5 bg-rose-500 text-white text-[9px] font-extrabold rounded-full flex items-center justify-center border border-white dark:border-slate-900 shadow-xs animate-in zoom-in-50">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}

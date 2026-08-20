@@ -240,6 +240,28 @@ export default function RegisterPage() {
             <span>You&apos;ll immediately unlock the <strong>Explorer Novice</strong> Rank and +20 XP upon joining!</span>
           </div>
 
+          {/* Terms & Conditions Acceptance */}
+          <div className="flex items-start gap-2.5 pt-1">
+            <input
+              type="checkbox"
+              id="terms-checkbox"
+              required
+              defaultChecked
+              className="mt-0.5 w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+            />
+            <label htmlFor="terms-checkbox" className="text-xs text-gray-600 dark:text-slate-400 select-none cursor-pointer leading-tight">
+              I agree to the{" "}
+              <Link href="/terms" target="_blank" className="text-emerald-600 font-bold hover:underline">
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link href="/privacy" target="_blank" className="text-emerald-600 font-bold hover:underline">
+                Privacy Policy
+              </Link>{" "}
+              of North East Connect.
+            </label>
+          </div>
+
           <button
             type="submit"
             disabled={loading}

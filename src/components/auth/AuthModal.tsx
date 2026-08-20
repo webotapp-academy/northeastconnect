@@ -374,10 +374,24 @@ export default function AuthModal({
                 </div>
               </div>
 
+              {/* Terms & Conditions Acceptance */}
+              <div className="flex items-start gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="auth-modal-terms"
+                  required
+                  defaultChecked
+                  className="mt-0.5 w-3.5 h-3.5 rounded border-slate-700 bg-slate-800 text-emerald-500 focus:ring-emerald-500 cursor-pointer"
+                />
+                <label htmlFor="auth-modal-terms" className="text-[11px] text-slate-400 select-none cursor-pointer leading-tight">
+                  I agree to the Terms of Service and Privacy Policy.
+                </label>
+              </div>
+
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-gradient-to-r from-emerald-600 to-indigo-700 hover:from-emerald-500 hover:to-indigo-600 text-white font-semibold rounded-xl shadow-md transition-all disabled:opacity-50 text-sm mt-2 cursor-pointer"
+                className="w-full py-3 bg-gradient-to-r from-emerald-600 to-indigo-700 hover:from-emerald-500 hover:to-indigo-600 text-white font-semibold rounded-xl shadow-md transition-all disabled:opacity-50 text-sm mt-1 cursor-pointer"
               >
                 {loading ? "Creating Account..." : "Create Account & Get 20 XP"}
               </button>

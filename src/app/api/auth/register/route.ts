@@ -77,6 +77,8 @@ export async function POST(request: Request) {
         state: state?.trim() || null,
         city: city?.trim() || null,
         role: "User",
+        acceptedTerms: true,
+        termsAcceptedAt: new Date(),
         xpPoints: 20, // Welcome bonus
         rankTier: "Explorer Novice",
       },

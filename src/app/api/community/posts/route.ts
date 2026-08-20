@@ -203,7 +203,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // Extract mentions (@handle) and send notifications to mentioned users
+    // Extract mentions (@handle) and send notifications to mentioned users & directory owners
     const mentionMatches = content.match(/@([a-zA-Z0-9_]+)/g);
     if (mentionMatches && mentionMatches.length > 0) {
       const handles: string[] = Array.from(
@@ -212,6 +212,7 @@ export async function POST(request: Request) {
 
       for (const handle of handles) {
         try {
+          // 1. Check if handle matches a user
           const mentionedUser = await db.user.findUnique({
             where: { username: handle },
             select: { id: true },
@@ -228,6 +229,44 @@ export async function POST(request: Request) {
                 linkUrl: `/community#post-${post.id}`,
               },
             });
+          }
+
+          // 2. Check if handle matches a directory business
+          const matchingBusinesses = await db.directory.findMany({
+            where: {
+              userId: { not: null },
+              status: "Active",
+            },
+            select: {
+              id: true,
+              businessName: true,
+              userId: true,
+            },
+          });
+
+          for (const biz of matchingBusinesses) {
+            const cleanBizHandle = biz.businessName
+              .toLowerCase()
+              .replace(/[^a-z0-9_]/g, "_")
+              .replace(/^_+|_+$/g, "")
+              .slice(0, 24);
+
+            if (
+              (cleanBizHandle === handle || `biz_${biz.id}` === handle) &&
+              biz.userId &&
+              biz.userId !== currentUser.id
+            ) {
+              await db.notification.create({
+                data: {
+                  userId: biz.userId,
+                  actorId: currentUser.id,
+                  type: "BUSINESS_MENTION",
+                  title: `Your business "${biz.businessName}" was mentioned! 🏢`,
+                  message: `@${currentUser.username} mentioned your business "${biz.businessName}" in a community post.`,
+                  linkUrl: `/community#post-${post.id}`,
+                },
+              });
+            }
           }
         } catch (e) {
           console.warn("Mention notification error for:", handle, e);

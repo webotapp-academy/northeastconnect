@@ -181,6 +181,8 @@ export async function GET(request: Request) {
           passwordHash: dummyPassword,
           role: "User",
           status: "Active",
+          acceptedTerms: true,
+          termsAcceptedAt: new Date(),
           isVerified: true,
           xpPoints: 30,
           rankTier: "Explorer Novice",

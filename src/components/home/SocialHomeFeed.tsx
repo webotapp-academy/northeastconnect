@@ -220,6 +220,12 @@ export default function SocialHomeFeed({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const addaPopoverRef = useRef<HTMLDivElement | null>(null);
 
+  // Post editing & action menu state
+  const [editingPostId, setEditingPostId] = useState<number | null>(null);
+  const [editPostContent, setEditPostContent] = useState("");
+  const [editPostSaving, setEditPostSaving] = useState(false);
+  const [openPostMenuId, setOpenPostMenuId] = useState<number | null>(null);
+
   // Active expanded comments
   const [expandedCommentsPostId, setExpandedCommentsPostId] = useState<number | null>(null);
 
@@ -609,6 +615,50 @@ export default function SocialHomeFeed({
       console.error(err);
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleSaveEditPost(postId: number) {
+    if (!editPostContent.trim()) return;
+    try {
+      setEditPostSaving(true);
+      const res = await fetch(`/api/community/posts/${postId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: editPostContent.trim() }),
+      });
+      const data = await res.json();
+      if (data.status === "success" && data.post) {
+        setPosts((prev) =>
+          prev.map((p) => (p.id === postId ? { ...p, content: data.post.content } : p))
+        );
+        setEditingPostId(null);
+        showToast("✨ Post updated successfully!");
+      } else {
+        showToast(data.message || "Failed to update post");
+      }
+    } catch {
+      showToast("Error updating post");
+    } finally {
+      setEditPostSaving(false);
+    }
+  }
+
+  async function handleDeletePost(postId: number) {
+    if (!confirm("Are you sure you want to permanently delete this post?")) return;
+    try {
+      const res = await fetch(`/api/community/posts/${postId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.status === "success") {
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
+        showToast("🗑️ Post deleted successfully.");
+      } else {
+        showToast(data.message || "Failed to delete post");
+      }
+    } catch {
+      showToast("Error deleting post");
     }
   }
 
@@ -1480,20 +1530,96 @@ export default function SocialHomeFeed({
                             </div>
                           </div>
 
-                          <div className="shrink-0">
+                          <div className="flex items-center gap-2 shrink-0">
                             <RankBadge
                               rankTier={post.user.rankTier}
                               xpPoints={post.user.xpPoints}
                               size="sm"
                               showLevel={false}
                             />
+
+                            {/* Author / Admin Action Dropdown */}
+                            {currentUser && (currentUser.id === post.user.id || currentUser.role === "Admin" || currentUser.role === "SuperAdmin") && (
+                              <div className="relative">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenPostMenuId(openPostMenuId === post.id ? null : post.id);
+                                  }}
+                                  className="p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer text-xs font-bold"
+                                  title="Post options"
+                                >
+                                  •••
+                                </button>
+
+                                {openPostMenuId === post.id && (
+                                  <div
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="absolute right-0 mt-1 w-32 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1 z-30 animate-in fade-in duration-100 text-xs"
+                                  >
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setEditingPostId(post.id);
+                                        setEditPostContent(post.content);
+                                        setOpenPostMenuId(null);
+                                      }}
+                                      className="w-full flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold transition text-left cursor-pointer"
+                                    >
+                                      <span>✏️</span>
+                                      <span>Edit</span>
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setOpenPostMenuId(null);
+                                        handleDeletePost(post.id);
+                                      }}
+                                      className="w-full flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/60 text-rose-600 dark:text-rose-400 font-semibold transition text-left cursor-pointer"
+                                    >
+                                      <span>🗑️</span>
+                                      <span>Delete</span>
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
 
-                        {/* Content */}
-                        <div className="text-slate-800 dark:text-slate-200 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap mb-3.5">
-                          {renderPostContent(post.content)}
-                        </div>
+                        {/* Content or Inline Editor */}
+                        {editingPostId === post.id ? (
+                          <div className="mb-3.5 space-y-2 animate-in fade-in duration-150">
+                            <textarea
+                              rows={3}
+                              value={editPostContent}
+                              onChange={(e) => setEditPostContent(e.target.value)}
+                              className="w-full bg-slate-50 dark:bg-slate-800 border border-emerald-500 rounded-2xl p-3 text-xs sm:text-sm text-slate-900 dark:text-slate-100 focus:outline-none"
+                            />
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setEditingPostId(null)}
+                                className="px-3 py-1 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSaveEditPost(post.id)}
+                                disabled={editPostSaving}
+                                className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer disabled:opacity-50"
+                              >
+                                {editPostSaving ? "Saving..." : "Save Changes"}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-slate-800 dark:text-slate-200 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap mb-3.5">
+                            {renderPostContent(post.content)}
+                          </div>
+                        )}
 
                         {/* Media Attachment Carousel & Lightbox Zoom */}
                         {post.mediaUrls && (

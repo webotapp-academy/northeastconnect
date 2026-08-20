@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import EditListingModal from "@/components/directory/EditListingModal";
 
 export default function MyBusinessesDashboardPage() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function MyBusinessesDashboardPage() {
   const [totalLeads, setTotalLeads] = useState(0);
   const [loading, setLoading] = useState(true);
   const [expandedBusinessId, setExpandedBusinessId] = useState<number | null>(null);
+  const [editingBusiness, setEditingBusiness] = useState<any | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -212,6 +214,16 @@ export default function MyBusinessesDashboardPage() {
                         <span>{isExpanded ? "▲" : "▼"}</span>
                       </button>
 
+                      <button
+                        type="button"
+                        onClick={() => setEditingBusiness(biz)}
+                        className="px-3.5 py-1.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-bold border border-indigo-200 dark:border-indigo-800/60 transition flex items-center gap-1.5 cursor-pointer"
+                        title="Edit business details for admin review"
+                      >
+                        <span>✏️</span>
+                        <span>Edit Details</span>
+                      </button>
+
                       <Link
                         href={`/directory/${biz.id}`}
                         target="_blank"
@@ -290,6 +302,15 @@ export default function MyBusinessesDashboardPage() {
               );
             })}
           </div>
+        )}
+
+        {/* Edit Listing Modal */}
+        {editingBusiness && (
+          <EditListingModal
+            business={editingBusiness}
+            isOpen={!!editingBusiness}
+            onClose={() => setEditingBusiness(null)}
+          />
         )}
       </div>
     </div>

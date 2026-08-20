@@ -198,6 +198,21 @@ export default async function ListingDetailPage({ params }: PageProps) {
               businessName={business.businessName}
               isClaimed={business.isClaimed}
               ownerId={business.userId}
+              business={{
+                id: business.id,
+                businessName: business.businessName,
+                category: business.category,
+                subcategory: business.subcategory,
+                description: business.description,
+                address: business.address,
+                district: business.district,
+                city: business.city,
+                contactNumber: business.contactNumber,
+                email: business.email,
+                website: business.website,
+                workingHours: business.workingHours,
+                imageUrls: business.imageUrls,
+              }}
             />
           </div>
 

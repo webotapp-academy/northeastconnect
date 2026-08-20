@@ -12,6 +12,7 @@ const navItems = [
   { href: "/admin", label: "Dashboard", icon: "🏠", exact: true },
   { href: "/admin/directory", label: "Directory", icon: "📇" },
   { href: "/admin/directory/claims", label: "Business Claims", icon: "🏢" },
+  { href: "/admin/directory/edits", label: "Listing Edits", icon: "📝" },
   { href: "/admin/news", label: "News", icon: "📰" },
   { href: "/admin/culture", label: "Culture", icon: "🎭" },
   { href: "/admin/adventure", label: "Adventure", icon: "🏔️" },

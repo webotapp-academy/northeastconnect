@@ -77,6 +77,11 @@ export default function NotificationDropdown({
   const [loading, setLoading] = useState(false);
   const [filterTab, setFilterTab] = useState<"all" | "friends" | "comments" | "activity">("all");
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
+  
+  // Track resolved friend requests by notificationId or actorId
+  const [resolvedRequests, setResolvedRequests] = useState<Record<number, "ACCEPTED" | "DECLINED">>({});
+  // Track existing accepted friends IDs to know if request was already accepted
+  const [acceptedFriendActorIds, setAcceptedFriendActorIds] = useState<number[]>([]);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -102,11 +107,21 @@ export default function NotificationDropdown({
 
   async function loadNotifications() {
     try {
-      const res = await fetch("/api/notifications");
-      const data = await res.json();
-      if (data.status === "success") {
-        setNotifications(data.notifications || []);
-        setUnreadCount(data.unreadCount || 0);
+      const [notifRes, friendsRes] = await Promise.all([
+        fetch("/api/notifications"),
+        fetch("/api/friends"),
+      ]);
+      const notifData = await notifRes.json();
+      const friendsData = await friendsRes.json();
+
+      if (notifData.status === "success") {
+        setNotifications(notifData.notifications || []);
+        setUnreadCount(notifData.unreadCount || 0);
+      }
+
+      if (friendsData.status === "success" && friendsData.friends) {
+        const friendIds = friendsData.friends.map((f: any) => f.user?.id).filter(Boolean);
+        setAcceptedFriendActorIds(friendIds);
       }
     } catch (err) {
       console.error("Failed to load notifications:", err);
@@ -167,7 +182,7 @@ export default function NotificationDropdown({
       const friendsRes = await fetch("/api/friends");
       const friendsData = await friendsRes.json();
       const pendingReq = friendsData.pendingIncoming?.find(
-        (req: any) => req.sender.id === actorId || req.senderId === actorId
+        (req: any) => req.sender?.id === actorId || req.senderId === actorId
       );
 
       if (pendingReq) {
@@ -185,11 +200,20 @@ export default function NotificationDropdown({
         body: JSON.stringify({ notificationId }),
       });
 
+      // Update local state to immediately show "Accepted" or "Declined"
+      setResolvedRequests((prev) => ({
+        ...prev,
+        [notificationId]: action === "ACCEPT" ? "ACCEPTED" : "DECLINED",
+      }));
+
+      if (action === "ACCEPT") {
+        setAcceptedFriendActorIds((prev) => [...prev, actorId]);
+      }
+
       setNotifications((prev) =>
         prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n))
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
-      loadNotifications();
       if (onNotificationUpdate) onNotificationUpdate();
     } catch (err) {
       console.error("Friend action error:", err);
@@ -325,6 +349,10 @@ export default function NotificationDropdown({
               filteredNotifications.map((n) => {
                 const icon = getNotificationIcon(n.type);
                 const isFriendRequest = n.type === "FRIEND_REQUEST";
+                const isResolvedAccepted =
+                  resolvedRequests[n.id] === "ACCEPTED" ||
+                  (n.actorId && acceptedFriendActorIds.includes(n.actorId));
+                const isResolvedDeclined = resolvedRequests[n.id] === "DECLINED";
 
                 return (
                   <div
@@ -376,21 +404,43 @@ export default function NotificationDropdown({
 
                       {/* Quick Actions for Friend Requests */}
                       {isFriendRequest && n.actorId && (
-                        <div className="mt-2.5 flex items-center gap-2">
-                          <button
-                            onClick={() => handleFriendAction(n.actorId!, "ACCEPT", n.id)}
-                            disabled={actionLoadingId === n.id}
-                            className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition shadow-xs cursor-pointer disabled:opacity-50"
-                          >
-                            {actionLoadingId === n.id ? "Processing..." : "Accept"}
-                          </button>
-                          <button
-                            onClick={() => handleFriendAction(n.actorId!, "REJECT", n.id)}
-                            disabled={actionLoadingId === n.id}
-                            className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition cursor-pointer disabled:opacity-50"
-                          >
-                            Decline
-                          </button>
+                        <div className="mt-2.5">
+                          {isResolvedAccepted ? (
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-bold rounded-lg shadow-2xs animate-in zoom-in-95">
+                              <svg className="w-3.5 h-3.5 text-emerald-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                              </svg>
+                              <span>Accepted</span>
+                            </div>
+                          ) : isResolvedDeclined ? (
+                            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 border border-gray-300 text-gray-600 text-xs font-medium rounded-lg shadow-2xs">
+                              <span>Declined</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleFriendAction(n.actorId!, "ACCEPT", n.id)}
+                                disabled={actionLoadingId === n.id}
+                                className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition shadow-xs cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                              >
+                                {actionLoadingId === n.id ? (
+                                  <>
+                                    <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                    <span>Accepting...</span>
+                                  </>
+                                ) : (
+                                  "Accept"
+                                )}
+                              </button>
+                              <button
+                                onClick={() => handleFriendAction(n.actorId!, "REJECT", n.id)}
+                                disabled={actionLoadingId === n.id}
+                                className="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium rounded-lg transition cursor-pointer disabled:opacity-50"
+                              >
+                                Decline
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

@@ -6,6 +6,7 @@ import RankBadge from "@/components/profile/RankBadge";
 import CommentSection from "@/components/comments/CommentSection";
 import AuthModal from "@/components/auth/AuthModal";
 import GoogleAd from "@/components/GoogleAd";
+import AddaAutocompleteInput from "@/components/common/AddaAutocompleteInput";
 
 const NE_STATES = [
   { name: "All States", icon: "🌿", tag: "All" },
@@ -198,9 +199,11 @@ export default function SocialHomeFeed({
   const [addaSearchQuery, setAddaSearchQuery] = useState("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Active Adda real members
+  // Active Adda real members & related content
   const [addaMembers, setAddaMembers] = useState<any[]>([]);
   const [totalAddaMembers, setTotalAddaMembers] = useState(0);
+  const [relatedAddaNews, setRelatedAddaNews] = useState<any[]>([]);
+  const [relatedAddaDirectory, setRelatedAddaDirectory] = useState<any[]>([]);
 
   // Post composer state
   const [newContent, setNewContent] = useState("");
@@ -380,6 +383,8 @@ export default function SocialHomeFeed({
       const data = await res.json();
       if (data.status === "success") {
         setPosts(data.posts || []);
+        setRelatedAddaNews(data.relatedNews || []);
+        setRelatedAddaDirectory(data.relatedDirectory || []);
       }
     } catch (err) {
       console.error(err);
@@ -883,17 +888,23 @@ export default function SocialHomeFeed({
                   className="w-10 h-10 rounded-2xl object-cover border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <textarea
+                  <AddaAutocompleteInput
+                    isTextArea={true}
                     rows={2}
                     placeholder={
                       currentUser
                         ? (taggedLocation || selectedAdda)
-                          ? `Post in ${taggedLocation || selectedAdda}, u/${currentUser.username}...`
-                          : `Share a thought with the Northeast community, u/${currentUser.username}...`
+                          ? `Post in ${taggedLocation || selectedAdda}, u/${currentUser.username}... (type n:adda to mention)`
+                          : `Share a thought with the Northeast community... (type n:gu for auto-suggest)`
                         : `Sign in to start a discussion, ask recommendations, or share travel stories...`
                     }
                     value={newContent}
-                    onChange={(e) => setNewContent(e.target.value)}
+                    onChange={(val) => setNewContent(val)}
+                    onSelectAdda={(adda) => {
+                      if (!taggedLocation && !selectedAdda) {
+                        setTaggedLocation(adda.name);
+                      }
+                    }}
                     className="w-full bg-slate-50/90 dark:bg-slate-800/90 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl p-3 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition resize-none"
                   />
 
@@ -1187,6 +1198,89 @@ export default function SocialHomeFeed({
               </div>
             ) : (
               <div className="space-y-4">
+                {/* Aggregated In-Adda News & Directory Showcases */}
+                {selectedAdda && (relatedAddaNews.length > 0 || relatedAddaDirectory.length > 0) && (
+                  <div className="space-y-4 mb-2">
+                    {/* Related News Card */}
+                    {relatedAddaNews.length > 0 && (
+                      <div className="bg-gradient-to-br from-white/90 to-emerald-50/40 dark:from-slate-900/90 dark:to-emerald-950/20 backdrop-blur-xl border border-emerald-500/20 rounded-3xl p-5 shadow-sm">
+                        <div className="flex items-center justify-between mb-3.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">📰</span>
+                            <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                              Trending News in {selectedAdda}
+                            </h3>
+                          </div>
+                          <Link href="/news" className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline">
+                            View All &rarr;
+                          </Link>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          {relatedAddaNews.map((n) => (
+                            <Link
+                              key={n.id}
+                              href={`/news/${n.url || n.id}`}
+                              className="p-3 rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/60 hover:border-emerald-500 transition group flex flex-col justify-between"
+                            >
+                              <div>
+                                <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">
+                                  {n.category || "News"}
+                                </span>
+                                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition line-clamp-2 mt-1">
+                                  {n.title}
+                                </h4>
+                              </div>
+                              <span className="text-[10px] text-slate-400 font-mono mt-2 block">
+                                {n.publishedDate ? new Date(n.publishedDate).toLocaleDateString() : "Recent"}
+                              </span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Related Directory Businesses */}
+                    {relatedAddaDirectory.length > 0 && (
+                      <div className="bg-gradient-to-br from-white/90 to-blue-50/40 dark:from-slate-900/90 dark:to-blue-950/20 backdrop-blur-xl border border-blue-500/20 rounded-3xl p-5 shadow-sm">
+                        <div className="flex items-center justify-between mb-3.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">📇</span>
+                            <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-slate-100">
+                              Verified Businesses in {selectedAdda}
+                            </h3>
+                          </div>
+                          <Link href="/directory" className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline">
+                            Explore Directory &rarr;
+                          </Link>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          {relatedAddaDirectory.map((b) => (
+                            <Link
+                              key={b.id}
+                              href={`/directory/${b.id}`}
+                              className="p-3 rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/60 hover:border-blue-500 transition group flex flex-col justify-between"
+                            >
+                              <div>
+                                <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase">
+                                  {b.category || "Business"}
+                                </span>
+                                <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition line-clamp-1 mt-1">
+                                  {b.businessName}
+                                </h4>
+                                <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
+                                  📍 {b.city || b.address || "Northeast"}
+                                </p>
+                              </div>
+                              <span className="text-[10px] text-emerald-600 font-bold mt-2 block">
+                                ⭐ Verified Listing
+                              </span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {displayedPosts.map((post, idx) => {
                   const isCommentsOpen = expandedCommentsPostId === post.id;
                   const addaTag = post.taggedLocation?.startsWith("n:")

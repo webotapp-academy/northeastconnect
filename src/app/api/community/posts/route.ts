@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { awardUserXp, getRankFromXp } from "@/lib/gamification";
+import { MASTER_ADDAS } from "@/lib/addas";
 
 export async function GET(request: Request) {
   try {
@@ -58,7 +59,7 @@ export async function GET(request: Request) {
         },
       },
       orderBy: { createdAt: "desc" },
-      take: 30,
+      take: 40,
     });
 
     const formatted = posts.map((p) => ({
@@ -69,9 +70,50 @@ export async function GET(request: Request) {
       },
     }));
 
+    // Fetch matching news and directory listings for this adda wall
+    let relatedNews: any[] = [];
+    let relatedDirectory: any[] = [];
+
+    if (adda) {
+      const clean = adda.replace(/^n:/, "").toLowerCase();
+      const addaDef = MASTER_ADDAS.find(
+        (a) => a.name.toLowerCase() === adda.toLowerCase() || a.id === clean
+      );
+      const keywords = addaDef ? addaDef.keywords : [clean, adda];
+
+      relatedNews = await db.news.findMany({
+        where: {
+          status: "Published",
+          OR: [
+            { tags: { contains: adda, mode: "insensitive" } },
+            { tags: { contains: clean, mode: "insensitive" } },
+            { title: { contains: clean, mode: "insensitive" } },
+            { content: { contains: clean, mode: "insensitive" } },
+          ],
+        },
+        orderBy: { publishedDate: "desc" },
+        take: 3,
+      });
+
+      relatedDirectory = await db.directory.findMany({
+        where: {
+          status: "Active",
+          OR: [
+            { city: { contains: clean, mode: "insensitive" } },
+            { district: { contains: clean, mode: "insensitive" } },
+            { address: { contains: clean, mode: "insensitive" } },
+            { businessName: { contains: clean, mode: "insensitive" } },
+          ],
+        },
+        take: 3,
+      });
+    }
+
     return NextResponse.json({
       status: "success",
       posts: formatted,
+      relatedNews,
+      relatedDirectory,
     });
   } catch (error: any) {
     console.error("Community posts GET error:", error);
@@ -102,12 +144,21 @@ export async function POST(request: Request) {
       );
     }
 
+    // Auto-detect n:addaname in post content if not explicitly tagged
+    let finalLocation = taggedLocation?.trim() || null;
+    if (!finalLocation) {
+      const match = content.match(/(?:^|\s)(n:[a-z0-9_-]+)/i);
+      if (match) {
+        finalLocation = match[1].toLowerCase();
+      }
+    }
+
     const post = await db.communityPost.create({
       data: {
         userId: currentUser.id,
         content: content.trim(),
         mediaUrls: mediaUrls?.trim() || null,
-        taggedLocation: taggedLocation?.trim() || null,
+        taggedLocation: finalLocation,
         taggedEntityType: taggedEntityType || null,
         taggedEntityId: taggedEntityId ? parseInt(taggedEntityId, 10) : null,
         status: "Active",

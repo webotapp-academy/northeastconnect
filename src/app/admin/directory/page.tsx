@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import AddaAutocompleteInput from "@/components/common/AddaAutocompleteInput";
 
 interface DirectoryItem {
   id: number;
@@ -15,6 +16,7 @@ interface DirectoryItem {
   email: string | null;
   website: string | null;
   imageUrls: string | null;
+  tags?: string | null;
   status: string | null;
   createdAt: string;
 }
@@ -42,6 +44,7 @@ export default function AdminDirectoryPage() {
     contactNumber: "",
     email: "",
     website: "",
+    tags: "",
     status: "Active",
   });
   const [submitting, setSubmitting] = useState(false);
@@ -92,6 +95,7 @@ export default function AdminDirectoryPage() {
       contactNumber: "",
       email: "",
       website: "",
+      tags: "n:guwahati",
       status: "Active",
     });
     setModalOpen(true);
@@ -109,6 +113,7 @@ export default function AdminDirectoryPage() {
       contactNumber: item.contactNumber || "",
       email: item.email || "",
       website: item.website || "",
+      tags: item.tags || "",
       status: item.status || "Active",
     });
     setModalOpen(true);
@@ -427,6 +432,19 @@ export default function AdminDirectoryPage() {
                     className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-gray-700 mb-1">
+                  Adda / Regional Tags (Type <span className="font-mono text-emerald-600">n:gu</span> to auto-suggest)
+                </label>
+                <AddaAutocompleteInput
+                  isTextArea={false}
+                  placeholder="e.g. n:guwahati, n:assam, Rooftop Cafe"
+                  value={formData.tags}
+                  onChange={(val) => setFormData({ ...formData, tags: val })}
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
               </div>
 
               <div>

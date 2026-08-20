@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import AddaAutocompleteInput from "@/components/common/AddaAutocompleteInput";
 
 interface NewsItem {
   id: number;
@@ -12,6 +13,7 @@ interface NewsItem {
   source: string | null;
   publishedDate: string | null;
   imageUrls: string | null;
+  tags?: string | null;
   status: string | null;
 }
 
@@ -34,6 +36,7 @@ export default function AdminNewsPage() {
     source: "North East Connect",
     content: "",
     imageUrls: "",
+    tags: "",
     status: "Published",
   });
   const [submitting, setSubmitting] = useState(false);
@@ -80,6 +83,7 @@ export default function AdminNewsPage() {
       source: "North East Connect",
       content: "",
       imageUrls: "",
+      tags: "",
       status: "Published",
     });
     setModalOpen(true);
@@ -94,6 +98,7 @@ export default function AdminNewsPage() {
       source: item.source || "North East Connect",
       content: item.content || "",
       imageUrls: item.imageUrls || "",
+      tags: item.tags || "",
       status: item.status || "Published",
     });
     setModalOpen(true);
@@ -389,11 +394,26 @@ export default function AdminNewsPage() {
               </div>
 
               <div>
+                <label className="block font-bold text-gray-700 mb-1">
+                  Adda / Location Tags (Type <span className="font-mono text-emerald-600">n:gu</span> to auto-suggest)
+                </label>
+                <AddaAutocompleteInput
+                  isTextArea={false}
+                  placeholder="e.g. n:guwahati, n:assam, Guwahati, Kamrup"
+                  value={formData.tags}
+                  onChange={(val) => setFormData({ ...formData, tags: val })}
+                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
                 <label className="block font-bold text-gray-700 mb-1">Article Body Content</label>
-                <textarea
+                <AddaAutocompleteInput
+                  isTextArea={true}
                   rows={8}
+                  placeholder="Write article content here... (type n:adda to mention)"
                   value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  onChange={(val) => setFormData({ ...formData, content: val })}
                   className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>

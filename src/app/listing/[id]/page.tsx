@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import CommentSection from "@/components/comments/CommentSection";
 import DirectoryClaimButton from "@/components/directory/DirectoryClaimButton";
+import BusinessEnquiryButton from "@/components/directory/BusinessEnquiryButton";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -338,12 +339,13 @@ export default async function ListingDetailPage({ params }: PageProps) {
 
               {/* Action Button */}
               <div className="mt-8">
-                <Link
-                  href="/contact"
-                  className="w-full bg-emerald-600 text-white py-3 px-6 rounded-full hover:bg-emerald-500 transition duration-200 flex items-center justify-center font-bold text-sm shadow-xs cursor-pointer"
-                >
-                  Contact Business
-                </Link>
+                <BusinessEnquiryButton
+                  directoryId={business.id}
+                  businessName={business.businessName}
+                  businessPhone={business.contactNumber}
+                  businessEmail={business.email}
+                  label="Contact Business / Send Inquiry"
+                />
               </div>
             </div>
           </div>

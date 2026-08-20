@@ -70,6 +70,7 @@ export default function CommentSection({
   // Auth modal trigger
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [successToast, setSuccessToast] = useState("");
+  const [likingIds, setLikingIds] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     fetchSession();
@@ -201,6 +202,44 @@ export default function CommentSection({
       return;
     }
 
+    // 1. Optimistic UI update (0ms response)
+    if (!isReply) {
+      setComments((prev) =>
+        prev.map((c) =>
+          c.id === commentId
+            ? {
+                ...c,
+                isLiked: !c.isLiked,
+                likesCount: c.isLiked ? Math.max(0, c.likesCount - 1) : c.likesCount + 1,
+              }
+            : c
+        )
+      );
+    } else if (parentId) {
+      setComments((prev) =>
+        prev.map((c) => {
+          if (c.id === parentId) {
+            return {
+              ...c,
+              replies: (c.replies || []).map((r) =>
+                r.id === commentId
+                  ? {
+                      ...r,
+                      isLiked: !r.isLiked,
+                      likesCount: r.isLiked ? Math.max(0, r.likesCount - 1) : r.likesCount + 1,
+                    }
+                  : r
+              ),
+            };
+          }
+          return c;
+        })
+      );
+    }
+
+    // 2. Set loading indicator
+    setLikingIds((prev) => ({ ...prev, [commentId]: true }));
+
     try {
       const res = await fetch(`/api/comments/${commentId}/like`, {
         method: "POST",
@@ -208,6 +247,7 @@ export default function CommentSection({
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to like");
 
+      // Sync with exact server response
       if (!isReply) {
         setComments((prev) =>
           prev.map((c) =>
@@ -235,6 +275,8 @@ export default function CommentSection({
       }
     } catch (err: any) {
       console.error(err);
+    } finally {
+      setLikingIds((prev) => ({ ...prev, [commentId]: false }));
     }
   }
 
@@ -446,14 +488,21 @@ export default function CommentSection({
                           : "text-slate-500 dark:text-slate-400 hover:text-rose-500"
                       }`}
                     >
-                      <svg
-                        className={`w-4 h-4 ${comment.isLiked ? "fill-rose-500 text-rose-500" : ""}`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                      </svg>
+                      {likingIds[comment.id] ? (
+                        <svg className="w-3.5 h-3.5 animate-spin text-rose-500" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                      ) : (
+                        <svg
+                          className={`w-4 h-4 transition-transform active:scale-125 ${comment.isLiked ? "fill-rose-500 text-rose-500 scale-110" : ""}`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                      )}
                       <span>{comment.likesCount > 0 ? comment.likesCount : "Like"}</span>
                     </button>
 
@@ -570,14 +619,21 @@ export default function CommentSection({
                                   reply.isLiked ? "text-rose-500 font-semibold" : "text-slate-500 dark:text-slate-400 hover:text-rose-500"
                                 }`}
                               >
-                                <svg
-                                  className={`w-3.5 h-3.5 ${reply.isLiked ? "fill-rose-500 text-rose-500" : ""}`}
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                </svg>
+                                {likingIds[reply.id] ? (
+                                  <svg className="w-3 h-3 animate-spin text-rose-500" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                  </svg>
+                                ) : (
+                                  <svg
+                                    className={`w-3.5 h-3.5 transition-transform active:scale-125 ${reply.isLiked ? "fill-rose-500 text-rose-500 scale-110" : ""}`}
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                  </svg>
+                                )}
                                 <span>{reply.likesCount > 0 ? reply.likesCount : "Like"}</span>
                               </button>
                             </div>

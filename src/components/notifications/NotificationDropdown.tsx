@@ -180,26 +180,47 @@ export default function NotificationDropdown({
       }
     }
 
-    // Check if target URL has hash for direct post scrolling
-    const hashIndex = targetUrl.indexOf("#");
-    if (hashIndex !== -1) {
-      const hash = targetUrl.substring(hashIndex);
-      const pathname = targetUrl.substring(0, hashIndex) || "/";
+    try {
+      const parsed = new URL(targetUrl, window.location.origin);
+      const targetPath = parsed.pathname;
+      const targetHash = parsed.hash;
       const currentPath = window.location.pathname;
 
-      if (
-        currentPath === pathname ||
-        (pathname === "/" && currentPath === "") ||
-        (pathname === "/" && currentPath === "/community") ||
-        (pathname === "/community" && currentPath === "/")
-      ) {
-        window.location.hash = hash;
+      const isSamePage =
+        currentPath === targetPath ||
+        ((targetPath === "/" || targetPath === "") &&
+          (currentPath === "/" || currentPath === "" || currentPath === "/community")) ||
+        (targetPath === "/community" &&
+          (currentPath === "/" || currentPath === "" || currentPath === "/community"));
+
+      if (isSamePage && targetHash) {
+        if (window.location.hash !== targetHash) {
+          window.location.hash = targetHash;
+        }
         window.dispatchEvent(new Event("hashchange"));
+
+        const targetId = targetHash.replace("#", "");
+        setTimeout(() => {
+          const elem = document.getElementById(targetId);
+          if (elem) {
+            elem.scrollIntoView({ behavior: "smooth", block: "center" });
+            elem.classList.add("ring-2", "ring-emerald-500", "ring-offset-2");
+            setTimeout(() => {
+              elem.classList.remove("ring-2", "ring-emerald-500", "ring-offset-2");
+            }, 3500);
+          }
+        }, 100);
         return;
       }
-    }
 
-    router.push(targetUrl);
+      if (parsed.origin === window.location.origin) {
+        router.push(parsed.pathname + parsed.search + parsed.hash);
+      } else {
+        window.location.href = targetUrl;
+      }
+    } catch {
+      router.push(targetUrl);
+    }
   }
 
   async function handleFriendAction(

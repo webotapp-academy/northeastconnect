@@ -328,12 +328,29 @@ export default function SocialHomeFeed({
 
   // Handle direct navigation to post from notification hash (e.g. #post-123)
   useEffect(() => {
-    function handlePostHash() {
+    async function handlePostHash() {
       if (typeof window === "undefined") return;
       const hash = window.location.hash;
       if (hash && hash.startsWith("#post-")) {
         const postId = parseInt(hash.replace("#post-", ""), 10);
         if (!isNaN(postId)) {
+          // If post is not in current list, fetch it from API and prepend
+          const exists = posts.some((p) => p.id === postId);
+          if (!exists && posts.length > 0) {
+            try {
+              const res = await fetch(`/api/community/posts/${postId}`);
+              const data = await res.json();
+              if (data.status === "success" && data.post) {
+                setPosts((prev) => {
+                  if (prev.some((p) => p.id === postId)) return prev;
+                  return [data.post, ...prev];
+                });
+              }
+            } catch {
+              // Ignore
+            }
+          }
+
           setExpandedCommentsPostId(postId);
 
           // Allow DOM to settle and scroll to post
@@ -345,7 +362,7 @@ export default function SocialHomeFeed({
               element.classList.add("ring-2", "ring-emerald-500", "ring-offset-2");
               setTimeout(() => {
                 element.classList.remove("ring-2", "ring-emerald-500", "ring-offset-2");
-              }, 3000);
+              }, 3500);
             }
           }, 350);
         }
@@ -354,6 +371,7 @@ export default function SocialHomeFeed({
 
     handlePostHash();
     window.addEventListener("hashchange", handlePostHash);
+    window.addEventListener("popstate", handlePostHash);
 
     function handleExternalPostCreated(e: any) {
       if (e?.detail) {

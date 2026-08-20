@@ -134,3 +134,47 @@ export async function DELETE(
     );
   }
 }
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const postId = parseInt(id, 10);
+    if (isNaN(postId)) {
+      return NextResponse.json({ status: "error", message: "Invalid ID" }, { status: 400 });
+    }
+
+    const post = await db.communityPost.findUnique({
+      where: { id: postId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            fullName: true,
+            profileImageUrl: true,
+            rankTier: true,
+            xpPoints: true,
+          },
+        },
+      },
+    });
+
+    if (!post) {
+      return NextResponse.json({ status: "error", message: "Post not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      status: "success",
+      post,
+    });
+  } catch (error: any) {
+    return NextResponse.json(
+      { status: "error", message: error?.message || "Failed to fetch post" },
+      { status: 500 }
+    );
+  }
+}
+

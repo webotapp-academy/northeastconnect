@@ -30,7 +30,7 @@ async function verifySession(req: NextRequest): Promise<UserSessionPayload | nul
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isAdminPage = pathname.startsWith("/admin");

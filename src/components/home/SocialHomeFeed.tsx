@@ -193,7 +193,7 @@ export default function SocialHomeFeed({
 
   // Addas membership state
   const [addasList, setAddasList] = useState(INITIAL_ADDAS);
-  const [joinedAddas, setJoinedAddas] = useState<string[]>(["n:guwahati", "n:shillong"]);
+  const [joinedAddas, setJoinedAddas] = useState<string[]>([]);
   const [showAddasModal, setShowAddasModal] = useState(false);
   const [addaSearchQuery, setAddaSearchQuery] = useState("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -220,14 +220,6 @@ export default function SocialHomeFeed({
 
   useEffect(() => {
     fetchMe();
-    try {
-      const saved = localStorage.getItem("nec-joined-addas");
-      if (saved) {
-        setJoinedAddas(JSON.parse(saved));
-      }
-    } catch {
-      // Ignored
-    }
 
     async function loadLiveCounts() {
       try {
@@ -303,9 +295,23 @@ export default function SocialHomeFeed({
       const data = await res.json();
       if (data.status === "success" && data.user) {
         setCurrentUser(data.user);
+        try {
+          const saved = localStorage.getItem(`nec-joined-addas-${data.user.id}`);
+          if (saved) {
+            setJoinedAddas(JSON.parse(saved));
+          } else {
+            setJoinedAddas([]);
+          }
+        } catch {
+          setJoinedAddas([]);
+        }
+      } else {
+        setCurrentUser(null);
+        setJoinedAddas([]);
       }
     } catch {
-      // Ignored
+      setCurrentUser(null);
+      setJoinedAddas([]);
     }
   }
 
@@ -389,7 +395,7 @@ export default function SocialHomeFeed({
 
     setJoinedAddas(updated);
     try {
-      localStorage.setItem("nec-joined-addas", JSON.stringify(updated));
+      localStorage.setItem(`nec-joined-addas-${currentUser.id}`, JSON.stringify(updated));
     } catch {
       // Ignored
     }

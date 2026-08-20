@@ -186,7 +186,7 @@ const ALL_ADDAS = [
 export default function ExploreAddasPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [addasList, setAddasList] = useState(ALL_ADDAS);
-  const [joinedAddas, setJoinedAddas] = useState<string[]>(["n:guwahati", "n:shillong"]);
+  const [joinedAddas, setJoinedAddas] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedState, setSelectedState] = useState("All States");
@@ -195,14 +195,6 @@ export default function ExploreAddasPage() {
 
   useEffect(() => {
     fetchMe();
-    try {
-      const saved = localStorage.getItem("nec-joined-addas");
-      if (saved) {
-        setJoinedAddas(JSON.parse(saved));
-      }
-    } catch {
-      // Ignored
-    }
 
     async function loadLiveCounts() {
       try {
@@ -229,9 +221,23 @@ export default function ExploreAddasPage() {
       const data = await res.json();
       if (data.status === "success" && data.user) {
         setCurrentUser(data.user);
+        try {
+          const saved = localStorage.getItem(`nec-joined-addas-${data.user.id}`);
+          if (saved) {
+            setJoinedAddas(JSON.parse(saved));
+          } else {
+            setJoinedAddas([]);
+          }
+        } catch {
+          setJoinedAddas([]);
+        }
+      } else {
+        setCurrentUser(null);
+        setJoinedAddas([]);
       }
     } catch {
-      // Ignored
+      setCurrentUser(null);
+      setJoinedAddas([]);
     }
   }
 
@@ -261,7 +267,7 @@ export default function ExploreAddasPage() {
 
     setJoinedAddas(updated);
     try {
-      localStorage.setItem("nec-joined-addas", JSON.stringify(updated));
+      localStorage.setItem(`nec-joined-addas-${currentUser.id}`, JSON.stringify(updated));
     } catch {
       // Ignored
     }

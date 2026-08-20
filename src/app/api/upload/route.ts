@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
-import { existsSync } from "fs";
 import { getCurrentUser } from "@/lib/auth";
+import { uploadMediaFile } from "@/lib/storage";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,6 +12,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const { searchParams } = new URL(req.url);
+    const targetFolder = searchParams.get("folder") || "community";
+
     const formData = await req.formData();
     const files = formData.getAll("files") as File[];
 
@@ -24,11 +25,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "marketplace");
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
-
     const uploadedUrls: string[] = [];
 
     for (const file of files) {
@@ -37,27 +33,30 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
-      // Max size limit: 10MB per image
-      if (file.size > 10 * 1024 * 1024) {
+      // Max size limit: 15MB per raw image (will be compressed down to ~150KB WebP)
+      if (file.size > 15 * 1024 * 1024) {
         continue;
       }
 
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      // Safe clean extension
-      const ext = path.extname(file.name) || ".jpg";
-      const cleanExt = ext.toLowerCase().replace(/[^a-z0-9.]/g, "");
-      const uniqueName = `ad_${Date.now()}_${Math.random().toString(36).substring(2, 8)}${cleanExt}`;
-      const filePath = path.join(uploadDir, uniqueName);
+      // Compress and upload to YYYY/MM/DD (Cloudflare R2 or Local)
+      const result = await uploadMediaFile(buffer, file.name, {
+        folder: targetFolder,
+        maxWidth: 1920,
+        quality: 82,
+      });
 
-      await writeFile(filePath, buffer);
-      uploadedUrls.push(`/uploads/marketplace/${uniqueName}`);
+      uploadedUrls.push(result.url);
     }
 
     if (uploadedUrls.length === 0) {
       return NextResponse.json(
-        { status: "error", message: "Failed to process uploaded images. Please ensure valid image files (JPG, PNG, WebP) under 10MB." },
+        {
+          status: "error",
+          message: "Failed to process uploaded images. Please ensure valid image files (JPG, PNG, WebP) under 15MB.",
+        },
         { status: 400 }
       );
     }

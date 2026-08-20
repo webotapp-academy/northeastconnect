@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 const NE_STATES = [
   "Assam",
@@ -76,6 +77,21 @@ export default function RegisterPage() {
             <span>{errorMsg}</span>
           </div>
         )}
+
+        {/* Google One-Click Sign Up */}
+        <div className="mb-5">
+          <GoogleSignInButton
+            text="Sign up with Google (+30 XP)"
+            onError={(err) => setErrorMsg(err)}
+          />
+
+          <div className="relative my-5 flex items-center justify-center">
+            <div className="border-t border-gray-200 w-full" />
+            <span className="bg-white px-3 text-xs font-bold text-gray-400 uppercase tracking-wider absolute">
+              or register with email
+            </span>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">

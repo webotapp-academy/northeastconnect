@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -125,7 +126,7 @@ export default function AuthModal({
           <p className="text-sm text-slate-400 mt-1">
             {tab === "login"
               ? "Sign in to comment, connect with friends, and level up your Explorer Rank."
-              : "Create an account, earn your Explorer Novice badge (+20 XP), and join travelers & locals across Northeast India."}
+              : "Create an account, earn your Explorer Novice badge (+30 XP), and join travelers & locals across Northeast India."}
           </p>
 
           {/* Tab Selector */}
@@ -172,6 +173,26 @@ export default function AuthModal({
             </div>
           )}
 
+          {/* 1. Continue with Google Button */}
+          <div className="mb-5">
+            <GoogleSignInButton
+              text={tab === "login" ? "Continue with Google" : "Sign up with Google"}
+              onSuccess={() => {
+                if (onSuccess) onSuccess();
+                onClose();
+                window.location.reload();
+              }}
+              onError={(err) => setErrorMsg(err)}
+            />
+
+            <div className="relative my-4 flex items-center justify-center">
+              <div className="border-t border-slate-800 w-full" />
+              <span className="bg-slate-900 px-3 text-xs font-bold text-slate-500 uppercase tracking-wider absolute">
+                or
+              </span>
+            </div>
+          </div>
+
           {tab === "login" ? (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
@@ -207,7 +228,7 @@ export default function AuthModal({
                 disabled={loading}
                 className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl shadow-sm transition-all disabled:opacity-50 text-sm cursor-pointer"
               >
-                {loading ? "Signing in..." : "Sign In"}
+                {loading ? "Signing in..." : "Sign In with Password"}
               </button>
             </form>
           ) : (

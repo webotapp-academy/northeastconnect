@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 function LoginForm() {
   const router = useRouter();
@@ -18,7 +19,7 @@ function LoginForm() {
       ? "Admin access required. Please sign in with an administrator account."
       : errorParam === "unauthorized_role"
       ? "Access restricted to administrators only."
-      : ""
+      : errorParam || ""
   );
 
   async function handleSubmit(e: React.FormEvent) {
@@ -70,6 +71,22 @@ function LoginForm() {
           <span>{errorMsg}</span>
         </div>
       )}
+
+      {/* Google Sign In */}
+      <div className="mb-5">
+        <GoogleSignInButton
+          text="Continue with Google"
+          redirectUrl={redirectParam || "/"}
+          onError={(err) => setErrorMsg(err)}
+        />
+
+        <div className="relative my-5 flex items-center justify-center">
+          <div className="border-t border-gray-200 w-full" />
+          <span className="bg-white px-3 text-xs font-bold text-gray-400 uppercase tracking-wider absolute">
+            or sign in with password
+          </span>
+        </div>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

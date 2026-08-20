@@ -119,35 +119,36 @@ export default async function NewsDetailPage({ params }: PageProps) {
   const mainImage = imageList[0] || "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800&auto=format&fit=crop&q=60";
   const galleryImages = imageList.slice(1);
 
-  // Process article paragraphs to allow in-article sponsored banner placements
+  // Process article content to preserve ALL HTML blocks (paragraphs, tables, headings, lists, quotes)
+  // while allowing in-article sponsored banner placements cleanly
   const rawContent = article.content || "";
-  let paragraphBlocks: string[] = [];
+  let contentBlocks: string[] = [];
 
-  if (/<\s*p\b/i.test(rawContent)) {
-    // Extract HTML paragraphs
-    const matches = rawContent.match(/<p[\s\S]*?<\/p>/gi);
+  if (/<(p|table|h[1-6]|ul|ol|blockquote|div|section)/i.test(rawContent)) {
+    // Regex matching any top-level HTML element
+    const blockRegex = /<(p|table|h[1-6]|ul|ol|blockquote|div|section|figure|article)[\s\S]*?<\/\1>|<(hr|img)[^>]*\/?>/gi;
+    const matches = rawContent.match(blockRegex);
     if (matches && matches.length > 0) {
-      paragraphBlocks = matches;
+      contentBlocks = matches;
     } else {
-      paragraphBlocks = [rawContent];
+      contentBlocks = [rawContent];
     }
   } else {
     // Plain text content
     const text = rawContent.replace(/\r\n|\r/g, "\n");
     const parts = text.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
     if (parts.length > 0) {
-      paragraphBlocks = parts.map((p) => `<p>${p.replace(/\n/g, "<br />")}</p>`);
+      contentBlocks = parts.map((p) => `<p>${p.replace(/\n/g, "<br />")}</p>`);
     } else if (text.trim()) {
-      // Split long single text block by sentences if needed
       const sentences = text.match(/[^.!?]+[.!?]+/g);
       if (sentences && sentences.length >= 4) {
         const mid = Math.ceil(sentences.length / 2);
-        paragraphBlocks = [
+        contentBlocks = [
           `<p>${sentences.slice(0, mid).join(" ").trim()}</p>`,
           `<p>${sentences.slice(mid).join(" ").trim()}</p>`,
         ];
       } else {
-        paragraphBlocks = [`<p>${text.replace(/\n/g, "<br />")}</p>`];
+        contentBlocks = [`<p>${text.replace(/\n/g, "<br />")}</p>`];
       }
     }
   }
@@ -193,7 +194,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-[#0b0e14] text-slate-900 dark:text-slate-100 font-sans pt-4 sm:pt-6 pb-16 transition-colors">
+    <main className="min-h-screen bg-slate-50 dark:bg-[#0b0e14] text-slate-900 dark:text-slate-100 font-sans pt-4 pb-16 transition-colors">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdNews) }}
@@ -287,19 +288,22 @@ export default async function NewsDetailPage({ params }: PageProps) {
 
           {/* Article Body with In-Between Sponsored Banners */}
           <article className="text-slate-800 dark:text-slate-200 text-sm sm:text-base leading-[1.85] font-sans space-y-5 my-6 prose dark:prose-invert prose-emerald max-w-none">
-            {paragraphBlocks.map((block, idx) => (
+            {contentBlocks.map((block, idx) => (
               <div key={idx} className="space-y-4">
-                <div dangerouslySetInnerHTML={{ __html: block }} />
+                <div
+                  className="article-html-block overflow-x-auto"
+                  dangerouslySetInnerHTML={{ __html: block }}
+                />
 
-                {/* 1st In-Article Sponsored Banner after 2nd paragraph (or after 1st if short) */}
-                {((paragraphBlocks.length > 2 && idx === 1) || (paragraphBlocks.length === 2 && idx === 0)) && (
+                {/* 1st In-Article Sponsored Banner after 2nd block (or after 1st if short) */}
+                {((contentBlocks.length > 2 && idx === 1) || (contentBlocks.length === 2 && idx === 0)) && (
                   <div className="my-6 not-prose">
                     <GoogleAd format="horizontal" responsive={true} />
                   </div>
                 )}
 
-                {/* 2nd In-Article Sponsored Banner after 4th paragraph if article is long */}
-                {paragraphBlocks.length >= 5 && idx === 3 && (
+                {/* 2nd In-Article Sponsored Banner after 6th block if article is long */}
+                {contentBlocks.length >= 7 && idx === 5 && (
                   <div className="my-6 not-prose">
                     <GoogleAd format="horizontal" responsive={true} />
                   </div>

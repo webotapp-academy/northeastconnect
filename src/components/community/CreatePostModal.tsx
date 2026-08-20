@@ -72,26 +72,38 @@ export default function CreatePostModal({
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
+    if (!currentUser) {
+      setErrorMsg("Please sign in to upload photos");
+      return;
+    }
+
     try {
       setUploadingMedia(true);
       setErrorMsg("");
 
-      for (const file of files) {
-        if (attachedPhotos.length >= 6) break;
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("folder", "posts");
+      const remainingSlots = 6 - attachedPhotos.length;
+      const filesToUpload = files.slice(0, remainingSlots);
 
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        const data = await res.json();
-        if (data.status === "success" && data.url) {
-          setAttachedPhotos((prev) => [...prev, data.url].slice(0, 6));
+      const formData = new FormData();
+      for (const file of filesToUpload) {
+        formData.append("files", file);
+      }
+      formData.append("folder", "posts");
+
+      const res = await fetch("/api/upload?folder=posts", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.status === "success") {
+        const newUrls = data.urls || (data.url ? [data.url] : []);
+        if (newUrls.length > 0) {
+          setAttachedPhotos((prev) => [...prev, ...newUrls].slice(0, 6));
         } else {
-          setErrorMsg(data.message || "Failed to upload image.");
+          setErrorMsg("No images could be processed.");
         }
+      } else {
+        setErrorMsg(data.message || "Failed to upload image.");
       }
     } catch {
       setErrorMsg("Network error uploading photo.");

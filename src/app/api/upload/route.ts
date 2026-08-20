@@ -13,12 +13,21 @@ export async function POST(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const targetFolder = searchParams.get("folder") || "community";
-
     const formData = await req.formData();
-    const files = formData.getAll("files") as File[];
 
-    if (!files || files.length === 0) {
+    // Support folder from formData or query param
+    const folderFromForm = formData.get("folder") as string | null;
+    const targetFolder = folderFromForm || searchParams.get("folder") || "community";
+
+    // Collect all uploaded files from any FormData field
+    const files: File[] = [];
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File && value.size > 0) {
+        files.push(value);
+      }
+    }
+
+    if (files.length === 0) {
       return NextResponse.json(
         { status: "error", message: "No files uploaded" },
         { status: 400 }
@@ -29,11 +38,11 @@ export async function POST(req: NextRequest) {
 
     for (const file of files) {
       // Validate type
-      if (!file.type.startsWith("image/")) {
+      if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
         continue;
       }
 
-      // Max size limit: 15MB per raw image (will be compressed down to ~150KB WebP)
+      // Max size limit: 15MB per raw file
       if (file.size > 15 * 1024 * 1024) {
         continue;
       }
@@ -41,7 +50,7 @@ export async function POST(req: NextRequest) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      // Compress and upload to YYYY/MM/DD (Cloudflare R2 or Local)
+      // Compress and upload
       const result = await uploadMediaFile(buffer, file.name, {
         folder: targetFolder,
         maxWidth: 1920,
@@ -55,7 +64,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           status: "error",
-          message: "Failed to process uploaded images. Please ensure valid image files (JPG, PNG, WebP) under 15MB.",
+          message: "Failed to process uploaded file. Please ensure valid image files (JPG, PNG, WebP) under 15MB.",
         },
         { status: 400 }
       );
@@ -63,6 +72,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       status: "success",
+      url: uploadedUrls[0] || "",
       urls: uploadedUrls,
     });
   } catch (error: any) {

@@ -1,8 +1,10 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
 import sharp, { OutputInfo } from "sharp";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { existsSync } from "fs";
+import https from "https";
 
 export interface UploadOptions {
   folder?: string; // e.g. "community", "marketplace", "news", "directory", "avatars"
@@ -45,6 +47,11 @@ function getR2Client(): { client: S3Client; bucket: string; publicDomain: string
     return null;
   }
 
+  const httpsAgent = new https.Agent({
+    keepAlive: true,
+    minVersion: "TLSv1.2",
+  });
+
   const client = new S3Client({
     region: "auto",
     endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
@@ -52,6 +59,9 @@ function getR2Client(): { client: S3Client; bucket: string; publicDomain: string
       accessKeyId,
       secretAccessKey,
     },
+    requestHandler: new NodeHttpHandler({
+      httpsAgent,
+    }),
   });
 
   return { client, bucket, publicDomain };

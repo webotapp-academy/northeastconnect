@@ -56,3 +56,32 @@ body {
   scrollbar-width: none;
 }
 
+/* ========================================================================= */
+/* STRICT ADSENSE RULES: NO FLOATING POPUPS / ANCHORS / VIGNETTES             */
+/* ========================================================================= */
+.adsbygoogle[data-anchor-status="displayed"],
+.adsbygoogle[data-anchor-shown="true"],
+#google_top_anchor_wrapper,
+#google_bottom_anchor_wrapper,
+.google-auto-placed,
+div[class*="grippy-host"],
+div[id^="aswift_"][style*="position: fixed"],
+div[id^="aswift_"][style*="position: absolute; z-index: 2147483647"],
+iframe[id^="aswift_"][style*="position: fixed"],
+iframe[name^="google_ads_iframe"][style*="position: fixed"],
+iframe[id^="google_ads_iframe"][style*="position: fixed"] {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  width: 0 !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}
+
+/* Ensure only legitimate in-page placeholders render ads */
+.google-ad-wrapper ins.adsbygoogle {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+

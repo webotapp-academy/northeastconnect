@@ -142,10 +142,19 @@ export default function RootLayout({
         {/* Google AdSense (Strictly manual inline banners only, no auto-ad popups/vignettes) */}
         <Script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9957106792444386"
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
+        <Script id="adsense-disable-auto-ads" strategy="afterInteractive">
+          {`
+            (window.adsbygoogle = window.adsbygoogle || []).push({
+              google_ad_client: "ca-pub-9957106792444386",
+              enable_page_level_ads: false,
+              overlays: { bottom: false, top: false }
+            });
+          `}
+        </Script>
 
         {/* Google Analytics GA4 */}
         <Script

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { setAuthCookie, hashPassword } from "@/lib/auth";
 import { awardUserXp, getRankFromXp } from "@/lib/gamification";
+import { uploadMediaFile } from "@/lib/storage";
 
 interface GoogleTokenInfo {
   iss?: string;
@@ -16,6 +17,25 @@ interface GoogleTokenInfo {
   picture?: string;
   given_name?: string;
   family_name?: string;
+}
+
+// Download remote image and store into Cloudflare R2 as WebP
+async function saveRemoteAvatarToR2(remoteUrl: string, username: string): Promise<string> {
+  try {
+    const res = await fetch(remoteUrl);
+    if (!res.ok) return remoteUrl;
+    const arrayBuffer = await res.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const result = await uploadMediaFile(buffer, `avatar_${username}.jpg`, {
+      folder: "avatars",
+      maxWidth: 512,
+      quality: 85,
+    });
+    return result.url;
+  } catch (e) {
+    console.warn("Failed to persist remote avatar to R2, fallback to original URL:", e);
+    return remoteUrl;
+  }
 }
 
 // Generate unique username from name or email
@@ -103,7 +123,7 @@ export async function POST(request: Request) {
 
     const email = googleUser.email.toLowerCase().trim();
     const fullName = googleUser.name || `${googleUser.given_name || ""} ${googleUser.family_name || ""}`.trim() || null;
-    const profileImageUrl = googleUser.picture || null;
+    const rawPicture = googleUser.picture || null;
 
     // Check if user exists in database
     let user = await db.user.findUnique({
@@ -113,10 +133,15 @@ export async function POST(request: Request) {
     let isNewUser = false;
 
     if (user) {
-      // Sync Google profile photo & full name
+      // Store avatar to Cloudflare R2 bucket
+      let finalAvatar = user.profileImageUrl;
+      if (rawPicture && (!user.profileImageUrl || user.profileImageUrl.includes("googleusercontent") || user.profileImageUrl.includes("dicebear"))) {
+        finalAvatar = await saveRemoteAvatarToR2(rawPicture, user.username);
+      }
+
       const updateData: any = {};
-      if (profileImageUrl) {
-        updateData.profileImageUrl = profileImageUrl;
+      if (finalAvatar && finalAvatar !== user.profileImageUrl) {
+        updateData.profileImageUrl = finalAvatar;
       }
       if (!user.fullName && fullName) {
         updateData.fullName = fullName;
@@ -140,12 +165,17 @@ export async function POST(request: Request) {
       const username = await generateUniqueUsername(fullName || "", email);
       const dummyPassword = await hashPassword(`google_${Date.now()}_${Math.random()}`);
 
+      let finalAvatar = null;
+      if (rawPicture) {
+        finalAvatar = await saveRemoteAvatarToR2(rawPicture, username);
+      }
+
       user = await db.user.create({
         data: {
           username,
           email,
           fullName,
-          profileImageUrl,
+          profileImageUrl: finalAvatar,
           passwordHash: dummyPassword,
           role: "User",
           status: "Active",

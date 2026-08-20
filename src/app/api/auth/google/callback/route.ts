@@ -2,6 +2,25 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { setAuthCookie, hashPassword } from "@/lib/auth";
 import { awardUserXp } from "@/lib/gamification";
+import { uploadMediaFile } from "@/lib/storage";
+
+async function saveRemoteAvatarToR2(remoteUrl: string, username: string): Promise<string> {
+  try {
+    const res = await fetch(remoteUrl);
+    if (!res.ok) return remoteUrl;
+    const arrayBuffer = await res.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const result = await uploadMediaFile(buffer, `avatar_${username}.jpg`, {
+      folder: "avatars",
+      maxWidth: 512,
+      quality: 85,
+    });
+    return result.url;
+  } catch (e) {
+    console.warn("Failed to persist remote avatar to R2, fallback to original URL:", e);
+    return remoteUrl;
+  }
+}
 
 async function generateUniqueUsername(baseName: string, email: string): Promise<string> {
   const clean = (baseName || email.split("@")[0])
@@ -120,9 +139,14 @@ export async function GET(request: Request) {
     });
 
     if (user) {
+      let finalAvatar = user.profileImageUrl;
+      if (profileImageUrl && (!user.profileImageUrl || user.profileImageUrl.includes("googleusercontent") || user.profileImageUrl.includes("dicebear"))) {
+        finalAvatar = await saveRemoteAvatarToR2(profileImageUrl, user.username);
+      }
+
       const updateData: any = {};
-      if (profileImageUrl) {
-        updateData.profileImageUrl = profileImageUrl;
+      if (finalAvatar && finalAvatar !== user.profileImageUrl) {
+        updateData.profileImageUrl = finalAvatar;
       }
       if (!user.fullName && fullName) {
         updateData.fullName = fullName;
@@ -143,12 +167,17 @@ export async function GET(request: Request) {
       const username = await generateUniqueUsername(fullName || "", email);
       const dummyPassword = await hashPassword(`google_${Date.now()}_${Math.random()}`);
 
+      let finalAvatar = null;
+      if (profileImageUrl) {
+        finalAvatar = await saveRemoteAvatarToR2(profileImageUrl, username);
+      }
+
       user = await db.user.create({
         data: {
           username,
           email,
           fullName,
-          profileImageUrl,
+          profileImageUrl: finalAvatar,
           passwordHash: dummyPassword,
           role: "User",
           status: "Active",

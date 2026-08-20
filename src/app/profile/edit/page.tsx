@@ -34,9 +34,64 @@ export default function EditProfilePage() {
   const [websiteUrl, setWebsiteUrl] = useState("");
   const [mobileNumber, setMobileNumber] = useState("");
 
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+
   useEffect(() => {
     fetchMe();
   }, []);
+
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingAvatar(true);
+      const formData = new FormData();
+      formData.append("files", file);
+
+      const res = await fetch("/api/upload?folder=avatars", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.status === "success" && data.urls?.[0]) {
+        setProfileImageUrl(data.urls[0]);
+      } else {
+        setErrorMsg(data.message || "Failed to upload avatar");
+      }
+    } catch {
+      setErrorMsg("Error uploading avatar");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
+  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingCover(true);
+      const formData = new FormData();
+      formData.append("files", file);
+
+      const res = await fetch("/api/upload?folder=covers", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.status === "success" && data.urls?.[0]) {
+        setCoverImageUrl(data.urls[0]);
+      } else {
+        setErrorMsg(data.message || "Failed to upload cover photo");
+      }
+    } catch {
+      setErrorMsg("Error uploading cover photo");
+    } finally {
+      setUploadingCover(false);
+    }
+  }
 
   async function fetchMe() {
     try {
@@ -220,32 +275,72 @@ export default function EditProfilePage() {
               />
             </div>
 
-            {/* Avatar & Cover URLs */}
+            {/* Avatar & Cover URLs with Cloudflare R2 Upload */}
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Profile Picture URL
+                  Profile Picture (Upload or URL)
                 </label>
-                <input
-                  type="url"
-                  placeholder="https://..."
-                  value={profileImageUrl}
-                  onChange={(e) => setProfileImageUrl(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 placeholder-slate-500"
-                />
+                <div className="flex items-center gap-3">
+                  {profileImageUrl && (
+                    <img
+                      src={profileImageUrl}
+                      alt="Avatar Preview"
+                      className="w-12 h-12 rounded-2xl object-cover border border-emerald-500/40 bg-slate-800 shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 flex gap-2">
+                    <input
+                      type="url"
+                      placeholder="https://... or click Upload"
+                      value={profileImageUrl}
+                      onChange={(e) => setProfileImageUrl(e.target.value)}
+                      className="flex-1 px-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 placeholder-slate-500"
+                    />
+                    <label className="px-4 py-2 bg-emerald-600/90 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5 shrink-0 transition">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        className="hidden"
+                      />
+                      {uploadingAvatar ? "Uploading..." : "📷 Upload"}
+                    </label>
+                  </div>
+                </div>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Cover Image URL
+                  Cover Banner Image (Upload or URL)
                 </label>
-                <input
-                  type="url"
-                  placeholder="https://images.unsplash.com/..."
-                  value={coverImageUrl}
-                  onChange={(e) => setCoverImageUrl(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 placeholder-slate-500"
-                />
+                <div className="flex items-center gap-3">
+                  {coverImageUrl && (
+                    <img
+                      src={coverImageUrl}
+                      alt="Cover Preview"
+                      className="w-16 h-10 rounded-xl object-cover border border-slate-700 bg-slate-800 shrink-0"
+                    />
+                  )}
+                  <div className="flex-1 flex gap-2">
+                    <input
+                      type="url"
+                      placeholder="https://... or click Upload"
+                      value={coverImageUrl}
+                      onChange={(e) => setCoverImageUrl(e.target.value)}
+                      className="flex-1 px-4 py-2 bg-slate-800 border border-slate-700 rounded-xl text-slate-100 text-xs outline-none focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500 placeholder-slate-500"
+                    />
+                    <label className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5 shrink-0 transition">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCoverUpload}
+                        className="hidden"
+                      />
+                      {uploadingCover ? "Uploading..." : "🖼️ Upload"}
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
 

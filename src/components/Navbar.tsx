@@ -115,7 +115,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full max-w-full overflow-hidden bg-white/90 dark:bg-[#0b0e14]/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 transition-colors">
+      <header className="sticky top-0 z-50 w-full max-w-full bg-white/90 dark:bg-[#0b0e14]/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 transition-colors">
         <div className="w-full max-w-7xl mx-auto px-2.5 sm:px-6 h-12 sm:h-14 flex items-center justify-between gap-1 sm:gap-4">
           {/* 1. Brand Logo (Unique Typography Wordmark) */}
           <Link

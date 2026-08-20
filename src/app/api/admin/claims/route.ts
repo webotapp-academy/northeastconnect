@@ -5,8 +5,9 @@ import { db } from "@/lib/db";
 export async function GET(request: Request) {
   try {
     const currentUser = await getCurrentUser();
-    if (!currentUser || currentUser.role !== "Admin") {
-      return NextResponse.json({ status: "error", message: "Unauthorized" }, { status: 403 });
+    const role = (currentUser?.role || "").toLowerCase();
+    if (!currentUser || (role !== "admin" && role !== "superadmin")) {
+      return NextResponse.json({ status: "error", message: "Unauthorized. Admin access required." }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);

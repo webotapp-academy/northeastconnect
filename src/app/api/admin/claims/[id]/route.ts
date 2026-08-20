@@ -9,8 +9,9 @@ export async function PUT(
 ) {
   try {
     const currentUser = await getCurrentUser();
-    if (!currentUser || currentUser.role !== "Admin") {
-      return NextResponse.json({ status: "error", message: "Unauthorized" }, { status: 403 });
+    const role = (currentUser?.role || "").toLowerCase();
+    if (!currentUser || (role !== "admin" && role !== "superadmin")) {
+      return NextResponse.json({ status: "error", message: "Unauthorized. Admin access required." }, { status: 403 });
     }
 
     const { id } = await params;

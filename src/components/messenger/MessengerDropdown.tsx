@@ -75,13 +75,13 @@ export default function MessengerDropdown({ currentUser }: MessengerDropdownProp
       {/* Messenger Top Bar Icon */}
       <button
         onClick={() => setOpen(!open)}
-        className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition cursor-pointer shrink-0"
+        className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition cursor-pointer shrink-0"
         aria-label="Friends Messenger"
         title="Messenger / Friends Chat"
       >
-        <span className="text-sm sm:text-base">💬</span>
+        <span className="text-base sm:text-lg leading-none">💬</span>
         {friends.length > 0 && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-xs">
+          <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-0.5 bg-emerald-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-xs">
             {friends.length > 9 ? "9+" : friends.length}
           </span>
         )}

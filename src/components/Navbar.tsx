@@ -119,7 +119,7 @@ export default function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-50 w-full max-w-full bg-white/90 dark:bg-[#0b0e14]/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 transition-colors">
-        <div className="w-full max-w-7xl mx-auto px-2.5 sm:px-6 h-12 sm:h-14 flex items-center justify-between gap-1 sm:gap-4">
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 h-13 sm:h-14 flex items-center justify-between gap-2 sm:gap-4">
           {/* 1. Brand Logo (Unique Typography Wordmark) */}
           <Link
             href="/"
@@ -132,16 +132,16 @@ export default function Navbar() {
           </Link>
 
           {/* 3. Right Action Items: Expandable Search, Theme Toggle, Auth & Menu */}
-          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {/* Expandable In-Place Search Input */}
             <div ref={searchContainerRef} className="relative flex items-center">
               {searchExpanded ? (
                 <form
                   onSubmit={handleNavSearchSubmit}
-                  className="flex items-center bg-slate-100 dark:bg-slate-800/90 border border-emerald-500 dark:border-emerald-500 rounded-full pl-2 pr-1.5 py-0.5 sm:py-1 shadow-sm transition-all duration-300 w-32 min-[380px]:w-40 sm:w-64 md:w-72 animate-in fade-in zoom-in-95 duration-200"
+                  className="flex items-center bg-slate-100 dark:bg-slate-800/90 border border-emerald-500 dark:border-emerald-500 rounded-full pl-2.5 pr-1.5 py-1 shadow-sm transition-all duration-300 w-36 min-[380px]:w-44 sm:w-64 md:w-72 animate-in fade-in zoom-in-95 duration-200"
                 >
                   <svg
-                    className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0 mr-1"
+                    className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mr-1.5"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -164,7 +164,7 @@ export default function Navbar() {
                       }
                     }}
                     placeholder="Search..."
-                    className="w-full bg-transparent text-[11px] sm:text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
+                    className="w-full bg-transparent text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
                   />
                   <button
                     type="button"
@@ -175,7 +175,7 @@ export default function Navbar() {
                         setSearchExpanded(false);
                       }
                     }}
-                    className="p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-bold shrink-0 cursor-pointer"
+                    className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-bold shrink-0 cursor-pointer"
                     aria-label="Close search"
                   >
                     ✕
@@ -185,11 +185,11 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={() => setSearchExpanded(true)}
-                  className="w-6.5 h-6.5 sm:w-8 sm:h-8 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition cursor-pointer shrink-0"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition cursor-pointer shrink-0"
                   aria-label="Expand Search"
                   title="Search"
                 >
-                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-4 h-4 sm:w-4.5 sm:h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -207,7 +207,7 @@ export default function Navbar() {
             </div>
 
             {currentUser ? (
-              <div className="flex items-center gap-1 sm:gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2.5">
                 <NotificationDropdown
                   currentUser={currentUser}
                   onNotificationUpdate={fetchMe}
@@ -220,7 +220,7 @@ export default function Navbar() {
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                    className="flex items-center gap-1 p-0.5 sm:p-1 sm:pr-2 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 transition cursor-pointer border border-slate-300 dark:border-slate-700/80 shrink-0"
+                    className="flex items-center gap-1.5 p-0.5 sm:p-1 sm:pr-2.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 transition cursor-pointer border border-slate-300 dark:border-slate-700/80 shrink-0"
                   >
                     <img
                       src={
@@ -228,9 +228,9 @@ export default function Navbar() {
                         `https://api.dicebear.com/7.x/bottts/svg?seed=${currentUser.username}`
                       }
                       alt={currentUser.username}
-                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-full object-cover shrink-0"
+                      className="w-7 h-7 sm:w-7.5 sm:h-7.5 rounded-full object-cover shrink-0"
                     />
-                    <span className="hidden sm:inline-block text-xs font-medium text-slate-800 dark:text-slate-200 max-w-[80px] truncate">
+                    <span className="hidden sm:inline-block text-xs font-semibold text-slate-800 dark:text-slate-200 max-w-[80px] truncate">
                       {currentUser.fullName || currentUser.username}
                     </span>
                     <svg
@@ -392,12 +392,12 @@ export default function Navbar() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setMobileOpen(true)}
-              className="lg:hidden p-1 sm:p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shrink-0"
+              className="lg:hidden w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition cursor-pointer shrink-0 ml-0.5"
               aria-label="Open menu"
               type="button"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
           </div>

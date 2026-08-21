@@ -1843,8 +1843,29 @@ export default function SocialHomeFeed({
                             </div>
                           </div>
                         ) : (
-                          <div className="text-slate-900 dark:text-slate-100 text-[15px] sm:text-base font-medium leading-snug sm:leading-relaxed whitespace-pre-wrap mb-3.5 tracking-[-0.01em]">
-                            {renderPostContent(post.content)}
+                          <div className="mb-3.5">
+                            {(() => {
+                              const isLong = post.content && post.content.length > 220;
+                              const displayContent = isLong
+                                ? post.content.slice(0, 220).trim() + "..."
+                                : post.content;
+                              return (
+                                <Link
+                                  href={`/community/${post.id}`}
+                                  className="block group/desc hover:opacity-95 transition"
+                                  title="Click to view full post thread"
+                                >
+                                  <div className="text-slate-900 dark:text-slate-100 text-[15px] sm:text-base font-medium leading-snug sm:leading-relaxed whitespace-pre-wrap tracking-[-0.01em]">
+                                    {renderPostContent(displayContent)}
+                                    {isLong && (
+                                      <span className="inline-flex items-center gap-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 group-hover/desc:underline ml-1.5 align-baseline">
+                                        Read more &rarr;
+                                      </span>
+                                    )}
+                                  </div>
+                                </Link>
+                              );
+                            })()}
                           </div>
                         )}
 
@@ -1884,16 +1905,6 @@ export default function SocialHomeFeed({
                                 </button>
                               );
                             })()}
-
-                            {/* Reddit-Style Permalink Thread Button */}
-                            <Link
-                              href={`/community/${post.id}`}
-                              className="px-3 sm:px-3.5 py-1.5 bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 rounded-full font-bold text-xs sm:text-[13px] flex items-center gap-1.5 border border-slate-200 dark:border-slate-700/60 transition cursor-pointer active:scale-95 shadow-xs"
-                              title="Open post in dedicated page"
-                            >
-                              <span>🔗</span>
-                              <span className="hidden sm:inline">Thread</span>
-                            </Link>
 
                             <ShareButton
                               url={`/community/${post.id}`}

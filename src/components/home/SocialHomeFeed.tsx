@@ -1949,7 +1949,7 @@ export default function SocialHomeFeed({
 
                             {/* Embedded Reposted Post Card (Facebook-Style) */}
                             {post.originalPost && (
-                              <div className="mt-3 border border-slate-200 dark:border-slate-750/90 rounded-2xl p-3.5 bg-slate-50/80 dark:bg-slate-805/80 space-y-2.5">
+                              <div className="mt-3 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-3.5 bg-slate-100/90 dark:bg-slate-800/80 space-y-2.5">
                                 <div className="flex items-center justify-between gap-2">
                                   <Link
                                     href={`/profile/${post.originalPost.user?.username}`}
@@ -1984,7 +1984,7 @@ export default function SocialHomeFeed({
                                 </div>
 
                                 <Link href={`/community/${post.originalPost.id}`} className="block">
-                                  <p className="text-xs sm:text-[13px] text-slate-700 dark:text-slate-300 line-clamp-3 leading-relaxed">
+                                  <p className="text-xs sm:text-[13px] text-slate-800 dark:text-slate-200 line-clamp-3 leading-relaxed">
                                     {post.originalPost.content}
                                   </p>
                                 </Link>

@@ -261,7 +261,7 @@ export default async function SingleCommunityPostPage({ params }: PageProps) {
 
               {/* Embedded Repost Preview */}
               {post.originalPost && (
-                <div className="mb-4 border border-slate-200 dark:border-slate-750/90 rounded-2xl p-4 bg-slate-50/80 dark:bg-slate-805/80 space-y-2.5">
+                <div className="mb-4 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-4 bg-slate-100/90 dark:bg-slate-800/80 space-y-2.5">
                   <div className="flex items-center justify-between gap-2">
                     <Link
                       href={`/profile/${post.originalPost.user?.username}`}
@@ -295,7 +295,7 @@ export default async function SingleCommunityPostPage({ params }: PageProps) {
                   </div>
 
                   <Link href={`/community/${post.originalPost.id}`} className="block">
-                    <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 line-clamp-3 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 line-clamp-3 leading-relaxed">
                       {post.originalPost.content}
                     </p>
                   </Link>

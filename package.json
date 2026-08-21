@@ -1,10 +1,11 @@
 {
   "name": "northeastconnect",
-  "version": "0.6.5",
+  "version": "0.6.6",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3012",
-    "build": "next build --webpack",
+    "dev": "prisma generate && next dev -p 3012",
+    "build": "prisma generate && next build --webpack",
+    "postinstall": "prisma generate",
     "start": "next start -p 3012",
     "lint": "eslint"
   },

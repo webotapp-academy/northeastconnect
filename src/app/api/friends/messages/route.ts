@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
     if (!friendIdParam) {
       // Return unread count
-      const unreadCount = await db.directMessage.count({
+      const unreadCount = await (db as any).directMessage.count({
         where: {
           receiverId: currentUser.id,
           isRead: false,
@@ -33,7 +33,7 @@ export async function GET(request: Request) {
     }
 
     // Fetch conversation history between currentUser and friend
-    const messages = await db.directMessage.findMany({
+    const messages = await (db as any).directMessage.findMany({
       where: {
         OR: [
           { senderId: currentUser.id, receiverId: friendId },
@@ -45,7 +45,7 @@ export async function GET(request: Request) {
     });
 
     // Mark unread messages from this friend as read
-    await db.directMessage.updateMany({
+    await (db as any).directMessage.updateMany({
       where: {
         senderId: friendId,
         receiverId: currentUser.id,
@@ -56,7 +56,7 @@ export async function GET(request: Request) {
       },
     });
 
-    const formattedMessages = messages.map((m) => ({
+    const formattedMessages = (messages || []).map((m: any) => ({
       id: m.id,
       sender: m.senderId === currentUser.id ? "me" : "them",
       text: m.content,
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
     }
 
     // Create persistent DirectMessage record
-    const message = await db.directMessage.create({
+    const message = await (db as any).directMessage.create({
       data: {
         senderId: currentUser.id,
         receiverId: targetUser.id,

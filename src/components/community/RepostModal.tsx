@@ -84,12 +84,12 @@ export default function RepostModal({
             onChange={(e) => setCommentary(e.target.value)}
             placeholder="Add your thoughts or commentary (optional)..."
             rows={3}
-            className="w-full p-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 transition"
+            className="w-full p-3.5 bg-slate-100 dark:bg-slate-800/90 border border-slate-300 dark:border-slate-700 focus:border-emerald-500 dark:focus:border-emerald-500 focus:bg-white dark:focus:bg-slate-800 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 transition resize-none"
           />
         </div>
 
         {/* Embedded Original Post Card Preview */}
-        <div className="border border-slate-200/90 dark:border-slate-750/90 rounded-2xl p-3.5 bg-slate-50/60 dark:bg-slate-805/60 space-y-2.5">
+        <div className="border border-slate-200 dark:border-slate-700/80 rounded-2xl p-3.5 bg-slate-50 dark:bg-slate-800/50 space-y-2.5">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
               <img
@@ -115,12 +115,12 @@ export default function RepostModal({
             />
           </div>
 
-          <p className="text-xs text-slate-700 dark:text-slate-300 line-clamp-3 leading-relaxed">
+          <p className="text-xs text-slate-800 dark:text-slate-200 line-clamp-3 leading-relaxed">
             {originalTarget.content}
           </p>
 
           {firstMedia && (
-            <div className="w-full h-32 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800">
+            <div className="w-full h-32 rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50">
               <img
                 src={firstMedia}
                 alt="Media preview"

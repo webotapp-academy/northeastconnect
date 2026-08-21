@@ -5,7 +5,7 @@ import SocialHomeFeed from "@/components/home/SocialHomeFeed";
 export const revalidate = 30;
 
 export default async function Home() {
-  const [rawPosts, latestNews, featuredDirectory, topExplorers, marketplaceDeals] =
+  const [rawPosts, latestNews, featuredDirectory, rawExplorers, marketplaceDeals] =
     await Promise.all([
       db.communityPost.findMany({
         where: { status: "Active" },
@@ -50,22 +50,42 @@ export default async function Home() {
           rating: true,
         },
       }),
-      db.user.findMany({
-        where: { status: "Active" },
-        orderBy: { xpPoints: "desc" },
-        take: 12,
-        select: {
-          id: true,
-          username: true,
-          fullName: true,
-          profileImageUrl: true,
-          rankTier: true,
-          xpPoints: true,
-          city: true,
-          state: true,
-          bio: true,
-        },
-      }),
+      Promise.all([
+        db.user.findMany({
+          where: { status: "Active" },
+          orderBy: { createdAt: "desc" },
+          take: 15,
+          select: {
+            id: true,
+            username: true,
+            fullName: true,
+            profileImageUrl: true,
+            rankTier: true,
+            xpPoints: true,
+            city: true,
+            state: true,
+            bio: true,
+            createdAt: true,
+          },
+        }),
+        db.user.findMany({
+          where: { status: "Active" },
+          orderBy: { xpPoints: "desc" },
+          take: 15,
+          select: {
+            id: true,
+            username: true,
+            fullName: true,
+            profileImageUrl: true,
+            rankTier: true,
+            xpPoints: true,
+            city: true,
+            state: true,
+            bio: true,
+            createdAt: true,
+          },
+        }),
+      ]),
       db.marketplaceListing.findMany({
         where: { status: "Active" },
         orderBy: { createdAt: "desc" },
@@ -80,6 +100,27 @@ export default async function Home() {
         },
       }),
     ]);
+
+  // Combine: Recently joined profiles on top (randomly shuffled for fresh discovery), followed by top explorers
+  const [recentUsers, topXpUsers] = rawExplorers;
+  const shuffledRecent = [...recentUsers].sort(() => Math.random() - 0.5);
+
+  const seenIds = new Set<number>();
+  const topExplorers: any[] = [];
+
+  for (const u of shuffledRecent) {
+    if (!seenIds.has(u.id)) {
+      seenIds.add(u.id);
+      topExplorers.push(u);
+    }
+  }
+
+  for (const u of topXpUsers) {
+    if (!seenIds.has(u.id)) {
+      seenIds.add(u.id);
+      topExplorers.push(u);
+    }
+  }
 
   const postIds = rawPosts.map((p) => p.id);
   const commentCounts = postIds.length > 0

@@ -1038,10 +1038,10 @@ export default function SocialHomeFeed({
               </div>
             )}
 
-            {/* Quick Post Composer (Modern Reddit / Threads Style) */}
+            {/* Quick Post Composer (Desktop / Tablet view only; Mobile uses bottom nav + button modal) */}
             <div
               id="community-composer"
-              className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] transition-all"
+              className="hidden lg:block bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] transition-all"
             >
               <div className="flex gap-3">
                 <img

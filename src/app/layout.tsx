@@ -3,7 +3,6 @@ import Script from "next/script";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MobileAppBottomNav from "@/components/layout/MobileAppBottomNav";
-import AddToHomeScreenBanner from "@/components/common/AddToHomeScreenBanner";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import "./globals.css";
 
@@ -182,7 +181,6 @@ export default function RootLayout({
       <body className="min-h-full w-full max-w-full overflow-x-hidden flex flex-col bg-slate-50 dark:bg-[#0b0e14] text-slate-900 dark:text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-white transition-colors duration-200">
         <ThemeProvider>
           <Navbar />
-          <AddToHomeScreenBanner />
           <div className="flex-1 flex flex-col pb-20 lg:pb-0 w-full max-w-full overflow-x-hidden">{children}</div>
           <Footer />
           <MobileAppBottomNav />

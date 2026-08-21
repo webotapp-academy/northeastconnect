@@ -235,11 +235,21 @@ export async function POST(request: Request) {
       }
     }
 
+    // Auto-detect image URLs in content if mediaUrls not provided
+    let finalMedia = mediaUrls?.trim() || null;
+    if (!finalMedia) {
+      const imgRegex = /(https?:\/\/[^\s"'<>]+\.(?:png|jpe?g|webp|gif|svg|avif)(?:\?[^\s"'<>]*)?|\/uploads\/[^\s"'<>]+)/gi;
+      const matches = content.match(imgRegex);
+      if (matches && matches.length > 0) {
+        finalMedia = Array.from(new Set(matches)).join(",");
+      }
+    }
+
     const post = await db.communityPost.create({
       data: {
         userId: currentUser.id,
         content: content.trim(),
-        mediaUrls: mediaUrls?.trim() || null,
+        mediaUrls: finalMedia,
         taggedLocation: finalLocation,
         taggedEntityType: taggedEntityType || null,
         taggedEntityId: taggedEntityId ? parseInt(taggedEntityId, 10) : null,

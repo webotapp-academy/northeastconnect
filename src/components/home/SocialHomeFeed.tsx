@@ -655,6 +655,58 @@ export default function SocialHomeFeed({
     });
   }
 
+  function getPostExcerpt(text: string, maxSentences = 2, maxChars = 160) {
+    if (!text) return { excerpt: "", isLong: false };
+
+    // Strip raw image URLs from text preview
+    const cleaned = text
+      .replace(
+        /(https?:\/\/[^\s"'<>]+\.(?:png|jpe?g|webp|gif|svg|avif)(?:\?[^\s"'<>]*)?|\/uploads\/[^\s"'<>]+)/gi,
+        ""
+      )
+      .trim();
+
+    if (!cleaned) return { excerpt: text, isLong: false };
+
+    // Extract first 2 sentences if separated by . ! ?
+    const sentenceMatches = cleaned.match(/[^.!?]+[.!?]+/g);
+    let excerpt = "";
+    let isLong = false;
+
+    if (sentenceMatches && sentenceMatches.length >= 2) {
+      const twoSentences = sentenceMatches.slice(0, maxSentences).join(" ").trim();
+      if (twoSentences.length < cleaned.length) {
+        excerpt = twoSentences;
+        isLong = true;
+      } else {
+        excerpt = cleaned;
+        isLong = false;
+      }
+    } else if (cleaned.includes("\n")) {
+      const firstLine = cleaned.split("\n")[0].trim();
+      if (firstLine.length < cleaned.length) {
+        excerpt = firstLine;
+        isLong = true;
+      } else {
+        excerpt = cleaned;
+        isLong = false;
+      }
+    } else if (cleaned.length > maxChars) {
+      excerpt = cleaned.slice(0, maxChars).trim() + "...";
+      isLong = true;
+    } else {
+      excerpt = cleaned;
+      isLong = false;
+    }
+
+    if (excerpt.length > maxChars + 30) {
+      excerpt = excerpt.slice(0, maxChars).trim() + "...";
+      isLong = true;
+    }
+
+    return { excerpt, isLong };
+  }
+
   function handleStateChange(state: string) {
     setSelectedState(state);
     setSelectedAdda(null);
@@ -1850,10 +1902,7 @@ export default function SocialHomeFeed({
                         ) : (
                           <div className="mb-3.5">
                             {(() => {
-                              const isLong = post.content && post.content.length > 220;
-                              const displayContent = isLong
-                                ? post.content.slice(0, 220).trim() + "..."
-                                : post.content;
+                              const { excerpt: displayContent, isLong } = getPostExcerpt(post.content);
                               return (
                                 <Link
                                   href={`/community/${post.id}`}
@@ -1864,7 +1913,7 @@ export default function SocialHomeFeed({
                                     {renderPostContent(displayContent)}
                                     {isLong && (
                                       <span className="inline-flex items-center gap-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 group-hover/desc:underline ml-1.5 align-baseline">
-                                        Read more &rarr;
+                                        ... Read more &rarr;
                                       </span>
                                     )}
                                   </div>
@@ -1922,10 +1971,25 @@ export default function SocialHomeFeed({
                           </div>
                         )}
 
-                        {/* Media Attachment Carousel & Lightbox Zoom */}
-                        {post.mediaUrls && (
-                          <PostMediaCarousel mediaUrls={post.mediaUrls} />
-                        )}
+                        {/* Media Attachment Carousel & Lightbox Zoom (with fallback image auto-detection) */}
+                        {(() => {
+                          const effectiveMediaUrls =
+                            post.mediaUrls ||
+                            (() => {
+                              const imgRegex =
+                                /(https?:\/\/[^\s"'<>]+\.(?:png|jpe?g|webp|gif|svg|avif)(?:\?[^\s"'<>]*)?|\/uploads\/[^\s"'<>]+)/gi;
+                              const matches = post.content?.match(imgRegex);
+                              return matches && matches.length > 0
+                                ? Array.from(new Set(matches)).join(",")
+                                : null;
+                            })();
+                          if (!effectiveMediaUrls) return null;
+                          return (
+                            <div className="mb-3.5">
+                              <PostMediaCarousel mediaUrls={effectiveMediaUrls} />
+                            </div>
+                          );
+                        })()}
 
                         {/* Footer Action Bar */}
                         <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400 flex-wrap gap-2">

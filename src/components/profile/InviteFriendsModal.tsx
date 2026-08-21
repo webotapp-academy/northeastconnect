@@ -45,9 +45,9 @@ export default function InviteFriendsModal({
     );
   }
 
-  function handleTwitterShare() {
+  function handleFacebookShare() {
     window.open(
-      `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`,
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(inviteUrl)}`,
       "_blank"
     );
   }
@@ -124,19 +124,19 @@ export default function InviteFriendsModal({
             </button>
 
             <button
+              onClick={handleFacebookShare}
+              className="flex flex-col items-center justify-center p-3 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800/60 rounded-2xl transition cursor-pointer group"
+            >
+              <span className="text-xl mb-1 group-hover:scale-110 transition-transform">🌐</span>
+              <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300">Facebook</span>
+            </button>
+
+            <button
               onClick={handleTelegramShare}
               className="flex flex-col items-center justify-center p-3 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 border border-sky-200 dark:border-sky-800/60 rounded-2xl transition cursor-pointer group"
             >
               <span className="text-xl mb-1 group-hover:scale-110 transition-transform">✈️</span>
               <span className="text-[11px] font-bold text-sky-700 dark:text-sky-300">Telegram</span>
-            </button>
-
-            <button
-              onClick={handleTwitterShare}
-              className="flex flex-col items-center justify-center p-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-2xl transition cursor-pointer group"
-            >
-              <span className="text-xl mb-1 group-hover:scale-110 transition-transform">𝕏</span>
-              <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">Twitter / X</span>
             </button>
           </div>
         </div>

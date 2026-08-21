@@ -352,18 +352,22 @@ export default function UserProfilePage() {
         </div>
 
         {/* Modern Mobile-Friendly Pill Tab Navigation */}
-        <div className="bg-slate-200/70 dark:bg-slate-900/90 p-1.5 rounded-2xl border border-slate-300/80 dark:border-slate-800 mb-6 flex items-center justify-between gap-1 sm:gap-2 shadow-inner">
+        <div className="bg-slate-200/80 dark:bg-slate-900/90 p-1 rounded-2xl border border-slate-300/80 dark:border-slate-800 mb-6 flex items-center justify-between gap-1 shadow-inner select-none">
           <button
             onClick={() => setActiveTab("activity")}
-            className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-4 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 sm:py-2.5 px-1.5 sm:px-4 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 whitespace-nowrap min-w-0 ${
               activeTab === "activity"
-                ? "bg-emerald-600 text-white shadow-md"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                ? "bg-emerald-600 text-white shadow-sm font-extrabold"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-300/40 dark:hover:bg-slate-800/40"
             }`}
           >
             <span>💬</span>
-            <span className="truncate">Activity &amp; Wall</span>
-            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${activeTab === "activity" ? "bg-white/20" : "bg-slate-300 dark:bg-slate-800"}`}>
+            <span className="truncate">Activity</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                activeTab === "activity" ? "bg-white/20 text-white" : "bg-slate-300/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+              }`}
+            >
               {profile.commentsCount || 0}
             </span>
           </button>
@@ -373,19 +377,23 @@ export default function UserProfilePage() {
               setActiveTab("friends");
               if (isOwnProfile) loadFriendsList();
             }}
-            className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-4 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 sm:py-2.5 px-1.5 sm:px-4 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 whitespace-nowrap min-w-0 ${
               activeTab === "friends"
-                ? "bg-emerald-600 text-white shadow-md"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                ? "bg-emerald-600 text-white shadow-sm font-extrabold"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-300/40 dark:hover:bg-slate-800/40"
             }`}
           >
             <span>👥</span>
             <span className="truncate">Friends</span>
-            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${activeTab === "friends" ? "bg-white/20" : "bg-slate-300 dark:bg-slate-800"}`}>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${
+                activeTab === "friends" ? "bg-white/20 text-white" : "bg-slate-300/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+              }`}
+            >
               {profile.friendsCount || 0}
             </span>
             {isOwnProfile && pendingIncomingCount > 0 && (
-              <span className="px-1.5 py-0.5 bg-rose-500 text-white text-[9px] font-black rounded-full animate-bounce">
+              <span className="px-1.5 py-0.2 bg-rose-500 text-white text-[9px] font-black rounded-full animate-bounce">
                 {pendingIncomingCount}
               </span>
             )}
@@ -393,14 +401,14 @@ export default function UserProfilePage() {
 
           <button
             onClick={() => setActiveTab("badges")}
-            className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-4 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+            className={`flex-1 py-2 sm:py-2.5 px-1.5 sm:px-4 rounded-xl text-[11px] sm:text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1 whitespace-nowrap min-w-0 ${
               activeTab === "badges"
-                ? "bg-emerald-600 text-white shadow-md"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                ? "bg-emerald-600 text-white shadow-sm font-extrabold"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-300/40 dark:hover:bg-slate-800/40"
             }`}
           >
             <span>🏅</span>
-            <span className="truncate">Badges &amp; XP</span>
+            <span className="truncate">Badges</span>
           </button>
         </div>
 

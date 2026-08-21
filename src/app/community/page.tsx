@@ -221,36 +221,9 @@ export default function CommunityDiscoveryPage() {
               </button>
             </div>
 
-            {/* Quick State Chips (Horizontal Scroll on Mobile) */}
-            <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0 mr-0.5">
-                State:
-              </span>
-              {NE_STATES.map((st) => {
-                const isSelected = selectedState === st;
-                return (
-                  <button
-                    key={st}
-                    type="button"
-                    onClick={() => {
-                      soundFX.playPop();
-                      setSelectedState(st);
-                    }}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition shrink-0 cursor-pointer ${
-                      isSelected
-                        ? "bg-emerald-600 text-white shadow-xs"
-                        : "bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/60"
-                    }`}
-                  >
-                    {st === "All States" ? "All States 🌿" : st}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Category Filter Chips for Directory & Marketplace */}
+            {/* Category Filter Chips (Only for Businesses & Marketplace) */}
             {activeTab === "directory" && (
-              <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0 mr-0.5">
                   Category:
                 </span>
@@ -264,10 +237,10 @@ export default function CommunityDiscoveryPage() {
                         soundFX.playPop();
                         setSelectedCategory(cat);
                       }}
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold transition shrink-0 cursor-pointer ${
+                      className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold transition shrink-0 cursor-pointer ${
                         isSelected
-                          ? "bg-teal-600 text-white shadow-xs"
-                          : "bg-white/60 dark:bg-slate-805/60 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-800/60"
+                          ? "bg-emerald-600 text-white shadow-xs"
+                          : "bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
                       }`}
                     >
                       {cat}
@@ -278,7 +251,7 @@ export default function CommunityDiscoveryPage() {
             )}
 
             {activeTab === "marketplace" && (
-              <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0 mr-0.5">
                   Category:
                 </span>
@@ -292,10 +265,10 @@ export default function CommunityDiscoveryPage() {
                         soundFX.playPop();
                         setSelectedCategory(cat);
                       }}
-                      className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold transition shrink-0 cursor-pointer ${
+                      className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold transition shrink-0 cursor-pointer ${
                         isSelected
-                          ? "bg-teal-600 text-white shadow-xs"
-                          : "bg-white/60 dark:bg-slate-805/60 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-800/60"
+                          ? "bg-emerald-600 text-white shadow-xs"
+                          : "bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
                       }`}
                     >
                       {cat}
@@ -306,12 +279,13 @@ export default function CommunityDiscoveryPage() {
             )}
           </form>
 
-          {/* LinkedIn-Style Segmented Navigation Tabs (No Scrollbar, Touch-Friendly) */}
+          {/* LinkedIn-Style Segmented Navigation Tabs: People -> Thoughts -> Addas -> Businesses -> Marketplace */}
           <div className="flex items-center gap-1.5 sm:gap-2 mt-4 overflow-x-auto pb-0.5 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden text-xs font-bold whitespace-nowrap">
+            {/* 1. People */}
             <button
               type="button"
               onClick={() => handleTabSwitch("users")}
-              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
+              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 active:scale-95 ${
                 activeTab === "users"
                   ? "bg-emerald-600 text-white shadow-xs"
                   : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
@@ -326,46 +300,30 @@ export default function CommunityDiscoveryPage() {
               )}
             </button>
 
+            {/* 2. Thoughts */}
             <button
               type="button"
-              onClick={() => handleTabSwitch("directory")}
-              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                activeTab === "directory"
+              onClick={() => handleTabSwitch("posts")}
+              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 active:scale-95 ${
+                activeTab === "posts"
                   ? "bg-emerald-600 text-white shadow-xs"
                   : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
-              <span>🏪</span>
-              <span>Businesses</span>
-              {activeTab === "directory" && totalCount > 0 && (
+              <span>💬</span>
+              <span>Thoughts</span>
+              {activeTab === "posts" && totalCount > 0 && (
                 <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
                   {totalCount}
                 </span>
               )}
             </button>
 
-            <button
-              type="button"
-              onClick={() => handleTabSwitch("marketplace")}
-              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                activeTab === "marketplace"
-                  ? "bg-emerald-600 text-white shadow-xs"
-                  : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
-              }`}
-            >
-              <span>🛍️</span>
-              <span>Deals</span>
-              {activeTab === "marketplace" && totalCount > 0 && (
-                <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
-                  {totalCount}
-                </span>
-              )}
-            </button>
-
+            {/* 3. Addas */}
             <button
               type="button"
               onClick={() => handleTabSwitch("addas")}
-              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
+              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 active:scale-95 ${
                 activeTab === "addas"
                   ? "bg-emerald-600 text-white shadow-xs"
                   : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
@@ -380,18 +338,38 @@ export default function CommunityDiscoveryPage() {
               )}
             </button>
 
+            {/* 4. Businesses */}
             <button
               type="button"
-              onClick={() => handleTabSwitch("posts")}
-              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                activeTab === "posts"
+              onClick={() => handleTabSwitch("directory")}
+              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 active:scale-95 ${
+                activeTab === "directory"
                   ? "bg-emerald-600 text-white shadow-xs"
                   : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
-              <span>💬</span>
-              <span>Thoughts</span>
-              {activeTab === "posts" && totalCount > 0 && (
+              <span>🏪</span>
+              <span>Businesses</span>
+              {activeTab === "directory" && totalCount > 0 && (
+                <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
+                  {totalCount}
+                </span>
+              )}
+            </button>
+
+            {/* 5. Marketplace */}
+            <button
+              type="button"
+              onClick={() => handleTabSwitch("marketplace")}
+              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 active:scale-95 ${
+                activeTab === "marketplace"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
+              }`}
+            >
+              <span>🛍️</span>
+              <span>Marketplace</span>
+              {activeTab === "marketplace" && totalCount > 0 && (
                 <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
                   {totalCount}
                 </span>

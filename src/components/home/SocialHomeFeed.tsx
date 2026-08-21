@@ -655,8 +655,14 @@ export default function SocialHomeFeed({
     });
   }
 
-  function getPostExcerpt(text: string, maxSentences = 2, maxChars = 160) {
-    if (!text) return { excerpt: "", isLong: false };
+  function getPostTypography(text: string) {
+    if (!text) {
+      return {
+        excerpt: "",
+        isLong: false,
+        textStyle: "text-[14px] sm:text-[15px] font-normal leading-relaxed text-slate-800 dark:text-slate-200",
+      };
+    }
 
     // Strip raw image URLs from text preview
     const cleaned = text
@@ -666,27 +672,39 @@ export default function SocialHomeFeed({
       )
       .trim();
 
-    if (!cleaned) return { excerpt: text, isLong: false };
+    if (!cleaned) {
+      return {
+        excerpt: text,
+        isLong: false,
+        textStyle: "text-lg sm:text-xl font-bold sm:font-extrabold leading-snug tracking-tight text-slate-900 dark:text-slate-100",
+      };
+    }
 
-    // Split into paragraphs
+    // Extract up to 3 lines / sentences (max 260 chars)
     const paragraphs = cleaned.split(/\n+/).map((p) => p.trim()).filter(Boolean);
-    const firstPara = paragraphs[0] || cleaned;
+    const maxChars = 260;
 
     let excerpt = "";
     let isLong = false;
 
-    const firstParaSentences = firstPara.match(/[^.!?]+[.!?]+/g);
+    const sentenceMatches = cleaned.match(/[^.!?]+[.!?]+/g);
 
-    if (firstParaSentences && firstParaSentences.length > 0) {
-      if (firstParaSentences.length >= maxSentences) {
-        excerpt = firstParaSentences.slice(0, maxSentences).join(" ").trim();
-        isLong = excerpt.length < cleaned.length;
+    if (sentenceMatches && sentenceMatches.length > 0) {
+      if (sentenceMatches.length <= 3 && cleaned.length <= maxChars && paragraphs.length <= 3) {
+        excerpt = cleaned;
+        isLong = false;
       } else {
-        excerpt = firstPara;
-        isLong = paragraphs.length > 1 || firstPara.length < cleaned.length;
+        const threeSentences = sentenceMatches.slice(0, 3).join(" ").trim();
+        if (threeSentences.length < cleaned.length) {
+          excerpt = threeSentences.slice(0, maxChars).trim();
+          isLong = true;
+        } else {
+          excerpt = cleaned.slice(0, maxChars).trim();
+          isLong = cleaned.length > maxChars;
+        }
       }
-    } else if (paragraphs.length > 1) {
-      excerpt = firstPara;
+    } else if (paragraphs.length > 3) {
+      excerpt = paragraphs.slice(0, 3).join("\n").trim();
       isLong = true;
     } else if (cleaned.length > maxChars) {
       excerpt = cleaned.slice(0, maxChars).trim();
@@ -696,12 +714,23 @@ export default function SocialHomeFeed({
       isLong = false;
     }
 
-    if (excerpt.length > maxChars + 20) {
-      excerpt = excerpt.slice(0, maxChars).trim();
-      isLong = true;
+    // Dynamic Reddit-style Typography:
+    // Tier 1: 1 line (short, < 65 chars) -> Big and Bold
+    // Tier 2: 2 lines (medium, 65 - 145 chars) -> Little Big and Bold
+    // Tier 3: 3 lines (long/excerpt, > 145 chars) -> Small and Regular (same balanced space)
+    const excerptLen = excerpt.length;
+    const lineBreaks = (excerpt.match(/\n/g) || []).length;
+
+    let textStyle = "";
+    if (excerptLen < 65 && lineBreaks === 0) {
+      textStyle = "text-lg sm:text-xl font-bold sm:font-extrabold leading-snug tracking-tight text-slate-900 dark:text-slate-100";
+    } else if (excerptLen <= 145 && lineBreaks <= 1) {
+      textStyle = "text-[16px] sm:text-[17px] font-bold leading-snug tracking-[-0.01em] text-slate-900 dark:text-slate-100";
+    } else {
+      textStyle = "text-[14px] sm:text-[15px] font-normal leading-relaxed text-slate-800 dark:text-slate-200";
     }
 
-    return { excerpt, isLong };
+    return { excerpt, isLong, textStyle };
   }
 
   function handleStateChange(state: string) {
@@ -1899,14 +1928,14 @@ export default function SocialHomeFeed({
                         ) : (
                           <div className="mb-3.5">
                             {(() => {
-                              const { excerpt: displayContent, isLong } = getPostExcerpt(post.content);
+                              const { excerpt: displayContent, isLong, textStyle } = getPostTypography(post.content);
                               return (
                                 <Link
                                   href={`/community/${post.id}`}
                                   className="block group/desc hover:opacity-95 transition"
                                   title="Click to view full post thread"
                                 >
-                                  <div className="text-slate-900 dark:text-slate-100 text-[15px] sm:text-base font-medium leading-snug sm:leading-relaxed whitespace-pre-wrap tracking-[-0.01em]">
+                                  <div className={`${textStyle} whitespace-pre-wrap`}>
                                     {renderPostContent(displayContent)}
                                     {isLong && (
                                       <span className="inline-flex items-center gap-0.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 group-hover/desc:underline ml-1.5 align-baseline">

@@ -17,8 +17,11 @@ export default function InviteFriendsModal({
 
   if (!isOpen) return null;
 
+  // Always default to production domain so WhatsApp / Social shares work for recipients
   const origin =
-    typeof window !== "undefined" ? window.location.origin : "https://northeastconnect.in";
+    typeof window !== "undefined" && !window.location.origin.includes("localhost")
+      ? window.location.origin
+      : "https://northeastconnect.in";
   const refCode = currentUser?.username || "friend";
   const inviteUrl = `${origin}/?ref=${encodeURIComponent(refCode)}`;
   const shareText = `Hey! Join me on NorthEast Connect — the premier community hub for all 8 Northeast states! Connect with locals, join regional Addas, explore verified homestays & news: ${inviteUrl}`;

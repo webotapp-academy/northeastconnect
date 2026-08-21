@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import RankBadge from "@/components/profile/RankBadge";
 import AuthModal from "@/components/auth/AuthModal";
+import { soundFX } from "@/lib/soundEffects";
 
 interface CommentUser {
   id: number;
@@ -150,6 +151,7 @@ export default function CommentSection({
       if (!res.ok) throw new Error(data.message || "Failed to post comment");
 
       setComments([data.comment, ...comments]);
+      soundFX.playCommentPosted();
       setTotalCount((prev) => {
         const next = prev + 1;
         if (typeof window !== "undefined") {
@@ -196,6 +198,8 @@ export default function CommentSection({
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to reply");
 
+      soundFX.playCommentPosted();
+
       // Attach reply to the parent in state
       setComments((prev) =>
         prev.map((c) => {
@@ -234,6 +238,8 @@ export default function CommentSection({
       setAuthModalOpen(true);
       return;
     }
+
+    soundFX.playPop();
 
     // 1. Optimistic UI update (0ms response)
     if (!isReply) {

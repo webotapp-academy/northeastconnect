@@ -10,6 +10,7 @@ import AddaAutocompleteInput from "@/components/common/AddaAutocompleteInput";
 import PostMediaCarousel from "@/components/common/PostMediaCarousel";
 import PostReactionsBar from "@/components/community/PostReactionsBar";
 import ShareButton from "@/components/common/ShareButton";
+import { soundFX } from "@/lib/soundEffects";
 
 const NE_STATES = [
   { name: "All States", icon: "🌿", tag: "All" },
@@ -730,6 +731,7 @@ export default function SocialHomeFeed({
       });
       const data = await res.json();
       if (data.status === "success") {
+        soundFX.playConnect();
         setFriendRequestsSent((prev) => ({ ...prev, [targetUserId]: true }));
         showToast(`✨ Friend request sent to @${targetUsername}!`);
       } else {
@@ -776,6 +778,7 @@ export default function SocialHomeFeed({
       });
       const data = await res.json();
       if (data.status === "success" && data.post) {
+        soundFX.playPostPublished();
         setPosts([data.post, ...posts]);
         setNewContent("");
         if (!selectedAdda) setTaggedLocation("");

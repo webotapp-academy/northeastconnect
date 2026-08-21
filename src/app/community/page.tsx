@@ -8,6 +8,7 @@ import AuthModal from "@/components/auth/AuthModal";
 import PostMediaCarousel from "@/components/common/PostMediaCarousel";
 import PostReactionsBar from "@/components/community/PostReactionsBar";
 import ShareButton from "@/components/common/ShareButton";
+import { soundFX } from "@/lib/soundEffects";
 
 const NE_STATES = [
   "All States",
@@ -135,6 +136,7 @@ export default function CommunityFeedPage() {
       if (!res.ok) throw new Error(data.message || "Failed to create post");
 
       setPosts([data.post, ...posts]);
+      soundFX.playPostPublished();
       setNewPostContent("");
       setTaggedLocation("");
       setMediaUrl("");

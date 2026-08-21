@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { soundFX } from "@/lib/soundEffects";
 
 interface MessengerDropdownProps {
   currentUser?: any;
@@ -119,6 +120,7 @@ export default function MessengerDropdown({ currentUser }: MessengerDropdownProp
       [friendId]: [...(prev[friendId] || []), tempMsg],
     }));
 
+    soundFX.playMessageSent();
     setChatMessage("");
 
     try {

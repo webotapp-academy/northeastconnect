@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import AuthModal from "@/components/auth/AuthModal";
+import { soundFX } from "@/lib/soundEffects";
 
 interface PostReactionsBarProps {
   postId: number;
@@ -73,11 +74,13 @@ export default function PostReactionsBar({
     if (prevReaction === type) {
       nextReaction = null;
       nextCount = Math.max(0, prevCount - 1);
+      soundFX.playPop();
     } else {
       nextReaction = type;
       if (!prevReaction) {
         nextCount = prevCount + 1;
       }
+      soundFX.playReaction(type);
     }
 
     setUserReaction(nextReaction);

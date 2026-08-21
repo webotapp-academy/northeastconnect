@@ -20,6 +20,13 @@ const NE_STATES = [
 export default function RegisterPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
+  const [usernameChecking, setUsernameChecking] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState<{
+    checked: boolean;
+    available?: boolean;
+    message?: string;
+  }>({ checked: false });
+
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [state, setState] = useState("");
@@ -30,6 +37,55 @@ export default function RegisterPage() {
   const [loadingCaptcha, setLoadingCaptcha] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  // Live username availability check
+  useEffect(() => {
+    const clean = username.trim();
+    if (!clean) {
+      setUsernameStatus({ checked: false });
+      setUsernameChecking(false);
+      return;
+    }
+
+    if (clean.length < 3) {
+      setUsernameStatus({
+        checked: true,
+        available: false,
+        message: "Username must be at least 3 characters",
+      });
+      setUsernameChecking(false);
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
+      setUsernameStatus({
+        checked: true,
+        available: false,
+        message: "Only letters, numbers, and _ allowed",
+      });
+      setUsernameChecking(false);
+      return;
+    }
+
+    setUsernameChecking(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(clean)}`);
+        const data = await res.json();
+        setUsernameStatus({
+          checked: true,
+          available: data.available,
+          message: data.message,
+        });
+      } catch {
+        // Ignored
+      } finally {
+        setUsernameChecking(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [username]);
 
   async function fetchCaptcha() {
     try {
@@ -126,17 +182,54 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Username <span className="text-emerald-600">(@unique)</span>
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. kaziranga_scout"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-300 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100 text-gray-900 placeholder:text-gray-400 outline-none text-xs transition"
-              />
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-gray-700">
+                  Username <span className="text-emerald-600">(@unique)</span>
+                </label>
+                {usernameChecking && (
+                  <span className="text-[10px] text-gray-400 flex items-center gap-1 font-medium">
+                    <svg className="animate-spin w-2.5 h-2.5 text-emerald-600" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Checking...
+                  </span>
+                )}
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. kaziranga_scout"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s+/g, "_"))}
+                  className={`w-full px-3.5 py-2.5 pr-8 rounded-xl bg-gray-50 border outline-none text-xs transition ${
+                    usernameStatus.checked
+                      ? usernameStatus.available
+                        ? "border-emerald-500 bg-emerald-50/20 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                        : "border-rose-500 bg-rose-50/20 focus:border-rose-500 focus:ring-2 focus:ring-rose-100"
+                      : "border-gray-300 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                  } text-gray-900 placeholder:text-gray-400`}
+                />
+                {usernameStatus.checked && !usernameChecking && (
+                  <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                    {usernameStatus.available ? (
+                      <span className="text-emerald-600 text-xs font-bold">✓</span>
+                    ) : (
+                      <span className="text-rose-500 text-xs font-bold">✕</span>
+                    )}
+                  </div>
+                )}
+              </div>
+              {usernameStatus.checked && usernameStatus.message && (
+                <p
+                  className={`text-[10px] mt-1 font-medium transition ${
+                    usernameStatus.available ? "text-emerald-600" : "text-rose-600"
+                  }`}
+                >
+                  {usernameStatus.message}
+                </p>
+              )}
             </div>
 
             <div>

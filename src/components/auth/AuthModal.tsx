@@ -35,6 +35,13 @@ export default function AuthModal({
   const [password, setPassword] = useState("");
 
   const [regUsername, setRegUsername] = useState("");
+  const [usernameChecking, setUsernameChecking] = useState(false);
+  const [usernameStatus, setUsernameStatus] = useState<{
+    checked: boolean;
+    available?: boolean;
+    message?: string;
+  }>({ checked: false });
+
   const [regEmail, setRegEmail] = useState("");
   const [regPassword, setRegPassword] = useState("");
   const [regFullName, setRegFullName] = useState("");
@@ -46,6 +53,55 @@ export default function AuthModal({
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+
+  // Live username availability validation
+  useEffect(() => {
+    const clean = regUsername.trim();
+    if (!clean) {
+      setUsernameStatus({ checked: false });
+      setUsernameChecking(false);
+      return;
+    }
+
+    if (clean.length < 3) {
+      setUsernameStatus({
+        checked: true,
+        available: false,
+        message: "Username must be at least 3 characters",
+      });
+      setUsernameChecking(false);
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(clean)) {
+      setUsernameStatus({
+        checked: true,
+        available: false,
+        message: "Only letters, numbers, and _ allowed",
+      });
+      setUsernameChecking(false);
+      return;
+    }
+
+    setUsernameChecking(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(clean)}`);
+        const data = await res.json();
+        setUsernameStatus({
+          checked: true,
+          available: data.available,
+          message: data.message,
+        });
+      } catch {
+        // Ignored
+      } finally {
+        setUsernameChecking(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [regUsername]);
 
   async function fetchCaptcha() {
     try {
@@ -266,17 +322,54 @@ export default function AuthModal({
           ) : (
             <form onSubmit={handleRegister} className="space-y-3.5 max-h-[60vh] overflow-y-auto pr-1">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Username <span className="text-emerald-400 font-normal">(@unique)</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. kaziranga_explorer"
-                  value={regUsername}
-                  onChange={(e) => setRegUsername(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl border border-slate-700 bg-slate-800 focus:bg-slate-900 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm text-slate-100 placeholder-slate-500"
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-slate-300">
+                    Username <span className="text-emerald-400 font-normal">(@unique)</span>
+                  </label>
+                  {usernameChecking && (
+                    <span className="text-[11px] text-slate-400 flex items-center gap-1 font-medium">
+                      <svg className="animate-spin w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Checking...
+                    </span>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. kaziranga_explorer"
+                    value={regUsername}
+                    onChange={(e) => setRegUsername(e.target.value.toLowerCase().replace(/\s+/g, "_"))}
+                    className={`w-full px-3.5 py-2 pr-8 rounded-xl border bg-slate-800 focus:bg-slate-900 outline-none text-sm text-slate-100 placeholder-slate-500 transition ${
+                      usernameStatus.checked
+                        ? usernameStatus.available
+                          ? "border-emerald-500/80 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                          : "border-rose-500/80 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+                        : "border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                    }`}
+                  />
+                  {usernameStatus.checked && !usernameChecking && (
+                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                      {usernameStatus.available ? (
+                        <span className="text-emerald-400 text-sm font-bold">✓</span>
+                      ) : (
+                        <span className="text-rose-400 text-sm font-bold">✕</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {usernameStatus.checked && usernameStatus.message && (
+                  <p
+                    className={`text-[11px] mt-1 font-medium transition ${
+                      usernameStatus.available ? "text-emerald-400" : "text-rose-400"
+                    }`}
+                  >
+                    {usernameStatus.message}
+                  </p>
+                )}
               </div>
 
               <div>

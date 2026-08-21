@@ -76,7 +76,7 @@ export default function MobileAppBottomNav() {
         className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#0b0e14]/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white shadow-2xl px-0.5 py-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] transition-colors"
       >
         <div className="grid grid-cols-5 items-center justify-items-center w-full mx-auto">
-          {/* 1. Feed / Home */}
+          {/* 1. Friends / Feed */}
           <Link
             href="/"
             className={`flex flex-col items-center justify-center w-full py-0.5 text-center transition-all ${
@@ -85,8 +85,8 @@ export default function MobileAppBottomNav() {
                 : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium"
             }`}
           >
-            <span className="text-lg leading-none mb-0.5">🌿</span>
-            <span className="text-[9px] leading-tight tracking-tight whitespace-nowrap">Community</span>
+            <span className="text-lg leading-none mb-0.5">👥</span>
+            <span className="text-[9px] leading-tight tracking-tight whitespace-nowrap">Friends</span>
           </Link>
 
           {/* 2. Explore Hub */}

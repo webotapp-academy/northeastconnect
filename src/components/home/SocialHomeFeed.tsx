@@ -668,39 +668,36 @@ export default function SocialHomeFeed({
 
     if (!cleaned) return { excerpt: text, isLong: false };
 
-    // Extract first 2 sentences if separated by . ! ?
-    const sentenceMatches = cleaned.match(/[^.!?]+[.!?]+/g);
+    // Split into paragraphs
+    const paragraphs = cleaned.split(/\n+/).map((p) => p.trim()).filter(Boolean);
+    const firstPara = paragraphs[0] || cleaned;
+
     let excerpt = "";
     let isLong = false;
 
-    if (sentenceMatches && sentenceMatches.length >= 2) {
-      const twoSentences = sentenceMatches.slice(0, maxSentences).join(" ").trim();
-      if (twoSentences.length < cleaned.length) {
-        excerpt = twoSentences;
-        isLong = true;
+    const firstParaSentences = firstPara.match(/[^.!?]+[.!?]+/g);
+
+    if (firstParaSentences && firstParaSentences.length > 0) {
+      if (firstParaSentences.length >= maxSentences) {
+        excerpt = firstParaSentences.slice(0, maxSentences).join(" ").trim();
+        isLong = excerpt.length < cleaned.length;
       } else {
-        excerpt = cleaned;
-        isLong = false;
+        excerpt = firstPara;
+        isLong = paragraphs.length > 1 || firstPara.length < cleaned.length;
       }
-    } else if (cleaned.includes("\n")) {
-      const firstLine = cleaned.split("\n")[0].trim();
-      if (firstLine.length < cleaned.length) {
-        excerpt = firstLine;
-        isLong = true;
-      } else {
-        excerpt = cleaned;
-        isLong = false;
-      }
+    } else if (paragraphs.length > 1) {
+      excerpt = firstPara;
+      isLong = true;
     } else if (cleaned.length > maxChars) {
-      excerpt = cleaned.slice(0, maxChars).trim() + "...";
+      excerpt = cleaned.slice(0, maxChars).trim();
       isLong = true;
     } else {
       excerpt = cleaned;
       isLong = false;
     }
 
-    if (excerpt.length > maxChars + 30) {
-      excerpt = excerpt.slice(0, maxChars).trim() + "...";
+    if (excerpt.length > maxChars + 20) {
+      excerpt = excerpt.slice(0, maxChars).trim();
       isLong = true;
     }
 

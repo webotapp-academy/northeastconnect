@@ -2,571 +2,729 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import RankBadge from "@/components/profile/RankBadge";
-import CommentSection from "@/components/comments/CommentSection";
 import AuthModal from "@/components/auth/AuthModal";
-import PostMediaCarousel from "@/components/common/PostMediaCarousel";
-import PostReactionsBar from "@/components/community/PostReactionsBar";
-import ShareButton from "@/components/common/ShareButton";
 import { soundFX } from "@/lib/soundEffects";
 
 const NE_STATES = [
   "All States",
   "Assam",
-  "Arunachal Pradesh",
-  "Manipur",
   "Meghalaya",
-  "Mizoram",
+  "Arunachal Pradesh",
   "Nagaland",
-  "Sikkim",
+  "Manipur",
+  "Mizoram",
   "Tripura",
+  "Sikkim",
 ];
 
-export default function CommunityFeedPage() {
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [posts, setPosts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<"all" | "friends">("all");
-  const [selectedState, setSelectedState] = useState("All States");
+const DIRECTORY_CATEGORIES = [
+  "All Categories",
+  "Hotels & Homestays",
+  "Tour Operators & Guides",
+  "Cafes & Restaurants",
+  "Handicrafts & Silk",
+  "Transport & Rentals",
+  "Hospitals & Clinics",
+  "Local Stores & Services",
+];
 
-  // Post composer
-  const [newPostContent, setNewPostContent] = useState("");
-  const [taggedLocation, setTaggedLocation] = useState("");
-  const [mediaUrl, setMediaUrl] = useState("");
-  const [showMediaInput, setShowMediaInput] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+const MARKETPLACE_CATEGORIES = [
+  "All Categories",
+  "Vehicles",
+  "Properties",
+  "Electronics",
+  "Handicrafts & Traditional",
+  "Services",
+  "Jobs",
+  "Others",
+];
+
+export default function CommunityDiscoveryPage() {
+  const [activeTab, setActiveTab] = useState<"users" | "directory" | "marketplace" | "addas" | "posts">("users");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedState, setSelectedState] = useState("All States");
+  const [selectedCategory, setSelectedCategory] = useState("All Categories");
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
-  // Active comments accordion
-  const [expandedCommentsPostId, setExpandedCommentsPostId] = useState<number | null>(null);
+  // Results & Pagination state
+  const [results, setResults] = useState<any[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // Friend requests tracking
+  const [friendRequestsSent, setFriendRequestsSent] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
-    fetchMe();
+    fetchSession();
   }, []);
 
-  // Handle direct navigation to post from notification hash (e.g. #post-123)
   useEffect(() => {
-    function handlePostHash() {
-      if (typeof window === "undefined") return;
-      const hash = window.location.hash;
-      if (hash && hash.startsWith("#post-")) {
-        const postId = parseInt(hash.replace("#post-", ""), 10);
-        if (!isNaN(postId)) {
-          setExpandedCommentsPostId(postId);
+    setPage(1);
+    fetchData(1, false);
+  }, [activeTab, selectedState, selectedCategory]);
 
-          // Allow DOM to settle and scroll to post
-          setTimeout(() => {
-            const element = document.getElementById(`post-${postId}`);
-            if (element) {
-              element.scrollIntoView({ behavior: "smooth", block: "center" });
-              // Highlight post card with subtle emerald glow
-              element.classList.add("ring-2", "ring-emerald-500", "ring-offset-2");
-              setTimeout(() => {
-                element.classList.remove("ring-2", "ring-emerald-500", "ring-offset-2");
-              }, 3000);
-            }
-          }, 350);
-        }
-      }
-    }
-
-    handlePostHash();
-    window.addEventListener("hashchange", handlePostHash);
-    return () => window.removeEventListener("hashchange", handlePostHash);
-  }, [posts]);
-
-  useEffect(() => {
-    fetchPosts();
-  }, [filter, selectedState]);
-
-  async function fetchMe() {
+  async function fetchSession() {
     try {
       const res = await fetch("/api/auth/me");
       const data = await res.json();
       if (data.status === "success" && data.user) {
         setCurrentUser(data.user);
       }
-    } catch {
-      // Ignored
-    }
+    } catch {}
   }
 
-  async function fetchPosts() {
+  async function fetchData(pageNum: number, isLoadMore = false) {
     try {
-      setLoading(true);
-      const queryParams = new URLSearchParams();
-      queryParams.set("filter", filter);
-      if (selectedState !== "All States") {
-        queryParams.set("state", selectedState);
+      if (isLoadMore) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
       }
 
-      const res = await fetch(`/api/community/posts?${queryParams.toString()}`);
+      const params = new URLSearchParams({
+        type: activeTab,
+        q: searchQuery,
+        state: selectedState,
+        category: selectedCategory.startsWith("All") ? "All" : selectedCategory,
+        page: pageNum.toString(),
+        limit: "16",
+      });
+
+      const res = await fetch(`/api/community/discover?${params.toString()}`);
       const data = await res.json();
+
       if (data.status === "success") {
-        setPosts(data.posts || []);
+        if (isLoadMore) {
+          setResults((prev) => [...prev, ...(data.data || [])]);
+        } else {
+          setResults(data.data || []);
+        }
+        setTotalCount(data.total || 0);
+        setHasMore(data.hasMore || false);
+        setPage(pageNum);
       }
     } catch (err) {
-      console.error("Failed to load posts", err);
+      console.error("Failed to load discovery data:", err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }
 
-  async function handleCreatePost(e: React.FormEvent) {
+  function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!newPostContent.trim()) return;
+    soundFX.playPop();
+    setPage(1);
+    fetchData(1, false);
+  }
 
+  function handleTabSwitch(tab: "users" | "directory" | "marketplace" | "addas" | "posts") {
+    soundFX.playPop();
+    setActiveTab(tab);
+    setSelectedCategory("All Categories");
+  }
+
+  async function handleSendFriendRequest(targetUserId: number, targetUsername: string, e?: React.MouseEvent) {
+    if (e) e.stopPropagation();
     if (!currentUser) {
       setAuthModalOpen(true);
       return;
     }
 
     try {
-      setSubmitting(true);
-      const res = await fetch("/api/community/posts", {
+      const res = await fetch("/api/friends", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: newPostContent.trim(),
-          taggedLocation: taggedLocation.trim() || null,
-          mediaUrls: mediaUrl.trim() || null,
-        }),
+        body: JSON.stringify({ targetUserId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to create post");
-
-      setPosts([data.post, ...posts]);
-      soundFX.playPostPublished();
-      setNewPostContent("");
-      setTaggedLocation("");
-      setMediaUrl("");
-      setShowMediaInput(false);
-      fetchMe(); // refresh XP in sidebar
-    } catch (err: any) {
-      alert(err.message);
-    } finally {
-      setSubmitting(false);
+      if (data.status === "success") {
+        soundFX.playConnect();
+        setFriendRequestsSent((prev) => ({ ...prev, [targetUserId]: true }));
+      } else {
+        alert(data.message || "Friend request sent!");
+      }
+    } catch {
+      alert("Failed to send friend request");
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 pt-24 pb-16 px-4">
-      {/* Top Banner */}
-      <div className="container mx-auto max-w-6xl mb-8">
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-sm text-slate-100">
-          <div className="relative z-10 max-w-2xl">
-            <span className="px-3 py-1 bg-emerald-950/80 text-emerald-400 text-xs font-semibold rounded-full border border-emerald-800/60 backdrop-blur">
-              🌿 Northeast Community Hub
+    <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 transition-colors pb-24">
+      {/* Top Hero Banner */}
+      <div className="bg-gradient-to-b from-emerald-900/40 via-slate-900/80 to-transparent pt-8 pb-12 border-b border-slate-200 dark:border-slate-800/80">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="max-w-3xl">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 rounded-full text-xs font-black uppercase tracking-wider mb-3">
+              🌿 Explorer Community & Discovery Hub
             </span>
-            <h1 className="text-2xl md:text-4xl font-extrabold text-slate-100 mt-3 tracking-tight">
-              Explorer Social Feed
+            <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-tight mb-2">
+              Discover People, Businesses & Deals Across Northeast India
             </h1>
-            <p className="text-xs md:text-sm text-slate-400 mt-2 leading-relaxed">
-              Connect with travelers, locals, and business owners across the Eight Sister States.
-              Share travel updates, regional tips, hidden gems, and level up your Explorer Rank!
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              Search and filter through local explorers, verified regional businesses, community marketplaces, and regional adda hubs.
             </p>
           </div>
-          <div className="absolute -right-8 -bottom-8 text-9xl opacity-10 select-none pointer-events-none">
-            🏔️
+
+          {/* Search & Filter Bar */}
+          <form onSubmit={handleSearchSubmit} className="mt-6 flex flex-col sm:flex-row gap-2.5">
+            <div className="relative flex-1">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={
+                  activeTab === "users"
+                    ? "Search people by name, username, bio, city..."
+                    : activeTab === "directory"
+                    ? "Search businesses, hotels, tours, handicrafts..."
+                    : activeTab === "marketplace"
+                    ? "Search marketplace items, cars, electronics..."
+                    : activeTab === "addas"
+                    ? "Search regional hubs (e.g. Guwahati, Shillong)..."
+                    : "Search thoughts and discussions..."
+                }
+                className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-xs"
+              />
+            </div>
+
+            {/* State Selector */}
+            <select
+              value={selectedState}
+              onChange={(e) => setSelectedState(e.target.value)}
+              className="px-3 py-2.5 sm:py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 shadow-xs cursor-pointer"
+            >
+              {NE_STATES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+
+            {/* Category Selector (if directory or marketplace) */}
+            {activeTab === "directory" && (
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-3 py-2.5 sm:py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 shadow-xs cursor-pointer"
+              >
+                {DIRECTORY_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {activeTab === "marketplace" && (
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-3 py-2.5 sm:py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 shadow-xs cursor-pointer"
+              >
+                {MARKETPLACE_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <button
+              type="submit"
+              className="px-6 py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs sm:text-sm font-bold transition shadow-xs cursor-pointer shrink-0"
+            >
+              Search
+            </button>
+          </form>
+
+          {/* LinkedIn-Style Segmented Navigation Tabs */}
+          <div className="flex items-center gap-2 mt-6 overflow-x-auto pb-1 no-scrollbar text-xs font-bold whitespace-nowrap">
+            <button
+              type="button"
+              onClick={() => handleTabSwitch("users")}
+              className={`px-4 py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 ${
+                activeTab === "users"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+              }`}
+            >
+              <span>👥</span>
+              <span>People & Explorers</span>
+              {activeTab === "users" && totalCount > 0 && (
+                <span className="ml-1 px-1.5 py-0.2 bg-emerald-800 text-[10px] rounded-full">
+                  {totalCount}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleTabSwitch("directory")}
+              className={`px-4 py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 ${
+                activeTab === "directory"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+              }`}
+            >
+              <span>🏪</span>
+              <span>Businesses & Places</span>
+              {activeTab === "directory" && totalCount > 0 && (
+                <span className="ml-1 px-1.5 py-0.2 bg-emerald-800 text-[10px] rounded-full">
+                  {totalCount}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleTabSwitch("marketplace")}
+              className={`px-4 py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 ${
+                activeTab === "marketplace"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+              }`}
+            >
+              <span>🛍️</span>
+              <span>Marketplace Deals</span>
+              {activeTab === "marketplace" && totalCount > 0 && (
+                <span className="ml-1 px-1.5 py-0.2 bg-emerald-800 text-[10px] rounded-full">
+                  {totalCount}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleTabSwitch("addas")}
+              className={`px-4 py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 ${
+                activeTab === "addas"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+              }`}
+            >
+              <span>🏙️</span>
+              <span>Regional Addas</span>
+              {activeTab === "addas" && totalCount > 0 && (
+                <span className="ml-1 px-1.5 py-0.2 bg-emerald-800 text-[10px] rounded-full">
+                  {totalCount}
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleTabSwitch("posts")}
+              className={`px-4 py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 ${
+                activeTab === "posts"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+              }`}
+            >
+              <span>💬</span>
+              <span>Thoughts & Discussions</span>
+              {activeTab === "posts" && totalCount > 0 && (
+                <span className="ml-1 px-1.5 py-0.2 bg-emerald-800 text-[10px] rounded-full">
+                  {totalCount}
+                </span>
+              )}
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Main Grid */}
-      <div className="container mx-auto max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left 2 Columns: Feed */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Post Composer Card */}
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm hover:border-slate-700/80 transition">
-            <form onSubmit={handleCreatePost}>
-              <div className="flex items-start gap-3.5">
-                <img
-                  src={
-                    currentUser?.profileImageUrl ||
-                    `https://api.dicebear.com/7.x/bottts/svg?seed=${currentUser?.username || "guest"}`
-                  }
-                  alt="Avatar"
-                  className="w-11 h-11 rounded-2xl object-cover border border-slate-700 bg-slate-800 flex-shrink-0"
-                />
-                <div className="flex-1">
-                  <textarea
-                    rows={3}
-                    placeholder={
-                      currentUser
-                        ? `What's on your mind or travel itinerary, @${currentUser.username}?`
-                        : "Sign in to share travel stories, recommendations, or questions (+20 XP)..."
-                    }
-                    value={newPostContent}
-                    onChange={(e) => setNewPostContent(e.target.value)}
-                    onClick={() => {
-                      if (!currentUser) setAuthModalOpen(true);
-                    }}
-                    className="w-full px-4 py-3 bg-slate-800 hover:bg-slate-800/80 focus:bg-slate-900 rounded-2xl border border-slate-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-slate-100 text-sm outline-none transition resize-none placeholder-slate-500"
-                  />
-
-                  {/* Optional Media URL input */}
-                  {showMediaInput && (
-                    <div className="mt-2.5 flex gap-2 animate-in fade-in duration-150">
-                      <input
-                        type="url"
-                        placeholder="Image URL (e.g. https://images.unsplash.com/...)"
-                        value={mediaUrl}
-                        onChange={(e) => setMediaUrl(e.target.value)}
-                        className="flex-1 px-3.5 py-2 bg-slate-800 rounded-xl border border-slate-700 text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                      />
-                    </div>
-                  )}
-
-                  {/* Composer Tools */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 mt-3 pt-3 border-t border-slate-800">
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setShowMediaInput(!showMediaInput)}
-                        className={`text-xs px-3.5 py-2 rounded-xl border font-medium transition flex items-center gap-1.5 cursor-pointer ${
-                          showMediaInput
-                            ? "bg-emerald-950/80 border-emerald-800/80 text-emerald-400"
-                            : "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700"
-                        }`}
-                      >
-                        <span>📷</span> Photo
-                      </button>
-
-                      <input
-                        type="text"
-                        placeholder="📍 Tag location..."
-                        value={taggedLocation}
-                        onChange={(e) => setTaggedLocation(e.target.value)}
-                        className="px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-100 placeholder-slate-500 outline-none focus:border-emerald-500 focus:bg-slate-900 max-w-[170px]"
-                      />
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      {currentUser && (
-                        <span className="text-xs text-emerald-400 font-semibold hidden sm:inline">
-                          ✨ +20 XP
-                        </span>
-                      )}
-                      <button
-                        type="submit"
-                        disabled={submitting || !newPostContent.trim()}
-                        className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-sm transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                      >
-                        {submitting ? "Posting..." : "Share Post"}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </form>
+      {/* Main Content Area */}
+      <div className="container mx-auto px-4 max-w-6xl mt-8">
+        {loading ? (
+          <div className="py-20 flex flex-col items-center justify-center text-center">
+            <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3" />
+            <p className="text-xs text-slate-500">Searching {activeTab} across Northeast India...</p>
           </div>
-
-          {/* Feed Filter Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-3 rounded-2xl shadow-sm">
-            <div className="flex items-center gap-1.5 bg-slate-800 p-1 rounded-xl text-xs">
-              <button
-                onClick={() => setFilter("all")}
-                className={`px-3.5 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
-                  filter === "all" ? "bg-slate-900 text-emerald-400 shadow-sm border border-slate-700" : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                🌐 All Explorers
-              </button>
-              <button
-                onClick={() => {
-                  if (!currentUser) {
-                    setAuthModalOpen(true);
-                    return;
-                  }
-                  setFilter("friends");
-                }}
-                className={`px-3.5 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
-                  filter === "friends" ? "bg-slate-900 text-emerald-400 shadow-sm border border-slate-700" : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                👥 Friends Only
-              </button>
-            </div>
-
-            <select
-              value={selectedState}
-              onChange={(e) => setSelectedState(e.target.value)}
-              className="px-3.5 py-1.5 bg-slate-800 border border-slate-700 rounded-xl text-xs text-slate-200 outline-none focus:border-emerald-500 font-medium cursor-pointer"
+        ) : results.length === 0 ? (
+          <div className="py-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 text-center max-w-md mx-auto shadow-sm">
+            <span className="text-4xl">🔍</span>
+            <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100 mt-3 mb-1">
+              No results found
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              Try adjusting your search terms or selecting "All States".
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedState("All States");
+                setSelectedCategory("All Categories");
+              }}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold"
             >
-              {NE_STATES.map((st) => (
-                <option key={st} value={st}>
-                  {st}
-                </option>
-              ))}
-            </select>
+              Reset Filters
+            </button>
           </div>
+        ) : (
+          <>
+            {/* 1. USERS / PEOPLE GRID */}
+            {activeTab === "users" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {results.map((user) => {
+                  const isSent = friendRequestsSent[user.id] || user.hasSentRequest;
+                  return (
+                    <div
+                      key={user.id}
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                    >
+                      <div>
+                        {/* Top Avatar & Rank */}
+                        <div className="flex items-start justify-between gap-2 mb-3">
+                          <Link href={`/profile/${user.username}`} className="shrink-0">
+                            <img
+                              src={
+                                user.profileImageUrl ||
+                                `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`
+                              }
+                              alt={user.username}
+                              className="w-14 h-14 rounded-2xl object-cover border-2 border-emerald-500 group-hover:scale-105 transition"
+                            />
+                          </Link>
+                          <RankBadge
+                            rankTier={user.rankTier}
+                            xpPoints={user.xpPoints}
+                            size="sm"
+                            showLevel={false}
+                          />
+                        </div>
 
-          {/* Posts List */}
-          {loading ? (
-            <div className="py-16 text-center text-slate-400 text-xs">
-              <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-              Loading feed...
-            </div>
-          ) : posts.length === 0 ? (
-            <div className="text-center py-16 bg-slate-900 border border-dashed border-slate-800 rounded-3xl p-6 shadow-sm">
-              <div className="text-4xl mb-2">🌿</div>
-              <h3 className="font-bold text-slate-100 text-base">No posts in this feed yet</h3>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                Be the first to share an update, travel recommendation, or local question!
-              </p>
-            </div>
-          ) : (
-            posts.map((post) => (
-              <div
-                key={post.id}
-                id={`post-${post.id}`}
-                className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm hover:border-slate-700/80 transition"
-              >
-                {/* Author Info Header */}
-                <div className="flex items-center justify-between mb-3.5">
-                  <div className="flex items-center gap-3">
-                    <Link href={`/profile/${post.user.username}`}>
-                      <img
-                        src={
-                          post.user.profileImageUrl ||
-                          `https://api.dicebear.com/7.x/bottts/svg?seed=${post.user.username}`
-                        }
-                        alt={post.user.username}
-                        className="w-11 h-11 rounded-2xl object-cover border border-slate-700 bg-slate-800 hover:scale-105 transition"
-                      />
-                    </Link>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
+                        {/* Name & Handle */}
                         <Link
-                          href={`/profile/${post.user.username}`}
-                          className="font-bold text-sm text-slate-100 hover:text-emerald-400 transition"
+                          href={`/profile/${user.username}`}
+                          className="font-extrabold text-sm text-slate-900 dark:text-slate-100 hover:underline block truncate"
                         >
-                          {post.user.fullName || post.user.username}
+                          {user.fullName || user.username}
                         </Link>
-                        <RankBadge
-                          rankTier={post.user.rankTier}
-                          xpPoints={post.user.xpPoints}
-                          size="sm"
-                          showLevel={false}
-                        />
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
-                        <span className="font-mono text-slate-500">@{post.user.username}</span>
-                        <span>•</span>
-                        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                        {post.taggedLocation && (
-                          <>
-                            <span>•</span>
-                            <span className="text-emerald-400 font-medium bg-emerald-950/80 px-2 py-0.5 rounded-md border border-emerald-800/60 text-[11px]">
-                              📍 {post.taggedLocation}
-                            </span>
-                          </>
+                        <p className="text-xs text-slate-500 font-mono">@{user.username}</p>
+
+                        {/* Location */}
+                        <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 truncate">
+                          <span>📍</span>
+                          <span>{user.city ? `${user.city}, ` : ""}{user.state || "Northeast India"}</span>
+                        </div>
+
+                        {/* Bio */}
+                        {user.bio && (
+                          <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 line-clamp-2 italic">
+                            "{user.bio}"
+                          </p>
                         )}
                       </div>
+
+                      {/* Bottom Action Buttons */}
+                      <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                        {user.isMe ? (
+                          <Link
+                            href="/profile/edit"
+                            className="flex-1 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl text-center"
+                          >
+                            Edit Profile
+                          </Link>
+                        ) : user.isFriend ? (
+                          <Link
+                            href={`/profile/${user.username}`}
+                            className="flex-1 py-1.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 text-xs font-bold rounded-xl text-center"
+                          >
+                            Connected ✓
+                          </Link>
+                        ) : isSent ? (
+                          <button
+                            disabled
+                            className="flex-1 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-bold rounded-xl text-center"
+                          >
+                            Requested ⏳
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => handleSendFriendRequest(user.id, user.username, e)}
+                            className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl text-center transition cursor-pointer active:scale-95 shadow-xs"
+                          >
+                            + Connect
+                          </button>
+                        )}
+
+                        <Link
+                          href={`/profile/${user.username}`}
+                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl"
+                          title="View Profile"
+                        >
+                          👁️
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* 2. DIRECTORY / BUSINESSES GRID */}
+            {activeTab === "directory" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+                {results.map((biz) => (
+                  <div
+                    key={biz.id}
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                  >
+                    <div>
+                      {biz.image && (
+                        <div className="w-full h-36 rounded-2xl overflow-hidden mb-3 bg-slate-100 dark:bg-slate-800">
+                          <img
+                            src={biz.image}
+                            alt={biz.businessName}
+                            className="w-full h-full object-cover group-hover:scale-105 transition"
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <Link
+                          href={biz.url}
+                          className="font-extrabold text-base text-slate-900 dark:text-slate-100 hover:underline line-clamp-1"
+                        >
+                          {biz.businessName}
+                        </Link>
+                        {biz.isVerified && (
+                          <span className="shrink-0 text-emerald-500" title="Verified Business">
+                            ✓
+                          </span>
+                        )}
+                      </div>
+
+                      <span className="inline-block px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded-full text-[10px] font-extrabold mb-2">
+                        {biz.category}
+                      </span>
+
+                      <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                        <span>📍</span>
+                        <span className="truncate">{biz.district ? `${biz.district}, ` : ""}{biz.state}</span>
+                      </div>
+
+                      {biz.rating && (
+                        <div className="flex items-center gap-1 text-xs font-bold text-amber-500 mt-1">
+                          <span>⭐</span>
+                          <span>{biz.rating}</span>
+                          {biz.reviewsCount && (
+                            <span className="text-slate-400 font-normal">({biz.reviewsCount} reviews)</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                      {biz.phone && (
+                        <a
+                          href={`tel:${biz.phone}`}
+                          className="flex-1 py-1.5 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 rounded-xl text-xs font-bold text-center border border-emerald-200 dark:border-emerald-800/60"
+                        >
+                          📞 Call
+                        </a>
+                      )}
+                      <Link
+                        href={biz.url}
+                        className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold text-center shadow-xs"
+                      >
+                        View Listing &rarr;
+                      </Link>
                     </div>
                   </div>
-                </div>
+                ))}
+              </div>
+            )}
 
-                {/* Post Content */}
-                <p className="text-[15px] sm:text-base font-medium leading-snug sm:leading-relaxed text-slate-100 whitespace-pre-wrap mb-4">
-                  {post.content}
-                </p>
+            {/* 3. MARKETPLACE GRID */}
+            {activeTab === "marketplace" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {results.map((item) => {
+                  const img = item.images ? item.images.split(",")[0] : null;
+                  return (
+                    <div
+                      key={item.id}
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                    >
+                      <div>
+                        {img ? (
+                          <div className="w-full h-36 rounded-2xl overflow-hidden mb-3 bg-slate-100 dark:bg-slate-800">
+                            <img
+                              src={img}
+                              alt={item.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-full h-36 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-3xl mb-3">
+                            🛍️
+                          </div>
+                        )}
 
-                {/* Attached Media */}
-                {post.mediaUrls && (
-                  <div className="mb-4">
-                    <PostMediaCarousel mediaUrls={post.mediaUrls} />
-                  </div>
-                )}
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
+                            ₹{item.price.toLocaleString()}
+                          </span>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase">
+                            {item.condition || "Used"}
+                          </span>
+                        </div>
 
-                {/* Post Footer (Action bar) */}
-                <div className="flex items-center justify-between pt-3 border-t border-slate-800 text-xs flex-wrap gap-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <PostReactionsBar
-                      postId={post.id}
-                      initialLikesCount={post.likesCount || 0}
-                      initialUserReaction={post.userReaction || null}
-                      currentUser={currentUser}
-                    />
-
-                    {(() => {
-                      const numComments = (post.commentsCount !== undefined ? post.commentsCount : post._count?.comments) || 0;
-                      return (
-                        <button
-                          onClick={() =>
-                            setExpandedCommentsPostId(
-                              expandedCommentsPostId === post.id ? null : post.id
-                            )
-                          }
-                          className="px-3.5 py-1.5 rounded-full font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition cursor-pointer"
+                        <Link
+                          href={`/marketplace/${item.id}`}
+                          className="font-extrabold text-sm text-slate-900 dark:text-slate-100 hover:underline line-clamp-2 block"
                         >
-                          <span>💬</span>
-                          <span>{numComments}</span>
-                          <span className="hidden sm:inline font-semibold">{numComments === 1 ? "Thought" : "Thoughts"}</span>
-                        </button>
-                      );
-                    })()}
+                          {item.title}
+                        </Link>
+
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                          📍 {item.locality ? `${item.locality}, ` : ""}{item.state}
+                        </p>
+                      </div>
+
+                      <Link
+                        href={`/marketplace/${item.id}`}
+                        className="mt-3 w-full py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-xs font-bold text-center block transition"
+                      >
+                        View Deal &rarr;
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* 4. REGIONAL ADDAS GRID */}
+            {activeTab === "addas" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+                {results.map((adda) => (
+                  <div
+                    key={adda.id}
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                  >
+                    <div>
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className="text-3xl p-2 bg-emerald-50 dark:bg-emerald-950/60 rounded-2xl">
+                          {adda.icon || "🏙️"}
+                        </span>
+                        <div>
+                          <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100">
+                            {adda.title || adda.name}
+                          </h3>
+                          <p className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                            {adda.name}
+                          </p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-2">
+                        {adda.desc}
+                      </p>
+                      <div className="flex items-center gap-2 mt-3 text-[11px] text-slate-400">
+                        <span>📍 {adda.state}</span>
+                      </div>
+                    </div>
 
                     <Link
-                      href={`/community/${post.id}`}
-                      className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-full font-bold text-xs flex items-center gap-1.5 border border-slate-700 transition cursor-pointer"
-                      title="Open full post in new page"
+                      href={`/?adda=${encodeURIComponent(adda.name)}`}
+                      className="mt-4 w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold text-center block transition shadow-xs"
                     >
-                      <span>🔗</span>
-                      <span className="hidden sm:inline">Thread</span>
+                      Enter Adda Wall &rarr;
                     </Link>
-
-                    <ShareButton
-                      url={`/community/${post.id}`}
-                      title={`Thought by @${post.user.username} on NorthEast Connect`}
-                      text={post.content.slice(0, 100)}
-                    />
                   </div>
+                ))}
+              </div>
+            )}
 
-                  <Link
-                    href={`/community/${post.id}`}
-                    className="text-slate-500 font-mono text-[11px] hover:text-emerald-400 hover:underline"
+            {/* 5. POSTS / DISCUSSIONS */}
+            {activeTab === "posts" && (
+              <div className="space-y-4 max-w-3xl mx-auto">
+                {results.map((post) => (
+                  <article
+                    key={post.id}
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition"
                   >
-                    #{post.id}
-                  </Link>
-                </div>
+                    <div className="flex items-center justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <Link href={`/profile/${post.user.username}`}>
+                          <img
+                            src={
+                              post.user.profileImageUrl ||
+                              `https://api.dicebear.com/7.x/bottts/svg?seed=${post.user.username}`
+                            }
+                            alt={post.user.username}
+                            className="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-slate-700"
+                          />
+                        </Link>
+                        <div className="min-w-0">
+                          <Link
+                            href={`/profile/${post.user.username}`}
+                            className="font-bold text-xs text-slate-900 dark:text-slate-100 hover:underline block truncate"
+                          >
+                            u/{post.user.username}
+                          </Link>
+                          <p className="text-[10px] text-slate-400 font-mono">
+                            {post.taggedLocation || "n:community"}
+                          </p>
+                        </div>
+                      </div>
+                      <RankBadge
+                        rankTier={post.user.rankTier}
+                        xpPoints={post.user.xpPoints}
+                        size="sm"
+                        showLevel={false}
+                      />
+                    </div>
 
-                {/* Embedded Comment Section for this post */}
-                {expandedCommentsPostId === post.id && (
-                  <div className="mt-3 pt-3 border-t border-slate-800">
-                    <CommentSection
-                      entityType="post"
-                      entityId={post.id}
-                      entityTitle={`Post by @${post.user.username}`}
-                      entityUrl={`/community#post-${post.id}`}
-                      hideHeader={true}
-                      minimal={true}
-                    />
-                  </div>
-                )}
+                    <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed mb-3 line-clamp-3">
+                      {post.content}
+                    </p>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+                      <span className="text-slate-400 font-mono text-[11px]">
+                        ❤️ {post.likesCount || 0} • 💬 {post.commentsCount || 0}
+                      </span>
+                      <Link
+                        href={`/community/${post.id}`}
+                        className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                      >
+                        View Full Thread &rarr;
+                      </Link>
+                    </div>
+                  </article>
+                ))}
               </div>
-            ))
-          )}
-        </div>
+            )}
 
-        {/* Right 1 Column: Sidebar & Leaderboard Quick View */}
-        <div className="space-y-6">
-          {/* User Status Card */}
-          {currentUser ? (
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-sm">
-              <div className="flex items-center gap-3.5 mb-4">
-                <img
-                  src={
-                    currentUser.profileImageUrl ||
-                    `https://api.dicebear.com/7.x/bottts/svg?seed=${currentUser.username}`
-                  }
-                  alt={currentUser.username}
-                  className="w-13 h-13 rounded-2xl object-cover border-2 border-emerald-500"
-                />
-                <div className="min-w-0 flex-1">
-                  <h3 className="font-bold text-sm text-slate-100 truncate">
-                    {currentUser.fullName || currentUser.username}
-                  </h3>
-                  <p className="text-xs text-slate-400 font-mono">@{currentUser.username}</p>
-                </div>
-              </div>
-
-              <div className="mb-4">
-                <RankBadge
-                  rankTier={currentUser.rankTier}
-                  xpPoints={currentUser.xpPoints}
-                  size="md"
-                />
-              </div>
-
-              {currentUser.rankProgress && (
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between text-slate-400">
-                    <span>XP: {currentUser.xpPoints}</span>
-                    <span>Next: {currentUser.rankProgress.nextRank?.tier || "Max"}</span>
-                  </div>
-                  <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500"
-                      style={{ width: `${currentUser.rankProgress.progressPercent}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="mt-5 pt-4 border-t border-slate-800 flex justify-between text-xs font-semibold">
-                <Link
-                  href={`/profile/${currentUser.username}`}
-                  className="text-emerald-400 hover:underline"
+            {/* Pagination / Load More */}
+            {hasMore && (
+              <div className="mt-8 text-center">
+                <button
+                  type="button"
+                  onClick={() => fetchData(page + 1, true)}
+                  disabled={loadingMore}
+                  className="px-6 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 text-slate-900 dark:text-slate-100 rounded-2xl text-xs font-bold transition shadow-xs cursor-pointer disabled:opacity-50"
                 >
-                  My Profile Wall &rarr;
-                </Link>
-                <Link href="/profile/edit" className="text-slate-400 hover:text-slate-200">
-                  Settings
-                </Link>
+                  {loadingMore ? "Loading more..." : "Load More Results ▾"}
+                </button>
               </div>
-            </div>
-          ) : (
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-sm text-center">
-              <div className="text-3xl mb-2">🎁</div>
-              <h3 className="font-bold text-slate-100 text-base">Join the Community</h3>
-              <p className="text-xs text-slate-400 mt-1 mb-4 leading-relaxed">
-                Sign in or register to share travel posts, add friends, and comment across all directory listings.
-              </p>
-              <button
-                onClick={() => setAuthModalOpen(true)}
-                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-sm cursor-pointer"
-              >
-                Sign In / Join (+20 XP)
-              </button>
-            </div>
-          )}
-
-          {/* How to Earn XP / Level Up */}
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-sm">
-            <h3 className="font-bold text-slate-100 text-sm flex items-center gap-2 mb-3.5">
-              <span>⚡</span> How to Level Up Your Rank
-            </h3>
-            <ul className="space-y-2.5 text-xs text-slate-300">
-              <li className="flex items-center justify-between bg-slate-800 p-2.5 rounded-xl border border-slate-700/80">
-                <span>💬 Comment on any page</span>
-                <span className="font-bold text-emerald-400">+10 XP</span>
-              </li>
-              <li className="flex items-center justify-between bg-slate-800 p-2.5 rounded-xl border border-slate-700/80">
-                <span>📝 Post in Community Feed</span>
-                <span className="font-bold text-emerald-400">+20 XP</span>
-              </li>
-              <li className="flex items-center justify-between bg-slate-800 p-2.5 rounded-xl border border-slate-700/80">
-                <span>🤝 Connect with a friend</span>
-                <span className="font-bold text-emerald-400">+15 XP</span>
-              </li>
-              <li className="flex items-center justify-between bg-slate-800 p-2.5 rounded-xl border border-slate-700/80">
-                <span>❤️ Receive a like on comment</span>
-                <span className="font-bold text-emerald-400">+5 XP</span>
-              </li>
-              <li className="flex items-center justify-between bg-slate-800 p-2.5 rounded-xl border border-slate-700/80">
-                <span>👤 Complete your profile</span>
-                <span className="font-bold text-emerald-400">+50 XP</span>
-              </li>
-            </ul>
-
-            <Link
-              href="/leaderboard"
-              className="mt-4 block text-center py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition border border-slate-700"
-            >
-              View Full Leaderboard &rarr;
-            </Link>
-          </div>
-        </div>
+            )}
+          </>
+        )}
       </div>
 
       <AuthModal
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
-        onSuccess={() => {
-          fetchMe();
-          fetchPosts();
-        }}
+        defaultTab="login"
       />
     </div>
   );

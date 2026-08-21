@@ -2,6 +2,18 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getRankFromXp, RANKS } from "@/lib/gamification";
 
+// Fisher-Yates shuffle with configurable randomness ratio (60% shuffle)
+function shuffleArray<T>(array: T[], randomRatio = 0.6): T[] {
+  const result = [...array];
+  for (let i = result.length - 1; i > 0; i--) {
+    if (Math.random() < randomRatio) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+  }
+  return result;
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -10,7 +22,7 @@ export async function GET(request: Request) {
     const users = await db.user.findMany({
       where: {
         status: "Active",
-        ...(state ? { state } : {}),
+        ...(state && state !== "All States" ? { state } : {}),
       },
       select: {
         id: true,
@@ -30,10 +42,32 @@ export async function GET(request: Request) {
         },
       },
       orderBy: { xpPoints: "desc" },
-      take: 50,
+      take: 60,
     });
 
-    const leaderboard = users.map((u, index) => ({
+    // Group users by XP level and shuffle matching peers with 60% probability for fresh community discovery
+    const xpGroups: Record<number, typeof users> = {};
+    for (const u of users) {
+      const xp = u.xpPoints || 0;
+      if (!xpGroups[xp]) xpGroups[xp] = [];
+      xpGroups[xp].push(u);
+    }
+
+    const sortedXpKeys = Object.keys(xpGroups)
+      .map(Number)
+      .sort((a, b) => b - a);
+
+    const reorderedUsers: typeof users = [];
+    for (const xp of sortedXpKeys) {
+      const group = xpGroups[xp];
+      if (group.length > 1) {
+        reorderedUsers.push(...shuffleArray(group, 0.6));
+      } else {
+        reorderedUsers.push(...group);
+      }
+    }
+
+    const leaderboard = reorderedUsers.map((u, index) => ({
       position: index + 1,
       ...u,
       rankInfo: getRankFromXp(u.xpPoints || 0),

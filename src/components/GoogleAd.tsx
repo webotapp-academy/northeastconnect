@@ -117,10 +117,10 @@ export default function GoogleAd({
               </p>
             </div>
             <Link
-              href="/marketplace/new"
+              href="/directory"
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-full shadow-xs shrink-0 transition"
             >
-              Post Free Ad &rarr;
+              Promote Your Business &rarr;
             </Link>
           </div>
         )}

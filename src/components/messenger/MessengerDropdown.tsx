@@ -91,7 +91,7 @@ export default function MessengerDropdown({ currentUser }: MessengerDropdownProp
       {open && (
         <div className="fixed left-1/2 -translate-x-1/2 top-14 w-[calc(100vw-24px)] max-w-sm sm:absolute sm:left-auto sm:right-0 sm:translate-x-0 sm:w-96 sm:top-auto sm:mt-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl z-50 overflow-hidden text-slate-900 dark:text-slate-100 animate-in fade-in zoom-in-95 duration-150">
           {/* Header */}
-          <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-850/80">
+          <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-100 dark:bg-slate-950">
             <div className="flex items-center gap-2">
               <span className="text-base">💬</span>
               <h4 className="font-extrabold text-xs text-slate-900 dark:text-slate-100 uppercase tracking-wider">
@@ -116,7 +116,7 @@ export default function MessengerDropdown({ currentUser }: MessengerDropdownProp
           {activeChatFriend ? (
             <div className="flex flex-col h-72">
               {/* Chat Friend Info Bar */}
-              <div className="px-4 py-2.5 bg-emerald-50/60 dark:bg-emerald-950/40 border-b border-emerald-100 dark:border-emerald-900/40 flex items-center justify-between">
+              <div className="px-4 py-2.5 bg-emerald-50/80 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <Link
                   href={`/profile/${activeChatFriend.username}`}
                   onClick={() => setOpen(false)}
@@ -134,7 +134,7 @@ export default function MessengerDropdown({ currentUser }: MessengerDropdownProp
                     <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
                       {activeChatFriend.fullName || activeChatFriend.username}
                     </p>
-                    <p className="text-[10px] text-slate-500 font-mono">@{activeChatFriend.username}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">@{activeChatFriend.username}</p>
                   </div>
                 </Link>
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">

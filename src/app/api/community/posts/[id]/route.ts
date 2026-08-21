@@ -166,9 +166,17 @@ export async function GET(
       return NextResponse.json({ status: "error", message: "Post not found" }, { status: 404 });
     }
 
+    const commentsCount = await db.universalComment.count({
+      where: { entityType: "post", entityId: postId, status: "Active" },
+    });
+
     return NextResponse.json({
       status: "success",
-      post,
+      post: {
+        ...post,
+        commentsCount,
+        _count: { comments: commentsCount },
+      },
     });
   } catch (error: any) {
     return NextResponse.json(

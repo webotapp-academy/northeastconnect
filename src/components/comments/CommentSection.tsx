@@ -96,7 +96,15 @@ export default function CommentSection({
       const data = await res.json();
       if (data.status === "success") {
         setComments(data.comments || []);
-        setTotalCount(data.totalCount || 0);
+        const count = data.totalCount || 0;
+        setTotalCount(count);
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("northeast-comment-count-updated", {
+              detail: { entityType, entityId, count },
+            })
+          );
+        }
       }
     } catch (err) {
       console.error("Failed to load comments", err);
@@ -137,7 +145,17 @@ export default function CommentSection({
       if (!res.ok) throw new Error(data.message || "Failed to post comment");
 
       setComments([data.comment, ...comments]);
-      setTotalCount((prev) => prev + 1);
+      setTotalCount((prev) => {
+        const next = prev + 1;
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("northeast-comment-count-updated", {
+              detail: { entityType, entityId, count: next },
+            })
+          );
+        }
+        return next;
+      });
       setNewComment("");
       showToast("Comment posted! (+10 Explorer XP earned 🎉)");
     } catch (err: any) {
@@ -185,7 +203,17 @@ export default function CommentSection({
           return c;
         })
       );
-      setTotalCount((prev) => prev + 1);
+      setTotalCount((prev) => {
+        const next = prev + 1;
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("northeast-comment-count-updated", {
+              detail: { entityType, entityId, count: next },
+            })
+          );
+        }
+        return next;
+      });
       setReplyText("");
       setActiveReplyId(null);
       showToast("Reply posted! (+10 Explorer XP 🎉)");

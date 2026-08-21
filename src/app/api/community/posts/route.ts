@@ -67,8 +67,32 @@ export async function GET(request: Request) {
       take: 40,
     });
 
+    const postIds = posts.map((p) => p.id);
+    const commentCounts = postIds.length > 0
+      ? await db.universalComment.groupBy({
+          by: ["entityId"],
+          where: {
+            entityType: "post",
+            entityId: { in: postIds },
+            status: "Active",
+          },
+          _count: {
+            _all: true,
+          },
+        })
+      : [];
+
+    const countMap: Record<number, number> = {};
+    commentCounts.forEach((c) => {
+      countMap[c.entityId] = c._count._all;
+    });
+
     const formatted = posts.map((p) => ({
       ...p,
+      commentsCount: countMap[p.id] || 0,
+      _count: {
+        comments: countMap[p.id] || 0,
+      },
       user: {
         ...p.user,
         rankInfo: getRankFromXp(p.user.xpPoints || 0),

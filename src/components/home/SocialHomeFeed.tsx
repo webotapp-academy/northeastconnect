@@ -384,9 +384,32 @@ export default function SocialHomeFeed({
     }
     window.addEventListener("northeast-post-created", handleExternalPostCreated);
 
+    function handleCommentCountUpdated(e: any) {
+      if (e?.detail && e.detail.entityType === "post" && e.detail.entityId) {
+        setPosts((prev) =>
+          prev.map((p) => {
+            if (p.id === e.detail.entityId) {
+              return {
+                ...p,
+                commentsCount: e.detail.count,
+                _count: {
+                  ...(p._count || {}),
+                  comments: e.detail.count,
+                },
+              };
+            }
+            return p;
+          })
+        );
+      }
+    }
+    window.addEventListener("northeast-comment-count-updated", handleCommentCountUpdated);
+
     return () => {
       window.removeEventListener("hashchange", handlePostHash);
+      window.removeEventListener("popstate", handlePostHash);
       window.removeEventListener("northeast-post-created", handleExternalPostCreated);
+      window.removeEventListener("northeast-comment-count-updated", handleCommentCountUpdated);
     };
   }, [posts, selectedState, feedTab, selectedAdda, selectedHashtag]);
 
@@ -1708,19 +1731,24 @@ export default function SocialHomeFeed({
                         {/* Footer Action Bar */}
                         <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400">
                           <div className="flex items-center gap-1.5 sm:gap-3">
-                            <button
-                              onClick={() =>
-                                setExpandedCommentsPostId(isCommentsOpen ? null : post.id)
-                              }
-                              className={`px-3.5 py-1.5 rounded-full font-bold text-xs sm:text-[13px] flex items-center gap-1.5 transition cursor-pointer ${
-                                isCommentsOpen
-                                  ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60"
-                                  : "bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60"
-                              }`}
-                            >
-                              <span>💬</span>
-                              <span>{post._count?.comments || 0} Comments</span>
-                            </button>
+                            {(() => {
+                              const numComments = (post.commentsCount !== undefined ? post.commentsCount : post._count?.comments) || 0;
+                              return (
+                                <button
+                                  onClick={() =>
+                                    setExpandedCommentsPostId(isCommentsOpen ? null : post.id)
+                                  }
+                                  className={`px-3.5 py-1.5 rounded-full font-bold text-xs sm:text-[13px] flex items-center gap-1.5 transition cursor-pointer ${
+                                    isCommentsOpen
+                                      ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60"
+                                      : "bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60"
+                                  }`}
+                                >
+                                  <span>💬</span>
+                                  <span>{numComments} {numComments === 1 ? "Comment" : "Comments"}</span>
+                                </button>
+                              );
+                            })()}
 
                             <button
                               onClick={() => handleShare(post)}

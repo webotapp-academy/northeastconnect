@@ -235,6 +235,12 @@ export default function SocialHomeFeed({
   // Auth modal
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
+  // Infinite scroll pagination state (10-by-10)
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const observerTarget = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (addaPopoverRef.current && !addaPopoverRef.current.contains(e.target as Node)) {
@@ -493,7 +499,11 @@ export default function SocialHomeFeed({
   ) {
     try {
       setLoading(true);
+      setPage(1);
+      setHasMore(true);
       const queryParams = new URLSearchParams();
+      queryParams.set("page", "1");
+      queryParams.set("limit", "10");
       if (tab === "friends") queryParams.set("filter", "friends");
       if (state !== "All States") queryParams.set("state", state);
       if (adda) queryParams.set("adda", adda);
@@ -505,6 +515,11 @@ export default function SocialHomeFeed({
         setPosts(data.posts || []);
         setRelatedAddaNews(data.relatedNews || []);
         setRelatedAddaDirectory(data.relatedDirectory || []);
+        if (data.hasMore === false || (data.posts && data.posts.length < 10)) {
+          setHasMore(false);
+        } else {
+          setHasMore(true);
+        }
       }
     } catch (err) {
       console.error(err);
@@ -512,6 +527,61 @@ export default function SocialHomeFeed({
       setLoading(false);
     }
   }
+
+  async function loadMorePosts() {
+    if (loading || loadingMore || !hasMore) return;
+    try {
+      setLoadingMore(true);
+      const nextPage = page + 1;
+      const queryParams = new URLSearchParams();
+      queryParams.set("page", String(nextPage));
+      queryParams.set("limit", "10");
+      if (feedTab === "friends") queryParams.set("filter", "friends");
+      if (selectedState !== "All States") queryParams.set("state", selectedState);
+      if (selectedAdda) queryParams.set("adda", selectedAdda);
+      if (selectedHashtag) queryParams.set("hashtag", selectedHashtag);
+
+      const res = await fetch(`/api/community/posts?${queryParams.toString()}`);
+      const data = await res.json();
+      if (data.status === "success" && Array.isArray(data.posts)) {
+        if (data.posts.length > 0) {
+          setPosts((prev) => {
+            const existingIds = new Set(prev.map((p: any) => p.id));
+            const newUniquePosts = data.posts.filter((p: any) => !existingIds.has(p.id));
+            return [...prev, ...newUniquePosts];
+          });
+          setPage(nextPage);
+        }
+        if (data.hasMore === false || data.posts.length < 10) {
+          setHasMore(false);
+        }
+      } else {
+        setHasMore(false);
+      }
+    } catch (err) {
+      console.error("Error loading more posts:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  useEffect(() => {
+    const target = observerTarget.current;
+    if (!target || !hasMore || loading || loadingMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+          loadMorePosts();
+        }
+      },
+      { threshold: 0.1, rootMargin: "300px" }
+    );
+
+    observer.observe(target);
+
+    return () => observer.disconnect();
+  }, [observerTarget.current, hasMore, loading, loadingMore, page, feedTab, selectedState, selectedAdda, selectedHashtag]);
 
   function handleSelectHashtag(tag: string) {
     const cleanTag = tag.replace(/^#/, "");
@@ -1852,6 +1922,30 @@ export default function SocialHomeFeed({
                     </React.Fragment>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Infinite Scroll Sentinel & Loading Indicator */}
+            {posts.length > 0 && (
+              <div ref={observerTarget} className="py-6 text-center">
+                {loadingMore ? (
+                  <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-full border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-300 shadow-xs animate-pulse">
+                    <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                    <span>Loading more thoughts...</span>
+                  </div>
+                ) : hasMore ? (
+                  <button
+                    onClick={loadMorePosts}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 rounded-full text-xs font-bold border border-slate-200/80 dark:border-slate-700 transition cursor-pointer"
+                  >
+                    <span>Load more thoughts ↓</span>
+                  </button>
+                ) : (
+                  <div className="py-4 text-xs font-semibold text-slate-400 dark:text-slate-500 flex items-center justify-center gap-1.5">
+                    <span>🌿</span>
+                    <span>You're all caught up with community thoughts!</span>
+                  </div>
+                )}
               </div>
             )}
           </div>

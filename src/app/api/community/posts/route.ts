@@ -47,25 +47,33 @@ export async function GET(request: Request) {
       ];
     }
 
-    const posts = await db.communityPost.findMany({
-      where: whereClause,
-      include: {
-        user: {
-          select: {
-            id: true,
-            username: true,
-            fullName: true,
-            profileImageUrl: true,
-            rankTier: true,
-            xpPoints: true,
-            state: true,
-            city: true,
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+    const limit = Math.max(1, Math.min(50, parseInt(searchParams.get("limit") || "10", 10)));
+    const skip = (page - 1) * limit;
+
+    const [posts, totalCount] = await Promise.all([
+      db.communityPost.findMany({
+        where: whereClause,
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              fullName: true,
+              profileImageUrl: true,
+              rankTier: true,
+              xpPoints: true,
+              state: true,
+              city: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 40,
-    });
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      db.communityPost.count({ where: whereClause }),
+    ]);
 
     const postIds = posts.map((p) => p.id);
     const commentCounts = postIds.length > 0
@@ -141,6 +149,13 @@ export async function GET(request: Request) {
     return NextResponse.json({
       status: "success",
       posts: formatted,
+      hasMore: skip + posts.length < totalCount,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        hasMore: skip + posts.length < totalCount,
+      },
       relatedNews,
       relatedDirectory,
     });

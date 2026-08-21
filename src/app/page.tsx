@@ -24,7 +24,7 @@ export default async function Home() {
           },
         },
         orderBy: { createdAt: "desc" },
-        take: 20,
+        take: 10,
       }),
       db.news.findMany({
         where: { status: "Published" },

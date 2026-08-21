@@ -30,6 +30,7 @@ const MARKETPLACE_CATEGORIES = [
 
 export default function CommunityDiscoveryPage() {
   const [activeTab, setActiveTab] = useState<"users" | "posts" | "addas" | "directory" | "marketplace">("users");
+  const [userSortTab, setUserSortTab] = useState<"recent" | "active">("recent");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -88,7 +89,7 @@ export default function CommunityDiscoveryPage() {
   useEffect(() => {
     setPage(1);
     fetchData(1, false);
-  }, [activeTab, selectedCategory]);
+  }, [activeTab, selectedCategory, userSortTab]);
 
   async function fetchSession() {
     try {
@@ -111,6 +112,7 @@ export default function CommunityDiscoveryPage() {
       const params = new URLSearchParams({
         type: activeTab,
         q: searchQuery,
+        userSort: userSortTab,
         category: selectedCategory.startsWith("All") ? "All" : selectedCategory,
         page: pageNum.toString(),
         limit: "16",
@@ -514,6 +516,41 @@ export default function CommunityDiscoveryPage() {
 
       {/* Results Content Area */}
       <div className="container mx-auto px-3 sm:px-6 max-w-6xl mt-4 sm:mt-6">
+        {/* People Sub-Tabs: Recently Joined vs Most Active (Highest Points) */}
+        {activeTab === "users" && (
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-4 bg-slate-100 dark:bg-slate-800/90 p-1 sm:p-1.5 rounded-2xl w-fit border border-slate-200 dark:border-slate-700/80">
+            <button
+              type="button"
+              onClick={() => setUserSortTab("recent")}
+              className={`px-3 sm:px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer select-none active:scale-95 ${
+                userSortTab === "recent"
+                  ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs border border-slate-200 dark:border-slate-700"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              }`}
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              <span>Recently Joined</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setUserSortTab("active")}
+              className={`px-3 sm:px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer select-none active:scale-95 ${
+                userSortTab === "active"
+                  ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs border border-slate-200 dark:border-slate-700"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+              }`}
+            >
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+              <span>Most Active (Highest Points)</span>
+            </button>
+          </div>
+        )}
+
         {loading ? (
           <div className="py-16 flex flex-col items-center justify-center text-center">
             <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3" />

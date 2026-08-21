@@ -1766,12 +1766,14 @@ export default function SocialHomeFeed({
 
                         {/* Expandable Universal Comment Section */}
                         {isCommentsOpen && (
-                          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 animate-in fade-in duration-200">
+                          <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 animate-in fade-in duration-200">
                             <CommentSection
                               entityType="post"
                               entityId={post.id}
                               entityTitle={`Post by @${post.user.username}`}
-                              entityUrl={`/community#post-${post.id}`}
+                              entityUrl={`/#post-${post.id}`}
+                              hideHeader={true}
+                              minimal={true}
                             />
                           </div>
                         )}

@@ -405,11 +405,14 @@ export default function CommunityFeedPage() {
 
                 {/* Embedded Comment Section for this post */}
                 {expandedCommentsPostId === post.id && (
-                  <div className="mt-4 pt-2 border-t border-slate-800">
+                  <div className="mt-3 pt-3 border-t border-slate-800">
                     <CommentSection
                       entityType="post"
                       entityId={post.id}
                       entityTitle={`Post by @${post.user.username}`}
+                      entityUrl={`/community#post-${post.id}`}
+                      hideHeader={true}
+                      minimal={true}
                     />
                   </div>
                 )}

@@ -32,6 +32,8 @@ interface CommentSectionProps {
   entityId: number;
   entityTitle?: string;
   entityUrl?: string;
+  hideHeader?: boolean;
+  minimal?: boolean;
 }
 
 function timeAgo(dateString: string) {
@@ -54,7 +56,10 @@ export default function CommentSection({
   entityId,
   entityTitle,
   entityUrl,
+  hideHeader,
+  minimal,
 }: CommentSectionProps) {
+  const isPostOrMinimal = minimal || hideHeader || entityType === "post";
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [totalCount, setTotalCount] = useState<number>(0);
@@ -340,7 +345,13 @@ export default function CommentSection({
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 shadow-xs border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 mt-10 transition-colors">
+    <div
+      className={
+        isPostOrMinimal
+          ? "space-y-3 pt-1 text-slate-900 dark:text-slate-100"
+          : "bg-white dark:bg-slate-900 rounded-3xl p-6 md:p-8 shadow-xs border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 mt-10 transition-colors"
+      }
+    >
       {/* Toast Alert */}
       {successToast && (
         <div className="fixed bottom-6 right-6 z-50 bg-emerald-950 border border-emerald-800 text-emerald-200 px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-bottom-5 duration-300">
@@ -349,30 +360,32 @@ export default function CommentSection({
         </div>
       )}
 
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-5 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-lg">
-            💬
+      {/* Header (Hidden on community post cards for direct, clean inline commenting) */}
+      {!isPostOrMinimal && (
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-5 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-lg">
+              💬
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Community Discussion</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {totalCount} {totalCount === 1 ? "thought shared" : "thoughts shared"} • Earn XP by commenting
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Community Discussion</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {totalCount} {totalCount === 1 ? "thought shared" : "thoughts shared"} • Earn XP by commenting
-            </p>
-          </div>
-        </div>
 
-        {currentUser && (
-          <div className="hidden sm:flex items-center gap-2">
-            <span className="text-xs text-slate-500 dark:text-slate-400">Your Rank:</span>
-            <RankBadge rankTier={currentUser.rankTier} xpPoints={currentUser.xpPoints} size="sm" />
-          </div>
-        )}
-      </div>
+          {currentUser && (
+            <div className="hidden sm:flex items-center gap-2">
+              <span className="text-xs text-slate-500 dark:text-slate-400">Your Rank:</span>
+              <RankBadge rankTier={currentUser.rankTier} xpPoints={currentUser.xpPoints} size="sm" />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Comment Input Box */}
-      <form onSubmit={handlePostComment} className="mb-8">
+      <form onSubmit={handlePostComment} className={isPostOrMinimal ? "mb-4" : "mb-8"}>
         <div className="flex gap-3">
           <div className="flex-shrink-0">
             {currentUser?.profileImageUrl ? (

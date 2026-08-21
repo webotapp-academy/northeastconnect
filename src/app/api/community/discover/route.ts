@@ -36,34 +36,76 @@ export async function GET(req: NextRequest) {
         where.state = { contains: state, mode: "insensitive" };
       }
 
-      const [rawUsers, total] = await Promise.all([
-        db.user.findMany({
-          where,
-          select: {
-            id: true,
-            username: true,
-            fullName: true,
-            profileImageUrl: true,
-            rankTier: true,
-            xpPoints: true,
-            state: true,
-            city: true,
-            bio: true,
-            createdAt: true,
-            _count: {
-              select: {
-                communityPosts: true,
-                sentFriendships: true,
-                receivedFriendships: true,
+      let rawUsers: any[] = [];
+      let total = 0;
+
+      if (!q) {
+        // Fetch recently joined users (latest 30) and randomly sample 20 of them
+        const [recentUsers, count] = await Promise.all([
+          db.user.findMany({
+            where,
+            select: {
+              id: true,
+              username: true,
+              fullName: true,
+              profileImageUrl: true,
+              rankTier: true,
+              xpPoints: true,
+              state: true,
+              city: true,
+              bio: true,
+              createdAt: true,
+              _count: {
+                select: {
+                  communityPosts: true,
+                  sentFriendships: true,
+                  receivedFriendships: true,
+                },
               },
             },
-          },
-          orderBy: [{ xpPoints: "desc" }, { createdAt: "desc" }],
-          skip,
-          take: limit,
-        }),
-        db.user.count({ where }),
-      ]);
+            orderBy: { createdAt: "desc" },
+            take: 30,
+          }),
+          db.user.count({ where }),
+        ]);
+
+        // Shuffle randomly
+        rawUsers = recentUsers
+          .sort(() => Math.random() - 0.5)
+          .slice(0, Math.min(limit, 20));
+        total = count;
+      } else {
+        const [searchedUsers, count] = await Promise.all([
+          db.user.findMany({
+            where,
+            select: {
+              id: true,
+              username: true,
+              fullName: true,
+              profileImageUrl: true,
+              rankTier: true,
+              xpPoints: true,
+              state: true,
+              city: true,
+              bio: true,
+              createdAt: true,
+              _count: {
+                select: {
+                  communityPosts: true,
+                  sentFriendships: true,
+                  receivedFriendships: true,
+                },
+              },
+            },
+            orderBy: [{ xpPoints: "desc" }, { createdAt: "desc" }],
+            skip,
+            take: limit,
+          }),
+          db.user.count({ where }),
+        ]);
+        rawUsers = searchedUsers;
+        total = count;
+      }
 
       // Check friend request status if logged in
       let sentRequestsSet = new Set<number>();

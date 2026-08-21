@@ -195,14 +195,6 @@ export default function CommunityDiscoveryPage() {
         <div className="container mx-auto px-3 sm:px-6 max-w-6xl">
           {/* Header Title (Compact on Mobile) */}
           <div className="max-w-3xl">
-            <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider">
-                🌿 Community Discovery
-              </span>
-              <span className="text-[11px] text-slate-500 font-mono hidden sm:inline">
-                • Northeast India
-              </span>
-            </div>
             <h1 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-tight">
               Discover People, Thoughts & Places
             </h1>

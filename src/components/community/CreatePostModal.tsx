@@ -124,13 +124,18 @@ export default function CreatePostModal({
 
     try {
       setSubmitting(true);
+      const finalMedia =
+        attachedPhotos.length > 0
+          ? attachedPhotos.join(",")
+          : manualMediaUrl.trim() || null;
+
       const res = await fetch("/api/community/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: content.trim(),
-          mediaUrls: attachedPhotos.length > 0 ? attachedPhotos.join(",") : null,
-          mediaType: attachedPhotos.length > 0 ? "IMAGE" : "TEXT",
+          mediaUrls: finalMedia,
+          mediaType: finalMedia ? "IMAGE" : "TEXT",
           taggedLocation: taggedLocation || null,
         }),
       });

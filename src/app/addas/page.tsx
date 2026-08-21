@@ -447,16 +447,21 @@ export default function ExploreAddasPage() {
                         </div>
                       </div>
 
-                      <button
-                        onClick={() => handleToggleJoin(adda.name)}
-                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition cursor-pointer shadow-xs shrink-0 ${
-                          isJoined
-                            ? "bg-emerald-600 hover:bg-rose-600 text-white"
-                            : "bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700"
-                        }`}
-                      >
-                        {isJoined ? "Joined ✓" : "+ Join"}
-                      </button>
+                      {isJoined ? (
+                        <Link
+                          href={`/?adda=${encodeURIComponent(adda.name)}`}
+                          className="px-4 py-1.5 rounded-full text-xs font-bold transition cursor-pointer shadow-xs shrink-0 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40"
+                        >
+                          View
+                        </Link>
+                      ) : (
+                        <button
+                          onClick={() => handleToggleJoin(adda.name)}
+                          className="px-4 py-1.5 rounded-full text-xs font-bold transition cursor-pointer shadow-xs shrink-0 bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700"
+                        >
+                          + Join
+                        </button>
+                      )}
                     </div>
 
                     {/* Description */}

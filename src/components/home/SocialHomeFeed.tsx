@@ -406,6 +406,29 @@ export default function SocialHomeFeed({
         } catch {
           setJoinedAddas([]);
         }
+
+        // Load existing friend connections and pending outgoing requests
+        try {
+          const friendsRes = await fetch("/api/friends");
+          const friendsData = await friendsRes.json();
+          if (friendsData.status === "success") {
+            const sentMap: Record<number, boolean> = {};
+            if (Array.isArray(friendsData.pendingOutgoing)) {
+              friendsData.pendingOutgoing.forEach((req: any) => {
+                const targetId = req.receiverId || req.receiver?.id;
+                if (targetId) sentMap[targetId] = true;
+              });
+            }
+            if (Array.isArray(friendsData.friends)) {
+              friendsData.friends.forEach((f: any) => {
+                if (f.user?.id) sentMap[f.user.id] = true;
+              });
+            }
+            setFriendRequestsSent(sentMap);
+          }
+        } catch {
+          // Ignored
+        }
       } else {
         setCurrentUser(null);
         setJoinedAddas([]);
@@ -413,6 +436,29 @@ export default function SocialHomeFeed({
     } catch {
       setCurrentUser(null);
       setJoinedAddas([]);
+    }
+  }
+
+  async function handleCancelFriendRequest(targetUserId: number, targetUsername: string, e?: React.MouseEvent) {
+    if (e) e.stopPropagation();
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`/api/friends?targetUserId=${targetUserId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.status === "success") {
+        setFriendRequestsSent((prev) => {
+          const updated = { ...prev };
+          delete updated[targetUserId];
+          return updated;
+        });
+        showToast(`Friend request to @${targetUsername} cancelled`);
+      } else {
+        showToast(data.message || "Failed to cancel request");
+      }
+    } catch {
+      showToast("Failed to cancel friend request");
     }
   }
 
@@ -1722,46 +1768,54 @@ export default function SocialHomeFeed({
                           </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {topExplorers.slice(0, 4).map((explorer: any) => {
-                              const isSent = friendRequestsSent[explorer.id];
-                              return (
-                                <div
-                                  key={explorer.id}
-                                  className="p-3 bg-slate-50/80 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between gap-3 hover:border-emerald-500/50 transition"
-                                >
-                                  <Link href={`/profile/${explorer.username}`} className="flex items-center gap-2.5 min-w-0">
-                                    <img
-                                      src={
-                                        explorer.profileImageUrl ||
-                                        `https://api.dicebear.com/7.x/bottts/svg?seed=${explorer.username}`
-                                      }
-                                      alt={explorer.username}
-                                      className="w-10 h-10 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shrink-0"
-                                    />
-                                    <div className="min-w-0">
-                                      <h4 className="font-extrabold text-xs text-slate-900 dark:text-slate-100 truncate hover:text-emerald-600">
-                                        {explorer.fullName || explorer.username}
-                                      </h4>
-                                      <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate font-mono">
-                                        📍 {explorer.city || explorer.state || "Northeast"}
-                                      </p>
-                                    </div>
-                                  </Link>
-
-                                  <button
-                                    onClick={(e) => handleSendFriendRequest(explorer.id, explorer.username, e)}
-                                    disabled={isSent}
-                                    className={`px-3 py-1 text-[11px] font-bold rounded-full transition cursor-pointer shrink-0 ${
-                                      isSent
-                                        ? "bg-slate-200 dark:bg-slate-700 text-slate-500 cursor-not-allowed"
-                                        : "bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs"
-                                    }`}
+                            {topExplorers
+                              .filter((exp: any) => exp.id !== currentUser?.id)
+                              .slice(0, 4)
+                              .map((explorer: any) => {
+                                const isSent = !!friendRequestsSent[explorer.id];
+                                return (
+                                  <div
+                                    key={explorer.id}
+                                    className="p-3 bg-slate-50/80 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between gap-3 hover:border-emerald-500/50 transition"
                                   >
-                                    {isSent ? "Sent ✓" : "+ Connect"}
-                                  </button>
-                                </div>
-                              );
-                            })}
+                                    <Link href={`/profile/${explorer.username}`} className="flex items-center gap-2.5 min-w-0">
+                                      <img
+                                        src={
+                                          explorer.profileImageUrl ||
+                                          `https://api.dicebear.com/7.x/bottts/svg?seed=${explorer.username}`
+                                        }
+                                        alt={explorer.username}
+                                        className="w-10 h-10 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+                                      />
+                                      <div className="min-w-0">
+                                        <h4 className="font-extrabold text-xs text-slate-900 dark:text-slate-100 truncate hover:text-emerald-600">
+                                          {explorer.fullName || explorer.username}
+                                        </h4>
+                                        <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate font-mono">
+                                          📍 {explorer.city || explorer.state || "Northeast"}
+                                        </p>
+                                      </div>
+                                    </Link>
+
+                                    {isSent ? (
+                                      <button
+                                        onClick={(e) => handleCancelFriendRequest(explorer.id, explorer.username, e)}
+                                        className="px-3 py-1 text-[11px] font-bold rounded-full transition cursor-pointer shrink-0 bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 border border-rose-500/30"
+                                        title="Cancel friend request"
+                                      >
+                                        Cancel
+                                      </button>
+                                    ) : (
+                                      <button
+                                        onClick={(e) => handleSendFriendRequest(explorer.id, explorer.username, e)}
+                                        className="px-3 py-1 text-[11px] font-bold rounded-full transition cursor-pointer shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs"
+                                      >
+                                        + Connect
+                                      </button>
+                                    )}
+                                  </div>
+                                );
+                              })}
                           </div>
                         </div>
                       )}
@@ -1834,15 +1888,22 @@ export default function SocialHomeFeed({
                       </div>
 
                       <button
-                        onClick={(e) => handleToggleJoinAdda(comm.name, e)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (isJoined) {
+                            handleSelectAdda(comm.name);
+                          } else {
+                            handleToggleJoinAdda(comm.name, e);
+                          }
+                        }}
                         className={`px-3 py-1 text-xs font-bold rounded-full transition cursor-pointer shrink-0 shadow-xs ${
                           isJoined
-                            ? "bg-emerald-600 hover:bg-rose-600 text-white"
+                            ? "bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40"
                             : "bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700"
                         }`}
-                        title={isJoined ? "Click to leave" : "Click to join"}
+                        title={isJoined ? "View adda feed" : "Click to join"}
                       >
-                        {isJoined ? "Joined" : "Join"}
+                        {isJoined ? "View" : "Join"}
                       </button>
                     </div>
                   );

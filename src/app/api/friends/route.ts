@@ -178,3 +178,57 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const currentUser = await getCurrentUser();
+    if (!currentUser) {
+      return NextResponse.json({ status: "error", message: "Unauthorized. Please log in." }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    let targetUserId = searchParams.get("targetUserId");
+
+    if (!targetUserId) {
+      try {
+        const body = await request.json();
+        targetUserId = body?.targetUserId;
+      } catch {}
+    }
+
+    if (!targetUserId) {
+      return NextResponse.json({ status: "error", message: "targetUserId is required" }, { status: 400 });
+    }
+
+    const numericTargetId = parseInt(targetUserId, 10);
+
+    const existing = await db.friendship.findFirst({
+      where: {
+        OR: [
+          { senderId: currentUser.id, receiverId: numericTargetId },
+          { senderId: numericTargetId, receiverId: currentUser.id },
+        ],
+      },
+    });
+
+    if (!existing) {
+      return NextResponse.json({ status: "success", message: "No active connection/request found." });
+    }
+
+    await db.friendship.delete({
+      where: { id: existing.id },
+    });
+
+    return NextResponse.json({
+      status: "success",
+      message: "Friend request cancelled.",
+    });
+  } catch (error: any) {
+    console.error("Cancel friend request error:", error);
+    return NextResponse.json(
+      { status: "error", message: error?.message || "Failed to cancel friend request" },
+      { status: 500 }
+    );
+  }
+}
+

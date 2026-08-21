@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import RankBadge from "@/components/profile/RankBadge";
 import AuthModal from "@/components/auth/AuthModal";
 import { soundFX } from "@/lib/soundEffects";
@@ -157,109 +156,171 @@ export default function CommunityDiscoveryPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 transition-colors pb-24">
-      {/* Top Hero Banner */}
-      <div className="bg-gradient-to-b from-emerald-900/40 via-slate-900/80 to-transparent pt-8 pb-12 border-b border-slate-200 dark:border-slate-800/80">
-        <div className="container mx-auto px-4 max-w-6xl">
+      {/* Top Header & Search Area - Mobile Optimized */}
+      <div className="bg-gradient-to-b from-emerald-950/60 via-slate-900/90 to-transparent pt-4 sm:pt-8 pb-5 sm:pb-8 border-b border-slate-200 dark:border-slate-800/80">
+        <div className="container mx-auto px-3 sm:px-6 max-w-6xl">
+          {/* Header Title (Compact on Mobile) */}
           <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 rounded-full text-xs font-black uppercase tracking-wider mb-3">
-              🌿 Explorer Community & Discovery Hub
-            </span>
-            <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-tight mb-2">
-              Discover People, Businesses & Deals Across Northeast India
+            <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider">
+                🌿 Community Discovery
+              </span>
+              <span className="text-[11px] text-slate-500 font-mono hidden sm:inline">
+                • Northeast India
+              </span>
+            </div>
+            <h1 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-tight">
+              Discover People, Businesses & Deals
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-              Search and filter through local explorers, verified regional businesses, community marketplaces, and regional adda hubs.
+            <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed hidden sm:block">
+              Filter local explorers, verified businesses, community marketplace ads, and regional adda hubs.
             </p>
           </div>
 
-          {/* Search & Filter Bar */}
-          <form onSubmit={handleSearchSubmit} className="mt-6 flex flex-col sm:flex-row gap-2.5">
-            <div className="relative flex-1">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔍</span>
+          {/* Unified Compact Search Form */}
+          <form onSubmit={handleSearchSubmit} className="mt-3 sm:mt-4 space-y-2">
+            <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/80 rounded-2xl p-1 sm:p-1.5 shadow-xs focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20 transition">
+              <span className="pl-2.5 text-slate-400 text-sm">🔍</span>
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={
                   activeTab === "users"
-                    ? "Search people by name, username, bio, city..."
+                    ? "Search explorers by name, handle, city..."
                     : activeTab === "directory"
-                    ? "Search businesses, hotels, tours, handicrafts..."
+                    ? "Search hotels, tours, cafes, stores..."
                     : activeTab === "marketplace"
-                    ? "Search marketplace items, cars, electronics..."
+                    ? "Search marketplace items, cars, gadgets..."
                     : activeTab === "addas"
-                    ? "Search regional hubs (e.g. Guwahati, Shillong)..."
+                    ? "Search regional hubs (e.g. Guwahati)..."
                     : "Search thoughts and discussions..."
                 }
-                className="w-full pl-10 pr-4 py-2.5 sm:py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-xs"
+                className="flex-1 min-w-0 bg-transparent px-2 py-1.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
               />
+
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setPage(1);
+                    fetchData(1, false);
+                  }}
+                  className="px-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xs font-bold"
+                >
+                  ✕
+                </button>
+              )}
+
+              <button
+                type="submit"
+                className="px-4 py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer shrink-0 active:scale-95"
+              >
+                Search
+              </button>
             </div>
 
-            {/* State Selector */}
-            <select
-              value={selectedState}
-              onChange={(e) => setSelectedState(e.target.value)}
-              className="px-3 py-2.5 sm:py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 shadow-xs cursor-pointer"
-            >
-              {NE_STATES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+            {/* Quick State Chips (Horizontal Scroll on Mobile) */}
+            <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0 mr-0.5">
+                State:
+              </span>
+              {NE_STATES.map((st) => {
+                const isSelected = selectedState === st;
+                return (
+                  <button
+                    key={st}
+                    type="button"
+                    onClick={() => {
+                      soundFX.playPop();
+                      setSelectedState(st);
+                    }}
+                    className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition shrink-0 cursor-pointer ${
+                      isSelected
+                        ? "bg-emerald-600 text-white shadow-xs"
+                        : "bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/60"
+                    }`}
+                  >
+                    {st === "All States" ? "All States 🌿" : st}
+                  </button>
+                );
+              })}
+            </div>
 
-            {/* Category Selector (if directory or marketplace) */}
+            {/* Category Filter Chips for Directory & Marketplace */}
             {activeTab === "directory" && (
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2.5 sm:py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 shadow-xs cursor-pointer"
-              >
-                {DIRECTORY_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0 mr-0.5">
+                  Category:
+                </span>
+                {DIRECTORY_CATEGORIES.map((cat) => {
+                  const isSelected = selectedCategory === cat;
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => {
+                        soundFX.playPop();
+                        setSelectedCategory(cat);
+                      }}
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold transition shrink-0 cursor-pointer ${
+                        isSelected
+                          ? "bg-teal-600 text-white shadow-xs"
+                          : "bg-white/60 dark:bg-slate-805/60 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-800/60"
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
             )}
 
             {activeTab === "marketplace" && (
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2.5 sm:py-3 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl text-xs sm:text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500 shadow-xs cursor-pointer"
-              >
-                {MARKETPLACE_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0 mr-0.5">
+                  Category:
+                </span>
+                {MARKETPLACE_CATEGORIES.map((cat) => {
+                  const isSelected = selectedCategory === cat;
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => {
+                        soundFX.playPop();
+                        setSelectedCategory(cat);
+                      }}
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold transition shrink-0 cursor-pointer ${
+                        isSelected
+                          ? "bg-teal-600 text-white shadow-xs"
+                          : "bg-white/60 dark:bg-slate-805/60 text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-800/60"
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
             )}
-
-            <button
-              type="submit"
-              className="px-6 py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs sm:text-sm font-bold transition shadow-xs cursor-pointer shrink-0"
-            >
-              Search
-            </button>
           </form>
 
-          {/* LinkedIn-Style Segmented Navigation Tabs */}
-          <div className="flex items-center gap-2 mt-6 overflow-x-auto pb-1 no-scrollbar text-xs font-bold whitespace-nowrap">
+          {/* LinkedIn-Style Segmented Navigation Tabs (No Scrollbar, Touch-Friendly) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 mt-4 overflow-x-auto pb-0.5 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden text-xs font-bold whitespace-nowrap">
             <button
               type="button"
               onClick={() => handleTabSwitch("users")}
-              className={`px-4 py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
                 activeTab === "users"
                   ? "bg-emerald-600 text-white shadow-xs"
-                  : "bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                  : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
               <span>👥</span>
-              <span>People & Explorers</span>
+              <span>People</span>
               {activeTab === "users" && totalCount > 0 && (
-                <span className="ml-1 px-1.5 py-0.2 bg-emerald-800 text-[10px] rounded-full">
+                <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
                   {totalCount}
                 </span>
               )}
@@ -268,16 +329,16 @@ export default function CommunityDiscoveryPage() {
             <button
               type="button"
               onClick={() => handleTabSwitch("directory")}
-              className={`px-4 py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
                 activeTab === "directory"
                   ? "bg-emerald-600 text-white shadow-xs"
-                  : "bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                  : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
               <span>🏪</span>
-              <span>Businesses & Places</span>
+              <span>Businesses</span>
               {activeTab === "directory" && totalCount > 0 && (
-                <span className="ml-1 px-1.5 py-0.2 bg-emerald-800 text-[10px] rounded-full">
+                <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
                   {totalCount}
                 </span>
               )}
@@ -286,16 +347,16 @@ export default function CommunityDiscoveryPage() {
             <button
               type="button"
               onClick={() => handleTabSwitch("marketplace")}
-              className={`px-4 py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
                 activeTab === "marketplace"
                   ? "bg-emerald-600 text-white shadow-xs"
-                  : "bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                  : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
               <span>🛍️</span>
-              <span>Marketplace Deals</span>
+              <span>Deals</span>
               {activeTab === "marketplace" && totalCount > 0 && (
-                <span className="ml-1 px-1.5 py-0.2 bg-emerald-800 text-[10px] rounded-full">
+                <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
                   {totalCount}
                 </span>
               )}
@@ -304,16 +365,16 @@ export default function CommunityDiscoveryPage() {
             <button
               type="button"
               onClick={() => handleTabSwitch("addas")}
-              className={`px-4 py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
                 activeTab === "addas"
                   ? "bg-emerald-600 text-white shadow-xs"
-                  : "bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                  : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
               <span>🏙️</span>
-              <span>Regional Addas</span>
+              <span>Addas</span>
               {activeTab === "addas" && totalCount > 0 && (
-                <span className="ml-1 px-1.5 py-0.2 bg-emerald-800 text-[10px] rounded-full">
+                <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
                   {totalCount}
                 </span>
               )}
@@ -322,16 +383,16 @@ export default function CommunityDiscoveryPage() {
             <button
               type="button"
               onClick={() => handleTabSwitch("posts")}
-              className={`px-4 py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 ${
                 activeTab === "posts"
                   ? "bg-emerald-600 text-white shadow-xs"
-                  : "bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                  : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
               <span>💬</span>
-              <span>Thoughts & Discussions</span>
+              <span>Thoughts</span>
               {activeTab === "posts" && totalCount > 0 && (
-                <span className="ml-1 px-1.5 py-0.2 bg-emerald-800 text-[10px] rounded-full">
+                <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
                   {totalCount}
                 </span>
               )}
@@ -340,21 +401,21 @@ export default function CommunityDiscoveryPage() {
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="container mx-auto px-4 max-w-6xl mt-8">
+      {/* Results Content Area */}
+      <div className="container mx-auto px-3 sm:px-6 max-w-6xl mt-4 sm:mt-6">
         {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center text-center">
+          <div className="py-16 flex flex-col items-center justify-center text-center">
             <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3" />
             <p className="text-xs text-slate-500">Searching {activeTab} across Northeast India...</p>
           </div>
         ) : results.length === 0 ? (
-          <div className="py-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 text-center max-w-md mx-auto shadow-sm">
-            <span className="text-4xl">🔍</span>
-            <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100 mt-3 mb-1">
+          <div className="py-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 text-center max-w-md mx-auto shadow-sm">
+            <span className="text-3xl">🔍</span>
+            <h3 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100 mt-2 mb-1">
               No results found
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-              Try adjusting your search terms or selecting "All States".
+              Try adjusting your keyword or selecting "All States".
             </p>
             <button
               type="button"
@@ -370,19 +431,19 @@ export default function CommunityDiscoveryPage() {
           </div>
         ) : (
           <>
-            {/* 1. USERS / PEOPLE GRID */}
+            {/* 1. USERS / PEOPLE GRID (Optimized Mobile Cards) */}
             {activeTab === "users" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {results.map((user) => {
                   const isSent = friendRequestsSent[user.id] || user.hasSentRequest;
                   return (
                     <div
                       key={user.id}
-                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
                     >
                       <div>
-                        {/* Top Avatar & Rank */}
-                        <div className="flex items-start justify-between gap-2 mb-3">
+                        {/* Top: Avatar, Name, Rank */}
+                        <div className="flex items-start gap-3 mb-2.5">
                           <Link href={`/profile/${user.username}`} className="shrink-0">
                             <img
                               src={
@@ -390,42 +451,43 @@ export default function CommunityDiscoveryPage() {
                                 `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`
                               }
                               alt={user.username}
-                              className="w-14 h-14 rounded-2xl object-cover border-2 border-emerald-500 group-hover:scale-105 transition"
+                              className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl object-cover border border-emerald-500 group-hover:scale-105 transition shrink-0"
                             />
                           </Link>
-                          <RankBadge
-                            rankTier={user.rankTier}
-                            xpPoints={user.xpPoints}
-                            size="sm"
-                            showLevel={false}
-                          />
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-1">
+                              <Link
+                                href={`/profile/${user.username}`}
+                                className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 hover:underline truncate block"
+                              >
+                                {user.fullName || user.username}
+                              </Link>
+                              <RankBadge
+                                rankTier={user.rankTier}
+                                xpPoints={user.xpPoints}
+                                size="sm"
+                                showLevel={false}
+                              />
+                            </div>
+                            <p className="text-[11px] text-slate-500 font-mono">@{user.username}</p>
+                            <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                              <span>📍</span>
+                              <span className="truncate">{user.city ? `${user.city}, ` : ""}{user.state || "Northeast India"}</span>
+                            </div>
+                          </div>
                         </div>
 
-                        {/* Name & Handle */}
-                        <Link
-                          href={`/profile/${user.username}`}
-                          className="font-extrabold text-sm text-slate-900 dark:text-slate-100 hover:underline block truncate"
-                        >
-                          {user.fullName || user.username}
-                        </Link>
-                        <p className="text-xs text-slate-500 font-mono">@{user.username}</p>
-
-                        {/* Location */}
-                        <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 truncate">
-                          <span>📍</span>
-                          <span>{user.city ? `${user.city}, ` : ""}{user.state || "Northeast India"}</span>
-                        </div>
-
-                        {/* Bio */}
+                        {/* Bio on desktop/tablet */}
                         {user.bio && (
-                          <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 line-clamp-2 italic">
+                          <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 line-clamp-2 italic mb-2">
                             "{user.bio}"
                           </p>
                         )}
                       </div>
 
-                      {/* Bottom Action Buttons */}
-                      <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                      {/* Bottom Action Bar */}
+                      <div className="pt-2 sm:pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
                         {user.isMe ? (
                           <Link
                             href="/profile/edit"
@@ -459,7 +521,7 @@ export default function CommunityDiscoveryPage() {
 
                         <Link
                           href={`/profile/${user.username}`}
-                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl"
+                          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl shrink-0"
                           title="View Profile"
                         >
                           👁️
@@ -471,60 +533,65 @@ export default function CommunityDiscoveryPage() {
               </div>
             )}
 
-            {/* 2. DIRECTORY / BUSINESSES GRID */}
+            {/* 2. DIRECTORY / BUSINESSES (Mobile List / Desktop Grid) */}
             {activeTab === "directory" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">
                 {results.map((biz) => (
                   <div
                     key={biz.id}
-                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
                   >
                     <div>
-                      {biz.image && (
-                        <div className="w-full h-36 rounded-2xl overflow-hidden mb-3 bg-slate-100 dark:bg-slate-800">
-                          <img
-                            src={biz.image}
-                            alt={biz.businessName}
-                            className="w-full h-full object-cover group-hover:scale-105 transition"
-                          />
-                        </div>
-                      )}
-
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <Link
-                          href={biz.url}
-                          className="font-extrabold text-base text-slate-900 dark:text-slate-100 hover:underline line-clamp-1"
-                        >
-                          {biz.businessName}
-                        </Link>
-                        {biz.isVerified && (
-                          <span className="shrink-0 text-emerald-500" title="Verified Business">
-                            ✓
-                          </span>
+                      {/* Mobile Row with Image Left */}
+                      <div className="flex sm:block gap-3 mb-2 sm:mb-3">
+                        {biz.image && (
+                          <div className="w-20 h-20 sm:w-full sm:h-36 rounded-xl sm:rounded-2xl overflow-hidden shrink-0 bg-slate-100 dark:bg-slate-800">
+                            <img
+                              src={biz.image}
+                              alt={biz.businessName}
+                              className="w-full h-full object-cover group-hover:scale-105 transition"
+                            />
+                          </div>
                         )}
-                      </div>
 
-                      <span className="inline-block px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded-full text-[10px] font-extrabold mb-2">
-                        {biz.category}
-                      </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-1 mb-0.5">
+                            <Link
+                              href={biz.url}
+                              className="font-extrabold text-xs sm:text-base text-slate-900 dark:text-slate-100 hover:underline line-clamp-2 sm:line-clamp-1"
+                            >
+                              {biz.businessName}
+                            </Link>
+                            {biz.isClaimed && (
+                              <span className="shrink-0 text-emerald-500 text-xs" title="Verified Business">
+                                ✓
+                              </span>
+                            )}
+                          </div>
 
-                      <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                        <span>📍</span>
-                        <span className="truncate">{biz.district ? `${biz.district}, ` : ""}{biz.state}</span>
-                      </div>
+                          <span className="inline-block px-2 py-0.2 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded-full text-[9px] sm:text-[10px] font-extrabold mb-1">
+                            {biz.category}
+                          </span>
 
-                      {biz.rating && (
-                        <div className="flex items-center gap-1 text-xs font-bold text-amber-500 mt-1">
-                          <span>⭐</span>
-                          <span>{biz.rating}</span>
-                          {biz.reviewsCount && (
-                            <span className="text-slate-400 font-normal">({biz.reviewsCount} reviews)</span>
+                          <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                            <span>📍</span>
+                            <span className="truncate">{biz.district ? `${biz.district}, ` : ""}{biz.state}</span>
+                          </div>
+
+                          {biz.rating && (
+                            <div className="flex items-center gap-1 text-[11px] font-bold text-amber-500 mt-0.5">
+                              <span>⭐</span>
+                              <span>{biz.rating}</span>
+                              {biz.reviewsCount && (
+                                <span className="text-slate-400 font-normal">({biz.reviewsCount})</span>
+                              )}
+                            </div>
                           )}
                         </div>
-                      )}
+                      </div>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                    <div className="pt-2 sm:pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
                       {biz.phone && (
                         <a
                           href={`tel:${biz.phone}`}
@@ -537,7 +604,7 @@ export default function CommunityDiscoveryPage() {
                         href={biz.url}
                         className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold text-center shadow-xs"
                       >
-                        View Listing &rarr;
+                        View &rarr;
                       </Link>
                     </div>
                   </div>
@@ -545,19 +612,19 @@ export default function CommunityDiscoveryPage() {
               </div>
             )}
 
-            {/* 3. MARKETPLACE GRID */}
+            {/* 3. MARKETPLACE (2-Column on Mobile) */}
             {activeTab === "marketplace" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
                 {results.map((item) => {
                   const img = item.images ? item.images.split(",")[0] : null;
                   return (
                     <div
                       key={item.id}
-                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
                     >
                       <div>
                         {img ? (
-                          <div className="w-full h-36 rounded-2xl overflow-hidden mb-3 bg-slate-100 dark:bg-slate-800">
+                          <div className="w-full h-28 sm:h-36 rounded-xl sm:rounded-2xl overflow-hidden mb-2 bg-slate-100 dark:bg-slate-800">
                             <img
                               src={img}
                               alt={item.title}
@@ -565,35 +632,35 @@ export default function CommunityDiscoveryPage() {
                             />
                           </div>
                         ) : (
-                          <div className="w-full h-36 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-3xl mb-3">
+                          <div className="w-full h-28 sm:h-36 rounded-xl sm:rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl mb-2">
                             🛍️
                           </div>
                         )}
 
-                        <div className="flex items-center justify-between gap-2 mb-1">
-                          <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
+                        <div className="flex items-center justify-between gap-1 mb-1">
+                          <span className="text-xs sm:text-base font-black text-emerald-600 dark:text-emerald-400">
                             ₹{item.price.toLocaleString()}
                           </span>
-                          <span className="text-[10px] font-bold text-slate-400 uppercase">
+                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase truncate">
                             {item.condition || "Used"}
                           </span>
                         </div>
 
                         <Link
                           href={`/marketplace/${item.id}`}
-                          className="font-extrabold text-sm text-slate-900 dark:text-slate-100 hover:underline line-clamp-2 block"
+                          className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 hover:underline line-clamp-2 block leading-snug"
                         >
                           {item.title}
                         </Link>
 
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+                        <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-1 truncate">
                           📍 {item.locality ? `${item.locality}, ` : ""}{item.state}
                         </p>
                       </div>
 
                       <Link
                         href={`/marketplace/${item.id}`}
-                        className="mt-3 w-full py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-xs font-bold text-center block transition"
+                        className="mt-2.5 w-full py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-[11px] sm:text-xs font-bold text-center block transition"
                       >
                         View Deal &rarr;
                       </Link>
@@ -603,39 +670,39 @@ export default function CommunityDiscoveryPage() {
               </div>
             )}
 
-            {/* 4. REGIONAL ADDAS GRID */}
+            {/* 4. REGIONAL ADDAS (2-Column on Mobile) */}
             {activeTab === "addas" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">
                 {results.map((adda) => (
                   <div
                     key={adda.id}
-                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
                   >
                     <div>
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="text-3xl p-2 bg-emerald-50 dark:bg-emerald-950/60 rounded-2xl">
+                      <div className="flex items-center gap-2.5 mb-1.5 sm:mb-2">
+                        <span className="text-2xl sm:text-3xl p-1.5 sm:p-2 bg-emerald-50 dark:bg-emerald-950/60 rounded-xl sm:rounded-2xl shrink-0">
                           {adda.icon || "🏙️"}
                         </span>
-                        <div>
-                          <h3 className="font-extrabold text-base text-slate-900 dark:text-slate-100">
+                        <div className="min-w-0">
+                          <h3 className="font-extrabold text-xs sm:text-base text-slate-900 dark:text-slate-100 truncate">
                             {adda.title || adda.name}
                           </h3>
-                          <p className="text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                          <p className="text-[11px] sm:text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
                             {adda.name}
                           </p>
                         </div>
                       </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-2">
+                      <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-1 line-clamp-2">
                         {adda.desc}
                       </p>
-                      <div className="flex items-center gap-2 mt-3 text-[11px] text-slate-400">
+                      <div className="flex items-center gap-2 mt-2 text-[10px] sm:text-[11px] text-slate-400">
                         <span>📍 {adda.state}</span>
                       </div>
                     </div>
 
                     <Link
                       href={`/?adda=${encodeURIComponent(adda.name)}`}
-                      className="mt-4 w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold text-center block transition shadow-xs"
+                      className="mt-3 sm:mt-4 w-full py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold text-center block transition shadow-xs"
                     >
                       Enter Adda Wall &rarr;
                     </Link>
@@ -646,22 +713,22 @@ export default function CommunityDiscoveryPage() {
 
             {/* 5. POSTS / DISCUSSIONS */}
             {activeTab === "posts" && (
-              <div className="space-y-4 max-w-3xl mx-auto">
+              <div className="space-y-3 sm:space-y-4 max-w-3xl mx-auto">
                 {results.map((post) => (
                   <article
                     key={post.id}
-                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition"
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition"
                   >
-                    <div className="flex items-center justify-between gap-3 mb-3">
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <Link href={`/profile/${post.user.username}`}>
+                    <div className="flex items-center justify-between gap-2 mb-2.5">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Link href={`/profile/${post.user.username}`} className="shrink-0">
                           <img
                             src={
                               post.user.profileImageUrl ||
                               `https://api.dicebear.com/7.x/bottts/svg?seed=${post.user.username}`
                             }
                             alt={post.user.username}
-                            className="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-slate-700"
+                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0"
                           />
                         </Link>
                         <div className="min-w-0">
@@ -671,7 +738,7 @@ export default function CommunityDiscoveryPage() {
                           >
                             u/{post.user.username}
                           </Link>
-                          <p className="text-[10px] text-slate-400 font-mono">
+                          <p className="text-[9px] sm:text-[10px] text-slate-400 font-mono truncate">
                             {post.taggedLocation || "n:community"}
                           </p>
                         </div>
@@ -684,19 +751,19 @@ export default function CommunityDiscoveryPage() {
                       />
                     </div>
 
-                    <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed mb-3 line-clamp-3">
+                    <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed mb-2.5 line-clamp-3">
                       {post.content}
                     </p>
 
                     <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
-                      <span className="text-slate-400 font-mono text-[11px]">
+                      <span className="text-slate-400 font-mono text-[10px] sm:text-[11px]">
                         ❤️ {post.likesCount || 0} • 💬 {post.commentsCount || 0}
                       </span>
                       <Link
                         href={`/community/${post.id}`}
-                        className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                        className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-xs"
                       >
-                        View Full Thread &rarr;
+                        View Thread &rarr;
                       </Link>
                     </div>
                   </article>
@@ -706,12 +773,12 @@ export default function CommunityDiscoveryPage() {
 
             {/* Pagination / Load More */}
             {hasMore && (
-              <div className="mt-8 text-center">
+              <div className="mt-6 sm:mt-8 text-center">
                 <button
                   type="button"
                   onClick={() => fetchData(page + 1, true)}
                   disabled={loadingMore}
-                  className="px-6 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 text-slate-900 dark:text-slate-100 rounded-2xl text-xs font-bold transition shadow-xs cursor-pointer disabled:opacity-50"
+                  className="px-5 sm:px-6 py-2 sm:py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-emerald-500 text-slate-900 dark:text-slate-100 rounded-2xl text-xs font-bold transition shadow-xs cursor-pointer disabled:opacity-50"
                 >
                   {loadingMore ? "Loading more..." : "Load More Results ▾"}
                 </button>

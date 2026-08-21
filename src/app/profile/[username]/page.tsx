@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import RankBadge from "@/components/profile/RankBadge";
 import FriendActionButton from "@/components/profile/FriendActionButton";
+import PostMediaCarousel from "@/components/common/PostMediaCarousel";
 
 export default function UserProfilePage() {
   const params = useParams();
@@ -450,16 +451,8 @@ export default function UserProfilePage() {
                       </div>
                       <p className="text-slate-200 text-sm leading-relaxed mb-3">{post.content}</p>
                       {post.mediaUrls && (
-                        <div className="mb-3 rounded-xl overflow-hidden max-h-60 border border-slate-800 bg-slate-950">
-                          <img
-                            src={
-                              post.mediaUrls.startsWith("[")
-                                ? JSON.parse(post.mediaUrls)[0]
-                                : post.mediaUrls
-                            }
-                            alt="Post Attachment"
-                            className="w-full h-full object-cover"
-                          />
+                        <div className="mb-3">
+                          <PostMediaCarousel mediaUrls={post.mediaUrls} />
                         </div>
                       )}
                       <div className="flex items-center justify-between text-xs pt-3 border-t border-slate-800 text-slate-400">

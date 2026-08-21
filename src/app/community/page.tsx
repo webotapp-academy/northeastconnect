@@ -5,6 +5,7 @@ import Link from "next/link";
 import RankBadge from "@/components/profile/RankBadge";
 import CommentSection from "@/components/comments/CommentSection";
 import AuthModal from "@/components/auth/AuthModal";
+import PostMediaCarousel from "@/components/common/PostMediaCarousel";
 
 const NE_STATES = [
   "All States",
@@ -369,12 +370,8 @@ export default function CommunityFeedPage() {
 
                 {/* Attached Media */}
                 {post.mediaUrls && (
-                  <div className="mb-4 rounded-2xl overflow-hidden border border-slate-800 max-h-96 bg-slate-950">
-                    <img
-                      src={post.mediaUrls}
-                      alt="Post Attachment"
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="mb-4">
+                    <PostMediaCarousel mediaUrls={post.mediaUrls} />
                   </div>
                 )}
 

@@ -9,6 +9,7 @@ import GoogleAd from "@/components/GoogleAd";
 import AddaAutocompleteInput from "@/components/common/AddaAutocompleteInput";
 import PostMediaCarousel from "@/components/common/PostMediaCarousel";
 import PostReactionsBar from "@/components/community/PostReactionsBar";
+import RepostModal from "@/components/community/RepostModal";
 import ShareButton from "@/components/common/ShareButton";
 import { soundFX } from "@/lib/soundEffects";
 
@@ -237,6 +238,10 @@ export default function SocialHomeFeed({
 
   // Auth modal
   const [authModalOpen, setAuthModalOpen] = useState(false);
+
+  // Repost modal state
+  const [repostModalOpen, setRepostModalOpen] = useState(false);
+  const [repostModalPost, setRepostModalPost] = useState<any>(null);
 
   // Infinite scroll pagination state (10-by-10)
   const [page, setPage] = useState(1);
@@ -1866,6 +1871,54 @@ export default function SocialHomeFeed({
                                 </Link>
                               );
                             })()}
+
+                            {/* Embedded Reposted Post Card (Facebook-Style) */}
+                            {post.originalPost && (
+                              <div className="mt-3 border border-slate-200 dark:border-slate-750/90 rounded-2xl p-3.5 bg-slate-50/80 dark:bg-slate-805/80 space-y-2.5">
+                                <div className="flex items-center justify-between gap-2">
+                                  <Link
+                                    href={`/profile/${post.originalPost.user?.username}`}
+                                    onClick={(e) => e.stopPropagation()}
+                                    className="flex items-center gap-2 min-w-0 group/orig"
+                                  >
+                                    <img
+                                      src={
+                                        post.originalPost.user?.profileImageUrl ||
+                                        `https://api.dicebear.com/7.x/bottts/svg?seed=${post.originalPost.user?.username}`
+                                      }
+                                      alt={post.originalPost.user?.username}
+                                      className="w-7 h-7 rounded-full object-cover border border-slate-200 dark:border-slate-700"
+                                    />
+                                    <div className="min-w-0">
+                                      <span className="font-extrabold text-xs text-slate-900 dark:text-slate-100 group-hover/orig:underline truncate block">
+                                        {post.originalPost.user?.fullName || post.originalPost.user?.username}
+                                      </span>
+                                      <span className="text-[10px] text-slate-400 font-mono">
+                                        @{post.originalPost.user?.username}
+                                      </span>
+                                    </div>
+                                  </Link>
+                                  {post.originalPost.user && (
+                                    <RankBadge
+                                      rankTier={post.originalPost.user.rankTier}
+                                      xpPoints={post.originalPost.user.xpPoints}
+                                      size="sm"
+                                      showLevel={false}
+                                    />
+                                  )}
+                                </div>
+
+                                <Link href={`/community/${post.originalPost.id}`} className="block">
+                                  <p className="text-xs sm:text-[13px] text-slate-700 dark:text-slate-300 line-clamp-3 leading-relaxed">
+                                    {post.originalPost.content}
+                                  </p>
+                                </Link>
+
+                                {post.originalPost.mediaUrls && (
+                                  <PostMediaCarousel mediaUrls={post.originalPost.mediaUrls} />
+                                )}
+                              </div>
+                            )}
                           </div>
                         )}
 
@@ -1876,7 +1929,7 @@ export default function SocialHomeFeed({
 
                         {/* Footer Action Bar */}
                         <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400 flex-wrap gap-2">
-                          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-wrap">
+                          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                             {/* Like Reactions Bar */}
                             <PostReactionsBar
                               postId={post.id}
@@ -1905,6 +1958,32 @@ export default function SocialHomeFeed({
                                 </button>
                               );
                             })()}
+
+                            {/* Repost Button */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (!currentUser) {
+                                  setAuthModalOpen(true);
+                                  return;
+                                }
+                                setRepostModalPost(post);
+                                setRepostModalOpen(true);
+                              }}
+                              className="px-3 sm:px-3.5 py-1.5 rounded-full font-bold text-xs sm:text-[13px] flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-xs bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60"
+                              title="Repost to this platform"
+                            >
+                              <svg className="w-3.5 h-3.5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M17 1l4 4-4 4" />
+                                <path d="M3 11V9a4 4 0 014-4h14" />
+                                <path d="M7 23l-4-4 4-4" />
+                                <path d="M21 13v2a4 4 0 01-4 4H3" />
+                              </svg>
+                              <span>Repost</span>
+                              {post.repostsCount > 0 && (
+                                <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">{post.repostsCount}</span>
+                              )}
+                            </button>
 
                             <ShareButton
                               url={`/community/${post.id}`}
@@ -2355,6 +2434,22 @@ export default function SocialHomeFeed({
         defaultTab="login"
         onClose={() => setAuthModalOpen(false)}
         onSuccess={() => fetchMe()}
+      />
+
+      {/* Global Repost to Platform Modal */}
+      <RepostModal
+        isOpen={repostModalOpen}
+        post={repostModalPost}
+        currentUser={currentUser}
+        onClose={() => {
+          setRepostModalOpen(false);
+          setRepostModalPost(null);
+        }}
+        onRepostSuccess={(newPost) => {
+          setPosts((prev) => [newPost, ...prev]);
+          setToastMessage("Thought reposted to your feed! 🎉");
+          setTimeout(() => setToastMessage(null), 3500);
+        }}
       />
     </div>
   );

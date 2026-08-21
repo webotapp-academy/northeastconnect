@@ -132,6 +132,8 @@ export function getNextRankProgress(xp: number) {
 export type ActionType =
   | "COMMENT"
   | "POST"
+  | "COMMUNITY_REPOST"
+  | "POST_WAS_REPOSTED"
   | "REVIEW"
   | "LIKE_RECEIVED"
   | "FRIEND_ACCEPTED"
@@ -142,6 +144,8 @@ export type ActionType =
 export const ACTION_XP_MAP: Record<ActionType, number> = {
   COMMENT: 10,
   POST: 20,
+  COMMUNITY_REPOST: 15,
+  POST_WAS_REPOSTED: 10,
   REVIEW: 25,
   LIKE_RECEIVED: 5,
   FRIEND_ACCEPTED: 15,

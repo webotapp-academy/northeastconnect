@@ -67,6 +67,20 @@ export async function GET(request: Request) {
               city: true,
             },
           },
+          originalPost: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  fullName: true,
+                  profileImageUrl: true,
+                  rankTier: true,
+                  xpPoints: true,
+                },
+              },
+            },
+          },
         },
         orderBy: { createdAt: "desc" },
         skip,

@@ -70,6 +70,20 @@ export default async function SingleCommunityPostPage({ params }: PageProps) {
             bio: true,
           },
         },
+        originalPost: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                fullName: true,
+                profileImageUrl: true,
+                rankTier: true,
+                xpPoints: true,
+              },
+            },
+          },
+        },
       },
     }),
     getCurrentUser(),
@@ -244,6 +258,53 @@ export default async function SingleCommunityPostPage({ params }: PageProps) {
               <div className="text-slate-900 dark:text-slate-100 text-base sm:text-lg font-medium leading-relaxed whitespace-pre-wrap mb-4">
                 {renderContent(post.content)}
               </div>
+
+              {/* Embedded Repost Preview */}
+              {post.originalPost && (
+                <div className="mb-4 border border-slate-200 dark:border-slate-750/90 rounded-2xl p-4 bg-slate-50/80 dark:bg-slate-805/80 space-y-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <Link
+                      href={`/profile/${post.originalPost.user?.username}`}
+                      className="flex items-center gap-2 min-w-0 group/orig"
+                    >
+                      <img
+                        src={
+                          post.originalPost.user?.profileImageUrl ||
+                          `https://api.dicebear.com/7.x/bottts/svg?seed=${post.originalPost.user?.username}`
+                        }
+                        alt={post.originalPost.user?.username}
+                        className="w-7 h-7 rounded-full object-cover border border-slate-200 dark:border-slate-700"
+                      />
+                      <div className="min-w-0">
+                        <span className="font-extrabold text-xs text-slate-900 dark:text-slate-100 group-hover/orig:underline truncate block">
+                          {post.originalPost.user?.fullName || post.originalPost.user?.username}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          @{post.originalPost.user?.username}
+                        </span>
+                      </div>
+                    </Link>
+                    {post.originalPost.user && (
+                      <RankBadge
+                        rankTier={post.originalPost.user.rankTier}
+                        xpPoints={post.originalPost.user.xpPoints}
+                        size="sm"
+                        showLevel={false}
+                      />
+                    )}
+                  </div>
+
+                  <Link href={`/community/${post.originalPost.id}`} className="block">
+                    <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 line-clamp-3 leading-relaxed">
+                      {post.originalPost.content}
+                    </p>
+                  </Link>
+
+                  {post.originalPost.mediaUrls && (
+                    <PostMediaCarousel mediaUrls={post.originalPost.mediaUrls} />
+                  )}
+                </div>
+              )}
 
               {/* Media Carousel Attachment */}
               {post.mediaUrls && (

@@ -11,10 +11,13 @@ export default function MessengerDropdown({ currentUser }: MessengerDropdownProp
   const [open, setOpen] = useState(false);
   const [friends, setFriends] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingConversation, setLoadingConversation] = useState(false);
   const [activeChatFriend, setActiveChatFriend] = useState<any | null>(null);
   const [chatMessage, setChatMessage] = useState("");
-  const [chatMessagesList, setChatMessagesList] = useState<Record<number, Array<{ sender: string; text: string; time: string }>>>({});
+  const [chatMessagesList, setChatMessagesList] = useState<Record<number, Array<{ id?: number; sender: string; text: string; time: string }>>>({});
+  const [unreadCount, setUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -29,10 +32,41 @@ export default function MessengerDropdown({ currentUser }: MessengerDropdownProp
   }, [open]);
 
   useEffect(() => {
+    if (currentUser) {
+      fetchUnreadCount();
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
     if (open && currentUser) {
       fetchFriends();
+      fetchUnreadCount();
     }
   }, [open, currentUser]);
+
+  useEffect(() => {
+    if (activeChatFriend) {
+      fetchConversation(activeChatFriend.id);
+    }
+  }, [activeChatFriend]);
+
+  useEffect(() => {
+    if (activeChatFriend && chatMessagesList[activeChatFriend.id]) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatMessagesList, activeChatFriend]);
+
+  async function fetchUnreadCount() {
+    try {
+      const res = await fetch("/api/friends/messages");
+      const data = await res.json();
+      if (data.status === "success" && typeof data.unreadCount === "number") {
+        setUnreadCount(data.unreadCount);
+      }
+    } catch {
+      // Ignored
+    }
+  }
 
   async function fetchFriends() {
     try {
@@ -49,23 +83,68 @@ export default function MessengerDropdown({ currentUser }: MessengerDropdownProp
     }
   }
 
-  function handleSendMessage(e: React.FormEvent) {
+  async function fetchConversation(friendId: number) {
+    try {
+      setLoadingConversation(true);
+      const res = await fetch(`/api/friends/messages?friendId=${friendId}`);
+      const data = await res.json();
+      if (data.status === "success" && Array.isArray(data.messages)) {
+        setChatMessagesList((prev) => ({
+          ...prev,
+          [friendId]: data.messages,
+        }));
+      }
+    } catch (err) {
+      console.error("Failed to load conversation:", err);
+    } finally {
+      setLoadingConversation(false);
+    }
+  }
+
+  async function handleSendMessage(e: React.FormEvent) {
     e.preventDefault();
     if (!chatMessage.trim() || !activeChatFriend) return;
 
     const friendId = activeChatFriend.id;
-    const newMsg = {
+    const msgText = chatMessage.trim();
+    const tempMsg = {
       sender: "me",
-      text: chatMessage.trim(),
+      text: msgText,
       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
 
+    // Optimistic UI update
     setChatMessagesList((prev) => ({
       ...prev,
-      [friendId]: [...(prev[friendId] || []), newMsg],
+      [friendId]: [...(prev[friendId] || []), tempMsg],
     }));
 
     setChatMessage("");
+
+    try {
+      const res = await fetch("/api/friends/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          targetUserId: friendId,
+          content: msgText,
+        }),
+      });
+      const data = await res.json();
+      if (data.status === "success" && data.message) {
+        setChatMessagesList((prev) => {
+          const currentList = prev[friendId] || [];
+          const updated = [...currentList];
+          updated[updated.length - 1] = data.message;
+          return {
+            ...prev,
+            [friendId]: updated,
+          };
+        });
+      }
+    } catch (err) {
+      console.error("Failed to persist sent message:", err);
+    }
   }
 
   if (!currentUser) return null;
@@ -144,8 +223,13 @@ export default function MessengerDropdown({ currentUser }: MessengerDropdownProp
 
               {/* Chat Messages Bubble Area */}
               <div className="flex-1 p-3.5 overflow-y-auto space-y-2.5 text-xs">
-                {(!chatMessagesList[activeChatFriend.id] ||
-                  chatMessagesList[activeChatFriend.id].length === 0) && (
+                {loadingConversation ? (
+                  <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 py-6">
+                    <div className="w-5 h-5 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-2" />
+                    <span className="text-[11px]">Loading conversation...</span>
+                  </div>
+                ) : (!chatMessagesList[activeChatFriend.id] ||
+                  chatMessagesList[activeChatFriend.id].length === 0) ? (
                   <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 space-y-1 py-6">
                     <span className="text-2xl">👋</span>
                     <p className="font-semibold text-xs text-slate-600 dark:text-slate-300">
@@ -155,27 +239,28 @@ export default function MessengerDropdown({ currentUser }: MessengerDropdownProp
                       Share tips, plan road trips, or discuss local community addas.
                     </p>
                   </div>
-                )}
-
-                {(chatMessagesList[activeChatFriend.id] || []).map((msg, i) => (
-                  <div
-                    key={i}
-                    className={`flex flex-col ${
-                      msg.sender === "me" ? "items-end" : "items-start"
-                    }`}
-                  >
+                ) : (
+                  (chatMessagesList[activeChatFriend.id] || []).map((msg, i) => (
                     <div
-                      className={`max-w-[80%] px-3 py-2 rounded-2xl ${
-                        msg.sender === "me"
-                          ? "bg-emerald-600 text-white rounded-br-xs"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-xs"
+                      key={msg.id || i}
+                      className={`flex flex-col ${
+                        msg.sender === "me" ? "items-end" : "items-start"
                       }`}
                     >
-                      <p className="leading-relaxed break-words">{msg.text}</p>
+                      <div
+                        className={`max-w-[80%] px-3 py-2 rounded-2xl ${
+                          msg.sender === "me"
+                            ? "bg-emerald-600 text-white rounded-br-xs"
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-bl-xs"
+                        }`}
+                      >
+                        <p className="leading-relaxed break-words">{msg.text}</p>
+                      </div>
+                      <span className="text-[9px] text-slate-400 mt-0.5 px-1">{msg.time}</span>
                     </div>
-                    <span className="text-[9px] text-slate-400 mt-0.5 px-1">{msg.time}</span>
-                  </div>
-                ))}
+                  ))
+                )}
+                <div ref={messagesEndRef} />
               </div>
 
               {/* Chat Input */}

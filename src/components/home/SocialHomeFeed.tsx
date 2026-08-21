@@ -1779,9 +1779,10 @@ export default function SocialHomeFeed({
                         )}
                       </article>
 
-                      {/* In-feed "Make Friends & Discover Explorers" Section */}
-                      {idx === 0 && topExplorers.length > 0 && (
-                        <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
+                      {/* In-feed "Make Friends & Discover Explorers" Section (Shown after 2 posts) */}
+                      {((idx === 1) || (idx === 0 && posts.length === 1)) &&
+                        topExplorers.filter((exp: any) => exp.id !== currentUser?.id && !friendRequestsSent[exp.id]).length > 0 && (
+                        <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] my-1">
                           <div className="flex items-center justify-between mb-3.5">
                             <div className="flex items-center gap-2">
                               <span className="text-base">🤝</span>
@@ -1799,10 +1800,9 @@ export default function SocialHomeFeed({
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {topExplorers
-                              .filter((exp: any) => exp.id !== currentUser?.id)
+                              .filter((exp: any) => exp.id !== currentUser?.id && !friendRequestsSent[exp.id])
                               .slice(0, 4)
                               .map((explorer: any) => {
-                                const isSent = !!friendRequestsSent[explorer.id];
                                 return (
                                   <div
                                     key={explorer.id}
@@ -1827,22 +1827,12 @@ export default function SocialHomeFeed({
                                       </div>
                                     </Link>
 
-                                    {isSent ? (
-                                      <button
-                                        onClick={(e) => handleCancelFriendRequest(explorer.id, explorer.username, e)}
-                                        className="px-3 py-1 text-[11px] font-bold rounded-full transition cursor-pointer shrink-0 bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 border border-rose-500/30"
-                                        title="Cancel friend request"
-                                      >
-                                        Cancel
-                                      </button>
-                                    ) : (
-                                      <button
-                                        onClick={(e) => handleSendFriendRequest(explorer.id, explorer.username, e)}
-                                        className="px-3 py-1 text-[11px] font-bold rounded-full transition cursor-pointer shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs"
-                                      >
-                                        + Connect
-                                      </button>
-                                    )}
+                                    <button
+                                      onClick={(e) => handleSendFriendRequest(explorer.id, explorer.username, e)}
+                                      className="px-3.5 py-1 text-[11px] font-bold rounded-full transition cursor-pointer shrink-0 bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs active:scale-95"
+                                    >
+                                      + Connect
+                                    </button>
                                   </div>
                                 );
                               })}
@@ -1951,7 +1941,7 @@ export default function SocialHomeFeed({
             </div>
 
             {/* 2. MAKE FRIENDS CARD (Sidebar Recommended Explorers) */}
-            {topExplorers.length > 0 && (
+            {topExplorers.filter((exp: any) => exp.id !== currentUser?.id && !friendRequestsSent[exp.id]).length > 0 && (
               <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
                 <div className="flex items-center justify-between mb-3.5">
                   <div className="flex items-center gap-1.5">
@@ -1969,43 +1959,46 @@ export default function SocialHomeFeed({
                 </div>
 
                 <div className="space-y-3">
-                  {topExplorers.slice(0, 4).map((explorer: any) => {
-                    const isSent = friendRequestsSent[explorer.id];
-                    return (
-                      <div key={explorer.id} className="flex items-center justify-between gap-3">
-                        <Link href={`/profile/${explorer.username}`} className="flex items-center gap-2.5 min-w-0">
-                          <img
-                            src={
-                              explorer.profileImageUrl ||
-                              `https://api.dicebear.com/7.x/bottts/svg?seed=${explorer.username}`
-                            }
-                            alt={explorer.username}
-                            className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0"
-                          />
-                          <div className="min-w-0">
-                            <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 hover:text-emerald-600 transition truncate">
-                              {explorer.fullName || explorer.username}
-                            </h4>
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono truncate">
-                              📍 {explorer.city || explorer.state || "Assam"}
-                            </p>
-                          </div>
-                        </Link>
+                  {topExplorers
+                    .filter((exp: any) => exp.id !== currentUser?.id && !friendRequestsSent[exp.id])
+                    .slice(0, 4)
+                    .map((explorer: any) => {
+                      const isSent = friendRequestsSent[explorer.id];
+                      return (
+                        <div key={explorer.id} className="flex items-center justify-between gap-3">
+                          <Link href={`/profile/${explorer.username}`} className="flex items-center gap-2.5 min-w-0">
+                            <img
+                              src={
+                                explorer.profileImageUrl ||
+                                `https://api.dicebear.com/7.x/bottts/svg?seed=${explorer.username}`
+                              }
+                              alt={explorer.username}
+                              className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 hover:text-emerald-600 transition truncate">
+                                {explorer.fullName || explorer.username}
+                              </h4>
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono truncate">
+                                📍 {explorer.city || explorer.state || "Assam"}
+                              </p>
+                            </div>
+                          </Link>
 
-                        <button
-                          onClick={(e) => handleSendFriendRequest(explorer.id, explorer.username, e)}
-                          disabled={isSent}
-                          className={`px-3 py-1 text-xs font-bold rounded-full transition cursor-pointer shrink-0 shadow-xs ${
-                            isSent
-                              ? "bg-slate-200 dark:bg-slate-700 text-slate-500 cursor-not-allowed"
-                              : "bg-emerald-600 hover:bg-emerald-500 text-white"
-                          }`}
-                        >
-                          {isSent ? "Sent ✓" : "+ Connect"}
-                        </button>
-                      </div>
-                    );
-                  })}
+                          <button
+                            onClick={(e) => handleSendFriendRequest(explorer.id, explorer.username, e)}
+                            disabled={isSent}
+                            className={`px-3 py-1 text-xs font-bold rounded-full transition cursor-pointer shrink-0 shadow-xs ${
+                              isSent
+                                ? "bg-slate-200 dark:bg-slate-700 text-slate-500 cursor-not-allowed"
+                                : "bg-emerald-600 hover:bg-emerald-500 text-white"
+                            }`}
+                          >
+                            {isSent ? "Sent ✓" : "+ Connect"}
+                          </button>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             )}

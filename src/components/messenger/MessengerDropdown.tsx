@@ -89,7 +89,7 @@ export default function MessengerDropdown({ currentUser }: MessengerDropdownProp
 
       {/* Messenger Dropdown Panel */}
       {open && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl z-50 overflow-hidden text-slate-900 dark:text-slate-100 animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed left-1/2 -translate-x-1/2 top-14 w-[calc(100vw-24px)] max-w-sm sm:absolute sm:left-auto sm:right-0 sm:translate-x-0 sm:w-96 sm:top-auto sm:mt-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl z-50 overflow-hidden text-slate-900 dark:text-slate-100 animate-in fade-in zoom-in-95 duration-150">
           {/* Header */}
           <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-850/80">
             <div className="flex items-center gap-2">

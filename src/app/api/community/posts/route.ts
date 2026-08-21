@@ -76,36 +76,60 @@ export async function GET(request: Request) {
     ]);
 
     const postIds = posts.map((p) => p.id);
-    const commentCounts = postIds.length > 0
-      ? await db.universalComment.groupBy({
-          by: ["entityId"],
-          where: {
-            entityType: "post",
-            entityId: { in: postIds },
-            status: "Active",
-          },
-          _count: {
-            _all: true,
-          },
-        })
-      : [];
+    const [commentCounts, userReactions] = await Promise.all([
+      postIds.length > 0
+        ? db.universalComment.groupBy({
+            by: ["entityId"],
+            where: {
+              entityType: "post",
+              entityId: { in: postIds },
+              status: "Active",
+            },
+            _count: {
+              _all: true,
+            },
+          })
+        : [],
+      currentUser && postIds.length > 0
+        ? (db as any).postReaction.findMany({
+            where: {
+              userId: currentUser.id,
+              postId: { in: postIds },
+            },
+            select: {
+              postId: true,
+              type: true,
+            },
+          })
+        : [],
+    ]);
 
     const countMap: Record<number, number> = {};
-    commentCounts.forEach((c) => {
+    (commentCounts as any[]).forEach((c) => {
       countMap[c.entityId] = c._count._all;
     });
 
-    const formatted = posts.map((p) => ({
-      ...p,
-      commentsCount: countMap[p.id] || 0,
-      _count: {
-        comments: countMap[p.id] || 0,
-      },
-      user: {
-        ...p.user,
-        rankInfo: getRankFromXp(p.user.xpPoints || 0),
-      },
-    }));
+    const userReactionsMap: Record<number, string> = {};
+    (userReactions as any[]).forEach((r) => {
+      userReactionsMap[r.postId] = r.type;
+    });
+
+    const formatted = posts.map((p) => {
+      const actualCommentCount = countMap[p.id] !== undefined ? countMap[p.id] : (p.commentsCount || 0);
+      return {
+        ...p,
+        commentsCount: actualCommentCount,
+        _count: {
+          comments: actualCommentCount,
+        },
+        userReaction: userReactionsMap[p.id] || null,
+        isLiked: !!userReactionsMap[p.id],
+        user: {
+          ...p.user,
+          rankInfo: getRankFromXp(p.user.xpPoints || 0),
+        },
+      };
+    });
 
     // Fetch matching news and directory listings for this adda wall
     let relatedNews: any[] = [];

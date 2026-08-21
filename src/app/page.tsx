@@ -142,17 +142,21 @@ export default async function Home() {
     countMap[c.entityId] = c._count._all;
   });
 
-  const initialPosts = rawPosts.map((p) => ({
-    ...p,
-    commentsCount: countMap[p.id] || 0,
-    _count: {
-      comments: countMap[p.id] || 0,
-    },
-    user: {
-      ...p.user,
-      rankInfo: getRankFromXp(p.user.xpPoints || 0),
-    },
-  }));
+  const initialPosts = rawPosts.map((p) => {
+    const actualCommentCount = countMap[p.id] !== undefined ? countMap[p.id] : (p.commentsCount || 0);
+    return {
+      ...p,
+      commentsCount: actualCommentCount,
+      _count: {
+        comments: actualCommentCount,
+      },
+      likesCount: p.likesCount || 0,
+      user: {
+        ...p.user,
+        rankInfo: getRankFromXp(p.user.xpPoints || 0),
+      },
+    };
+  });
 
   return (
     <SocialHomeFeed

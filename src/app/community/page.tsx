@@ -6,6 +6,8 @@ import RankBadge from "@/components/profile/RankBadge";
 import CommentSection from "@/components/comments/CommentSection";
 import AuthModal from "@/components/auth/AuthModal";
 import PostMediaCarousel from "@/components/common/PostMediaCarousel";
+import PostReactionsBar from "@/components/community/PostReactionsBar";
+import ShareButton from "@/components/common/ShareButton";
 
 const NE_STATES = [
   "All States",
@@ -375,28 +377,55 @@ export default function CommunityFeedPage() {
                   </div>
                 )}
 
-                {/* Post Footer (Discussion toggle) */}
-                <div className="flex items-center justify-between pt-3 border-t border-slate-800 text-xs">
-                  <button
-                    onClick={() =>
-                      setExpandedCommentsPostId(
-                        expandedCommentsPostId === post.id ? null : post.id
-                      )
-                    }
-                    className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 font-semibold cursor-pointer py-1"
-                  >
-                    <span>💬</span>
-                    <span>
-                      {expandedCommentsPostId === post.id
-                        ? "Hide Discussion"
-                        : "Join Discussion / Comments"}
-                    </span>
-                  </button>
+                {/* Post Footer (Action bar) */}
+                <div className="flex items-center justify-between pt-3 border-t border-slate-800 text-xs flex-wrap gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <PostReactionsBar
+                      postId={post.id}
+                      initialLikesCount={post.likesCount || 0}
+                      initialUserReaction={post.userReaction || null}
+                      currentUser={currentUser}
+                    />
+
+                    {(() => {
+                      const numComments = (post.commentsCount !== undefined ? post.commentsCount : post._count?.comments) || 0;
+                      return (
+                        <button
+                          onClick={() =>
+                            setExpandedCommentsPostId(
+                              expandedCommentsPostId === post.id ? null : post.id
+                            )
+                          }
+                          className="px-3.5 py-1.5 rounded-full font-bold text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition cursor-pointer"
+                        >
+                          <span>💬</span>
+                          <span>{numComments}</span>
+                          <span className="hidden sm:inline font-semibold">{numComments === 1 ? "Thought" : "Thoughts"}</span>
+                        </button>
+                      );
+                    })()}
+
+                    <Link
+                      href={`/community/${post.id}`}
+                      className="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-full font-bold text-xs flex items-center gap-1.5 border border-slate-700 transition cursor-pointer"
+                      title="Open full post in new page"
+                    >
+                      <span>🔗</span>
+                      <span className="hidden sm:inline">Thread</span>
+                    </Link>
+
+                    <ShareButton
+                      url={`/community/${post.id}`}
+                      title={`Thought by @${post.user.username} on NorthEast Connect`}
+                      text={post.content.slice(0, 100)}
+                    />
+                  </div>
+
                   <Link
-                    href={`/profile/${post.user.username}`}
-                    className="text-slate-400 hover:text-slate-200 font-medium"
+                    href={`/community/${post.id}`}
+                    className="text-slate-500 font-mono text-[11px] hover:text-emerald-400 hover:underline"
                   >
-                    View @{post.user.username}&apos;s Profile &rarr;
+                    #{post.id}
                   </Link>
                 </div>
 

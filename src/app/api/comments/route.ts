@@ -197,6 +197,12 @@ export async function POST(request: Request) {
         });
       }
     } else if (entityType === "post") {
+      // Increment commentsCount on the community post directly
+      await db.communityPost.update({
+        where: { id: numericEntityId },
+        data: { commentsCount: { increment: 1 } },
+      }).catch(() => {});
+
       // If commenting on a community post, notify the author of the post
       const post = await db.communityPost.findUnique({
         where: { id: numericEntityId },
@@ -211,7 +217,7 @@ export async function POST(request: Request) {
             type: "POST_COMMENT",
             title: "New Comment on Your Post 💬",
             message: `@${currentUser.username} commented on your post: "${content.trim().slice(0, 75)}..."`,
-            linkUrl: `/#post-${numericEntityId}`,
+            linkUrl: `/community/${numericEntityId}`,
           },
         });
       }

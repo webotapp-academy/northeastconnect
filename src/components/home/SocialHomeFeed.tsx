@@ -8,6 +8,8 @@ import AuthModal from "@/components/auth/AuthModal";
 import GoogleAd from "@/components/GoogleAd";
 import AddaAutocompleteInput from "@/components/common/AddaAutocompleteInput";
 import PostMediaCarousel from "@/components/common/PostMediaCarousel";
+import PostReactionsBar from "@/components/community/PostReactionsBar";
+import ShareButton from "@/components/common/ShareButton";
 
 const NE_STATES = [
   { name: "All States", icon: "🌿", tag: "All" },
@@ -1695,9 +1697,13 @@ export default function SocialHomeFeed({
                                   u/{post.user.username}
                                 </Link>
                                 <span className="text-slate-400 text-xs">•</span>
-                                <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                                <Link
+                                  href={`/community/${post.id}`}
+                                  className="text-xs text-slate-500 dark:text-slate-400 font-mono hover:underline hover:text-emerald-600 dark:hover:text-emerald-400 transition"
+                                  title="Open full post thread in new page"
+                                >
                                   {timeAgo(post.createdAt)}
-                                </span>
+                                </Link>
                               </div>
                             </div>
                           </div>
@@ -1799,8 +1805,17 @@ export default function SocialHomeFeed({
                         )}
 
                         {/* Footer Action Bar */}
-                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400">
-                          <div className="flex items-center gap-1.5 sm:gap-3">
+                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400 flex-wrap gap-2">
+                          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-wrap">
+                            {/* Like Reactions Bar */}
+                            <PostReactionsBar
+                              postId={post.id}
+                              initialLikesCount={post.likesCount || 0}
+                              initialUserReaction={post.userReaction || null}
+                              currentUser={currentUser}
+                            />
+
+                            {/* Comments Count & Toggle */}
                             {(() => {
                               const numComments = (post.commentsCount !== undefined ? post.commentsCount : post._count?.comments) || 0;
                               return (
@@ -1808,30 +1823,43 @@ export default function SocialHomeFeed({
                                   onClick={() =>
                                     setExpandedCommentsPostId(isCommentsOpen ? null : post.id)
                                   }
-                                  className={`px-3.5 py-1.5 rounded-full font-bold text-xs sm:text-[13px] flex items-center gap-1.5 transition cursor-pointer ${
+                                  className={`px-3 sm:px-3.5 py-1.5 rounded-full font-bold text-xs sm:text-[13px] flex items-center gap-1.5 transition cursor-pointer active:scale-95 shadow-xs ${
                                     isCommentsOpen
                                       ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60"
                                       : "bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60"
                                   }`}
                                 >
                                   <span>💬</span>
-                                  <span>{numComments} {numComments === 1 ? "Comment" : "Comments"}</span>
+                                  <span>{numComments}</span>
+                                  <span className="hidden sm:inline font-semibold">{numComments === 1 ? "Thought" : "Thoughts"}</span>
                                 </button>
                               );
                             })()}
 
-                            <button
-                              onClick={() => handleShare(post)}
-                              className="px-3.5 py-1.5 bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full font-bold text-xs sm:text-[13px] flex items-center gap-1.5 border border-slate-200 dark:border-slate-700/60 transition cursor-pointer"
+                            {/* Reddit-Style Permalink Thread Button */}
+                            <Link
+                              href={`/community/${post.id}`}
+                              className="px-3 sm:px-3.5 py-1.5 bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 rounded-full font-bold text-xs sm:text-[13px] flex items-center gap-1.5 border border-slate-200 dark:border-slate-700/60 transition cursor-pointer active:scale-95 shadow-xs"
+                              title="Open post in dedicated page"
                             >
-                              <span>↗</span>
-                              <span className="hidden sm:inline">Share</span>
-                            </button>
+                              <span>🔗</span>
+                              <span className="hidden sm:inline">Thread</span>
+                            </Link>
+
+                            <ShareButton
+                              url={`/community/${post.id}`}
+                              title={`Thought by @${post.user.username} on NorthEast Connect`}
+                              text={post.content.slice(0, 100)}
+                            />
                           </div>
 
-                          <div className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">
+                          <Link
+                            href={`/community/${post.id}`}
+                            className="text-[11px] text-slate-400 dark:text-slate-500 font-mono hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline"
+                            title="Open permalink"
+                          >
                             #{post.id}
-                          </div>
+                          </Link>
                         </div>
 
                         {/* Expandable Universal Comment Section */}

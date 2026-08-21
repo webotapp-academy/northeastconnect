@@ -69,6 +69,7 @@ model User {
   directoryEditRequests  DirectoryEditRequest[]
   sentMessages           DirectMessage[]     @relation("SentMessages")
   receivedMessages       DirectMessage[]     @relation("ReceivedMessages")
+  postReactions          PostReaction[]
 
   @@map("users")
 }
@@ -478,10 +479,27 @@ model CommunityPost {
   updatedAt        DateTime @updatedAt @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reactions PostReaction[]
 
   @@index([userId])
   @@index([createdAt])
   @@map("community_posts")
+}
+
+model PostReaction {
+  id        Int      @id @default(autoincrement())
+  postId    Int      @map("post_id")
+  userId    Int      @map("user_id")
+  type      String   @default("like") // like, love, fire, clap, idea, pride
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+  @@map("post_reactions")
 }
 
 model Hashtag {

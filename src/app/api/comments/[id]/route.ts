@@ -36,6 +36,13 @@ export async function DELETE(
       where: { id: commentId },
     });
 
+    if (comment.entityType === "post") {
+      await db.communityPost.update({
+        where: { id: comment.entityId },
+        data: { commentsCount: { decrement: 1 } },
+      }).catch(() => {});
+    }
+
     return NextResponse.json({
       status: "success",
       message: "Comment deleted successfully",

@@ -147,45 +147,46 @@ export default function UserProfilePage() {
   }
 
   const isOwnProfile = profile.friendshipStatus === "SELF";
+  const isFriend = profile.friendshipStatus === "ACCEPTED";
   const rank = profile.rankInfo;
   const progress = profile.rankProgress;
   const pendingIncomingCount = friendsData.pendingIncoming?.length || 0;
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 pt-20 pb-16">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 pt-16 sm:pt-20 pb-16 transition-colors font-sans">
       {/* Cover Banner */}
-      <div className="relative h-64 md:h-80 w-full overflow-hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-indigo-950 border-b border-slate-800 shadow-inner">
+      <div className="relative h-48 sm:h-64 md:h-80 w-full overflow-hidden bg-gradient-to-r from-emerald-900 via-slate-800 to-indigo-950 border-b border-slate-200 dark:border-slate-800 shadow-inner">
         {profile.coverImageUrl ? (
           <img
             src={profile.coverImageUrl}
             alt="Profile Cover"
-            className="w-full h-full object-cover opacity-60"
+            className="w-full h-full object-cover opacity-70"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center relative">
-            <div className="absolute inset-0 bg-gradient-to-tr from-emerald-950/80 via-slate-900/70 to-indigo-950/80" />
-            <div className="relative z-10 text-white/10 font-black text-6xl md:text-8xl select-none tracking-widest uppercase">
+            <div className="absolute inset-0 bg-gradient-to-tr from-emerald-900/60 via-slate-900/60 to-indigo-900/60" />
+            <div className="relative z-10 text-white/20 dark:text-white/10 font-black text-5xl sm:text-7xl md:text-8xl select-none tracking-widest uppercase">
               Northeast
             </div>
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#090d16] via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-50 dark:from-[#090d16] via-transparent to-transparent opacity-80" />
       </div>
 
       {/* Main Container */}
-      <div className="container mx-auto px-4 max-w-5xl -mt-24 relative z-10">
+      <div className="container mx-auto px-3.5 sm:px-4 max-w-5xl -mt-16 sm:-mt-24 relative z-10">
         {/* Profile Header Card */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-md mb-8">
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-5 sm:p-7 md:p-8 shadow-xl mb-6 sm:mb-8 transition-colors">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-5 sm:gap-6">
             {/* Avatar */}
-            <div className="relative -mt-16 md:-mt-20 flex-shrink-0">
+            <div className="relative -mt-14 sm:-mt-20 flex-shrink-0">
               <img
                 src={
                   profile.profileImageUrl ||
                   `https://api.dicebear.com/7.x/bottts/svg?seed=${profile.username}`
                 }
                 alt={profile.username}
-                className="w-28 h-28 md:w-36 md:h-36 rounded-3xl object-cover border-4 border-slate-900 shadow-xl bg-slate-800"
+                className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-3xl object-cover border-4 border-white dark:border-slate-900 shadow-2xl bg-slate-100 dark:bg-slate-800"
               />
               <div className="absolute -bottom-2 -right-2">
                 <RankBadge
@@ -198,38 +199,40 @@ export default function UserProfilePage() {
             </div>
 
             {/* Info */}
-            <div className="flex-1 text-center md:text-left">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex-1 text-center md:text-left w-full">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-extrabold text-slate-100 tracking-tight">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                     {profile.fullName || profile.username}
                   </h1>
-                  <p className="text-sm font-mono text-emerald-400 font-semibold mt-0.5">@{profile.username}</p>
+                  <p className="text-xs sm:text-sm font-mono text-emerald-600 dark:text-emerald-400 font-bold mt-0.5">
+                    @{profile.username}
+                  </p>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center justify-center md:justify-end gap-2 flex-wrap">
+                <div className="flex items-center justify-center md:justify-end gap-2 flex-wrap pt-2 md:pt-0">
                   {isOwnProfile ? (
                     <>
                       <Link
                         href="/profile/my-businesses"
-                        className="px-3.5 py-2 bg-emerald-600/15 hover:bg-emerald-600/25 text-emerald-400 text-xs font-bold rounded-xl border border-emerald-500/30 transition flex items-center gap-1.5 shadow-sm"
+                        className="px-3 sm:px-3.5 py-1.5 sm:py-2 bg-emerald-50 dark:bg-emerald-600/15 hover:bg-emerald-100 dark:hover:bg-emerald-600/25 text-emerald-700 dark:text-emerald-400 text-xs font-bold rounded-xl border border-emerald-200 dark:border-emerald-500/30 transition flex items-center gap-1.5 shadow-xs"
                         title="View customer leads & business traffic"
                       >
                         <span>🏢</span>
-                        <span>My Businesses & Leads</span>
+                        <span>My Businesses</span>
                       </Link>
                       <Link
                         href="/marketplace/my-ads"
-                        className="px-3.5 py-2 bg-indigo-600/15 hover:bg-indigo-600/25 text-indigo-400 text-xs font-bold rounded-xl border border-indigo-500/30 transition flex items-center gap-1.5 shadow-sm"
+                        className="px-3 sm:px-3.5 py-1.5 sm:py-2 bg-indigo-50 dark:bg-indigo-600/15 hover:bg-indigo-100 dark:hover:bg-indigo-600/25 text-indigo-700 dark:text-indigo-400 text-xs font-bold rounded-xl border border-indigo-200 dark:border-indigo-500/30 transition flex items-center gap-1.5 shadow-xs"
                         title="View marketplace buyer leads & active ads"
                       >
                         <span>🛍️</span>
-                        <span>My Marketplace Ads</span>
+                        <span>My Ads</span>
                       </Link>
                       <Link
                         href="/profile/edit"
-                        className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition flex items-center gap-1.5 shadow-sm"
+                        className="px-3 sm:px-3.5 py-1.5 sm:py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 transition flex items-center gap-1.5 shadow-xs"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -238,30 +241,47 @@ export default function UserProfilePage() {
                       </Link>
                     </>
                   ) : (
-                    <FriendActionButton
-                      targetUserId={profile.id}
-                      initialStatus={profile.friendshipStatus}
-                      initialFriendshipId={profile.friendshipId}
-                      onStatusChange={() => loadProfile()}
-                    />
+                    <div className="flex items-center gap-2">
+                      <FriendActionButton
+                        targetUserId={profile.id}
+                        initialStatus={profile.friendshipStatus}
+                        initialFriendshipId={profile.friendshipId}
+                        onStatusChange={() => loadProfile()}
+                      />
+
+                      {isFriend && (
+                        <button
+                          onClick={() => {
+                            // Scroll to bottom or notify user
+                            alert(`You are connected with @${profile.username}! Use the Messenger icon on the top bar to message them anytime.`);
+                          }}
+                          className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <span>💬</span>
+                          <span>Message</span>
+                        </button>
+                      )}
+                    </div>
                   )}
                 </div>
               </div>
 
               {/* Bio */}
               {profile.bio && (
-                <p className="text-slate-300 text-sm mt-3 leading-relaxed max-w-2xl">{profile.bio}</p>
+                <p className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm mt-3 leading-relaxed max-w-2xl">
+                  {profile.bio}
+                </p>
               )}
 
-              {/* Badges / Location Meta */}
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4 text-xs text-slate-400">
+              {/* Location / Date Meta */}
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-3.5 text-xs text-slate-500 dark:text-slate-400">
                 {(profile.city || profile.state) && (
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1 font-medium">
                     <span>📍</span>
                     <span>{[profile.city, profile.state].filter(Boolean).join(", ")}</span>
                   </span>
                 )}
-                <span className="flex items-center gap-1">
+                <span className="flex items-center gap-1 font-medium">
                   <span>📅</span>
                   <span>
                     Joined {new Date(profile.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
@@ -272,7 +292,7 @@ export default function UserProfilePage() {
                     href={profile.websiteUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1 text-emerald-400 hover:underline"
+                    className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
                   >
                     <span>🌐</span> Website
                   </a>
@@ -282,27 +302,27 @@ export default function UserProfilePage() {
           </div>
 
           {/* Gamification XP Bar */}
-          <div className="mt-8 pt-6 border-t border-slate-800 bg-slate-950/60 -mx-6 md:-mx-8 -mb-6 md:-mb-8 p-6 md:p-8 rounded-b-3xl">
+          <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/60 -mx-5 sm:-mx-7 md:-mx-8 -mb-5 sm:-mb-7 md:-mb-8 p-5 sm:p-7 md:p-8 rounded-b-3xl transition-colors">
             <div className="flex items-center justify-between text-xs mb-2">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-slate-200">{rank.tier}</span>
-                <span className="text-slate-600">•</span>
-                <span className="text-emerald-400 font-semibold">{rank.perk}</span>
+                <span className="font-extrabold text-slate-800 dark:text-slate-200">{rank.tier}</span>
+                <span className="text-slate-400 dark:text-slate-600">•</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{rank.perk}</span>
               </div>
-              <div className="font-mono text-slate-100 font-bold">
+              <div className="font-mono text-slate-900 dark:text-slate-100 font-bold">
                 {profile.xpPoints || 0} Total XP
               </div>
             </div>
 
             {progress && (
               <div className="space-y-1.5">
-                <div className="w-full h-3 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                <div className="w-full h-2.5 sm:h-3 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-300 dark:border-slate-700">
                   <div
                     className={`h-full rounded-full bg-gradient-to-r ${rank.color} transition-all duration-700`}
                     style={{ width: `${progress.progressPercent}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-[11px] text-slate-400 font-medium">
+                <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                   <span>{progress.progressPercent}% towards next rank</span>
                   <span>
                     {progress.nextRank
@@ -315,61 +335,72 @@ export default function UserProfilePage() {
           </div>
 
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-3 gap-3 mt-6 pt-6 border-t border-slate-800 text-center">
-            <div className="bg-slate-800/70 p-3.5 rounded-2xl border border-slate-700/60">
-              <div className="text-xl md:text-2xl font-extrabold text-slate-100">{profile.friendsCount || 0}</div>
-              <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mt-0.5">Friends</div>
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-3 mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
+            <div className="bg-slate-50 dark:bg-slate-800/60 p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/60">
+              <div className="text-lg sm:text-2xl font-black text-slate-900 dark:text-slate-100">{profile.friendsCount || 0}</div>
+              <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mt-0.5">Friends</div>
             </div>
-            <div className="bg-slate-800/70 p-3.5 rounded-2xl border border-slate-700/60">
-              <div className="text-xl md:text-2xl font-extrabold text-slate-100">{profile.commentsCount || 0}</div>
-              <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mt-0.5">Comments</div>
+            <div className="bg-slate-50 dark:bg-slate-800/60 p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/60">
+              <div className="text-lg sm:text-2xl font-black text-slate-900 dark:text-slate-100">{profile.commentsCount || 0}</div>
+              <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mt-0.5">Comments</div>
             </div>
-            <div className="bg-slate-800/70 p-3.5 rounded-2xl border border-slate-700/60">
-              <div className="text-xl md:text-2xl font-extrabold text-slate-100">{profile.postsCount || 0}</div>
-              <div className="text-[11px] text-slate-400 font-medium uppercase tracking-wider mt-0.5">Posts</div>
+            <div className="bg-slate-50 dark:bg-slate-800/60 p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/60">
+              <div className="text-lg sm:text-2xl font-black text-slate-900 dark:text-slate-100">{profile.postsCount || 0}</div>
+              <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mt-0.5">Posts</div>
             </div>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex border-b border-slate-800 mb-6 gap-6 text-sm font-semibold">
+        {/* Modern Mobile-Friendly Pill Tab Navigation */}
+        <div className="bg-slate-200/70 dark:bg-slate-900/90 p-1.5 rounded-2xl border border-slate-300/80 dark:border-slate-800 mb-6 flex items-center justify-between gap-1 sm:gap-2 shadow-inner">
           <button
             onClick={() => setActiveTab("activity")}
-            className={`pb-3 border-b-2 transition-all cursor-pointer ${
+            className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-4 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
               activeTab === "activity"
-                ? "border-emerald-500 text-emerald-400"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "bg-emerald-600 text-white shadow-md"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
-            💬 Recent Thoughts & Comments ({profile.commentsCount || 0})
+            <span>💬</span>
+            <span className="truncate">Activity &amp; Wall</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${activeTab === "activity" ? "bg-white/20" : "bg-slate-300 dark:bg-slate-800"}`}>
+              {profile.commentsCount || 0}
+            </span>
           </button>
+
           <button
             onClick={() => {
               setActiveTab("friends");
               if (isOwnProfile) loadFriendsList();
             }}
-            className={`pb-3 border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+            className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-4 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
               activeTab === "friends"
-                ? "border-emerald-500 text-emerald-400"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "bg-emerald-600 text-white shadow-md"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
-            <span>👥 Friends & Connections ({profile.friendsCount || 0})</span>
+            <span>👥</span>
+            <span className="truncate">Friends</span>
+            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold ${activeTab === "friends" ? "bg-white/20" : "bg-slate-300 dark:bg-slate-800"}`}>
+              {profile.friendsCount || 0}
+            </span>
             {isOwnProfile && pendingIncomingCount > 0 && (
-              <span className="px-2 py-0.5 bg-rose-500 text-white text-[10px] font-extrabold rounded-full">
-                {pendingIncomingCount} new
+              <span className="px-1.5 py-0.5 bg-rose-500 text-white text-[9px] font-black rounded-full animate-bounce">
+                {pendingIncomingCount}
               </span>
             )}
           </button>
+
           <button
             onClick={() => setActiveTab("badges")}
-            className={`pb-3 border-b-2 transition-all cursor-pointer ${
+            className={`flex-1 py-2 sm:py-2.5 px-2.5 sm:px-4 rounded-xl text-xs font-extrabold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
               activeTab === "badges"
-                ? "border-emerald-500 text-emerald-400"
-                : "border-transparent text-slate-400 hover:text-slate-200"
+                ? "bg-emerald-600 text-white shadow-md"
+                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
             }`}
           >
-            🏅 Explorer Badges
+            <span>🏅</span>
+            <span className="truncate">Badges &amp; XP</span>
           </button>
         </div>
 
@@ -378,7 +409,7 @@ export default function UserProfilePage() {
           <div className="space-y-6">
             {/* Recent Comments */}
             <div>
-              <h3 className="text-sm font-bold text-slate-100 mb-3 flex items-center gap-2">
+              <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2 uppercase tracking-wider">
                 <span>💬</span> Recent Thoughts &amp; Discussions
               </h3>
               {profile.recentComments && profile.recentComments.length > 0 ? (
@@ -386,18 +417,18 @@ export default function UserProfilePage() {
                   {profile.recentComments.map((c: any) => (
                     <div
                       key={c.id}
-                      className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-sm hover:border-slate-700/80 transition"
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-2xl shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition"
                     >
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 mb-2.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400 mb-2.5">
                         <div className="flex items-center gap-2">
-                          <span className="bg-emerald-950/80 text-emerald-400 px-2.5 py-0.5 rounded-md font-bold uppercase text-[10px] border border-emerald-800/60">
+                          <span className="bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 px-2.5 py-0.5 rounded-md font-bold uppercase text-[10px] border border-emerald-200 dark:border-emerald-800/60">
                             {c.entityType || "Comment"}
                           </span>
-                          <span className="font-semibold text-slate-200 truncate max-w-xs sm:max-w-md">
+                          <span className="font-bold text-slate-800 dark:text-slate-200 truncate max-w-xs sm:max-w-md">
                             {c.entityTitle || `${c.entityType} #${c.entityId}`}
                           </span>
                         </div>
-                        <span className="text-[11px] text-slate-500">
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">
                           {new Date(c.createdAt).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
@@ -405,12 +436,14 @@ export default function UserProfilePage() {
                           })}
                         </span>
                       </div>
-                      <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{c.content}</p>
-                      <div className="mt-3 flex items-center justify-between text-xs pt-3 border-t border-slate-800">
-                        <span className="text-slate-400 font-medium">❤️ {c.likesCount || 0} Likes</span>
+                      <p className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap">
+                        {c.content}
+                      </p>
+                      <div className="mt-3 flex items-center justify-between text-xs pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <span className="text-slate-500 dark:text-slate-400 font-medium">❤️ {c.likesCount || 0} Likes</span>
                         <Link
                           href={c.entityUrl || `/${c.entityType}/${c.entityId}`}
-                          className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1"
+                          className="text-emerald-600 dark:text-emerald-400 hover:underline font-bold flex items-center gap-1"
                         >
                           View Discussion <span>&rarr;</span>
                         </Link>
@@ -419,7 +452,7 @@ export default function UserProfilePage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-10 bg-slate-900 rounded-2xl border border-dashed border-slate-800 text-slate-400 text-xs shadow-sm">
+                <div className="text-center py-10 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs shadow-xs">
                   No recent comments from this user yet.
                 </div>
               )}
@@ -428,20 +461,20 @@ export default function UserProfilePage() {
             {/* Recent Community Posts */}
             {profile.recentPosts && profile.recentPosts.length > 0 && (
               <div>
-                <h3 className="text-sm font-bold text-slate-100 mb-3 flex items-center gap-2">
+                <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100 mb-3 flex items-center gap-2 uppercase tracking-wider">
                   <span>📰</span> Community Posts
                 </h3>
                 <div className="space-y-3">
                   {profile.recentPosts.map((post: any) => (
                     <div
                       key={post.id}
-                      className="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-sm hover:border-slate-700/80 transition"
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-2xl shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition"
                     >
-                      <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-                        <span className="bg-teal-950/80 text-teal-400 px-2.5 py-0.5 rounded-md font-bold text-[10px] border border-teal-800/60">
+                      <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-2">
+                        <span className="bg-teal-50 dark:bg-teal-950/80 text-teal-700 dark:text-teal-400 px-2.5 py-0.5 rounded-md font-bold text-[10px] border border-teal-200 dark:border-teal-800/60">
                           {post.taggedLocation || "Community Post"}
                         </span>
-                        <span className="text-[11px] text-slate-500">
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">
                           {new Date(post.createdAt).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
@@ -449,15 +482,17 @@ export default function UserProfilePage() {
                           })}
                         </span>
                       </div>
-                      <p className="text-slate-200 text-sm leading-relaxed mb-3">{post.content}</p>
+                      <p className="text-slate-800 dark:text-slate-200 text-xs sm:text-sm leading-relaxed mb-3">
+                        {post.content}
+                      </p>
                       {post.mediaUrls && (
                         <div className="mb-3">
                           <PostMediaCarousel mediaUrls={post.mediaUrls} />
                         </div>
                       )}
-                      <div className="flex items-center justify-between text-xs pt-3 border-t border-slate-800 text-slate-400">
+                      <div className="flex items-center justify-between text-xs pt-3 border-t border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400">
                         <span>❤️ {post.likesCount || 0} Likes • 💬 {post.commentsCount || 0} Comments</span>
-                        <Link href="/community" className="text-emerald-400 hover:text-emerald-300 font-bold">
+                        <Link href="/community" className="text-emerald-600 dark:text-emerald-400 hover:underline font-bold">
                           Join Discussion &rarr;
                         </Link>
                       </div>
@@ -470,29 +505,29 @@ export default function UserProfilePage() {
         )}
 
         {activeTab === "friends" && (
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {isOwnProfile ? (
               <>
                 {/* 1. Pending Incoming Requests */}
                 {friendsData.pendingIncoming && friendsData.pendingIncoming.length > 0 && (
-                  <div className="bg-emerald-950/40 border border-emerald-800/60 rounded-3xl p-6 shadow-sm">
+                  <div className="bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-3xl p-5 sm:p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <span className="text-xl">👋</span>
-                        <h3 className="text-base font-extrabold text-slate-100">
+                        <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-slate-100">
                           Pending Friend Requests ({friendsData.pendingIncoming.length})
                         </h3>
                       </div>
-                      <span className="text-xs text-emerald-400 font-semibold bg-emerald-950 px-2.5 py-1 rounded-full border border-emerald-800/60">
+                      <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-bold bg-emerald-100 dark:bg-emerald-950 px-2.5 py-1 rounded-full border border-emerald-300 dark:border-emerald-800/60">
                         Action Required
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
                       {friendsData.pendingIncoming.map((req: any) => (
                         <div
                           key={req.id}
-                          className="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between"
+                          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm flex flex-col justify-between"
                         >
                           <div className="flex items-center gap-3 mb-3">
                             <Link href={`/profile/${req.sender.username}`}>
@@ -502,24 +537,24 @@ export default function UserProfilePage() {
                                   `https://api.dicebear.com/7.x/bottts/svg?seed=${req.sender.username}`
                                 }
                                 alt={req.sender.username}
-                                className="w-12 h-12 rounded-full object-cover border border-emerald-500 bg-slate-800"
+                                className="w-12 h-12 rounded-2xl object-cover border border-emerald-500 bg-slate-100 dark:bg-slate-800"
                               />
                             </Link>
                             <div className="min-w-0 flex-1">
                               <Link
                                 href={`/profile/${req.sender.username}`}
-                                className="font-bold text-sm text-slate-100 hover:text-emerald-400 transition truncate block"
+                                className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 hover:text-emerald-600 dark:hover:text-emerald-400 transition truncate block"
                               >
                                 {req.sender.fullName || req.sender.username}
                               </Link>
-                              <p className="text-xs text-slate-400 font-mono">@{req.sender.username}</p>
+                              <p className="text-[11px] text-slate-500 font-mono">@{req.sender.username}</p>
                               <div className="mt-1">
                                 <RankBadge rankTier={req.sender.rankTier} size="sm" showLevel={false} />
                               </div>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
+                          <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                             <button
                               onClick={() => handleAcceptFriendRequest(req.id)}
                               disabled={friendActionLoadingId === req.id}
@@ -530,7 +565,7 @@ export default function UserProfilePage() {
                             <button
                               onClick={() => handleDeclineOrCancelFriendRequest(req.id)}
                               disabled={friendActionLoadingId === req.id}
-                              className="py-1.5 px-3 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl border border-slate-700 transition cursor-pointer disabled:opacity-50"
+                              className="py-1.5 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl border border-slate-200 dark:border-slate-700 transition cursor-pointer disabled:opacity-50"
                             >
                               Decline
                             </button>
@@ -543,17 +578,17 @@ export default function UserProfilePage() {
 
                 {/* 2. Pending Outgoing Requests */}
                 {friendsData.pendingOutgoing && friendsData.pendingOutgoing.length > 0 && (
-                  <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-sm">
-                    <h3 className="text-sm font-bold text-slate-100 mb-4 flex items-center gap-2">
+                  <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm">
+                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2 uppercase tracking-wider">
                       <span>📤</span> Sent Friend Requests ({friendsData.pendingOutgoing.length})
                     </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
                       {friendsData.pendingOutgoing.map((req: any) => (
                         <div
                           key={req.id}
-                          className="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-sm flex items-center justify-between gap-3"
+                          className="bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 p-3.5 rounded-2xl shadow-xs flex items-center justify-between gap-3"
                         >
-                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="flex items-center gap-2.5 min-w-0 flex-1">
                             <Link href={`/profile/${req.receiver.username}`}>
                               <img
                                 src={
@@ -561,13 +596,13 @@ export default function UserProfilePage() {
                                   `https://api.dicebear.com/7.x/bottts/svg?seed=${req.receiver.username}`
                                 }
                                 alt={req.receiver.username}
-                                className="w-10 h-10 rounded-full object-cover border border-slate-700 bg-slate-800"
+                                className="w-10 h-10 rounded-2xl object-cover border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800"
                               />
                             </Link>
                             <div className="min-w-0 flex-1">
                               <Link
                                 href={`/profile/${req.receiver.username}`}
-                                className="font-bold text-xs text-slate-100 hover:text-emerald-400 truncate block"
+                                className="font-extrabold text-xs text-slate-900 dark:text-slate-100 hover:text-emerald-600 dark:hover:text-emerald-400 truncate block"
                               >
                                 {req.receiver.fullName || req.receiver.username}
                               </Link>
@@ -577,7 +612,7 @@ export default function UserProfilePage() {
                           <button
                             onClick={() => handleDeclineOrCancelFriendRequest(req.id)}
                             disabled={friendActionLoadingId === req.id}
-                            className="px-2.5 py-1 text-[11px] font-semibold text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 border border-slate-700 rounded-lg transition cursor-pointer disabled:opacity-50"
+                            className="px-2.5 py-1 text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-300 dark:border-slate-700 rounded-lg transition cursor-pointer disabled:opacity-50"
                             title="Cancel request"
                           >
                             Cancel
@@ -590,15 +625,15 @@ export default function UserProfilePage() {
 
                 {/* 3. Connected Friends */}
                 <div>
-                  <h3 className="text-base font-bold text-slate-100 mb-4 flex items-center gap-2">
+                  <h3 className="text-xs sm:text-base font-extrabold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2 uppercase tracking-wider">
                     <span>👥</span> All Connected Friends ({friendsData.friends?.length || 0})
                   </h3>
                   {friendsData.friends && friendsData.friends.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
                       {friendsData.friends.map((f: any) => (
                         <div
                           key={f.friendshipId}
-                          className="bg-slate-900 border border-slate-800 p-4 rounded-2xl hover:border-emerald-500/80 hover:shadow-md transition flex items-center justify-between gap-3 shadow-sm"
+                          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl hover:border-emerald-500 dark:hover:border-emerald-500 hover:shadow-md transition flex items-center justify-between gap-3 shadow-xs"
                         >
                           <Link
                             href={`/profile/${f.user.username}`}
@@ -610,13 +645,13 @@ export default function UserProfilePage() {
                                 `https://api.dicebear.com/7.x/bottts/svg?seed=${f.user.username}`
                               }
                               alt={f.user.username}
-                              className="w-12 h-12 rounded-full object-cover border border-slate-700 bg-slate-800"
+                              className="w-11 h-11 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800"
                             />
                             <div className="min-w-0 flex-1">
-                              <h4 className="font-bold text-sm text-slate-100 truncate">
+                              <h4 className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate">
                                 {f.user.fullName || f.user.username}
                               </h4>
-                              <p className="text-xs text-slate-400 font-mono">@{f.user.username}</p>
+                              <p className="text-[10px] text-slate-500 font-mono">@{f.user.username}</p>
                               <div className="mt-1">
                                 <RankBadge rankTier={f.user.rankTier} size="sm" showLevel={false} />
                               </div>
@@ -629,7 +664,7 @@ export default function UserProfilePage() {
                               }
                             }}
                             title="Unfriend"
-                            className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 rounded-xl transition cursor-pointer"
+                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition cursor-pointer"
                           >
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -639,7 +674,7 @@ export default function UserProfilePage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-12 bg-slate-900 rounded-2xl border border-dashed border-slate-800 text-slate-400 text-xs shadow-sm">
+                    <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs shadow-xs">
                       No connected friends yet. Explore the community feed to send friend requests!
                     </div>
                   )}
@@ -647,13 +682,13 @@ export default function UserProfilePage() {
               </>
             ) : (
               // Other User's Profile Friends Preview
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
                 {profile.friendsPreview && profile.friendsPreview.length > 0 ? (
                   profile.friendsPreview.map((friend: any) => (
                     <Link
                       key={friend.id}
                       href={`/profile/${friend.username}`}
-                      className="bg-slate-900 border border-slate-800 p-4 rounded-2xl hover:border-emerald-500/80 hover:shadow-md transition flex items-center gap-3.5 shadow-sm"
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl hover:border-emerald-500 hover:shadow-md transition flex items-center gap-3 shadow-xs"
                     >
                       <img
                         src={
@@ -661,11 +696,13 @@ export default function UserProfilePage() {
                           `https://api.dicebear.com/7.x/bottts/svg?seed=${friend.username}`
                         }
                         alt={friend.username}
-                        className="w-12 h-12 rounded-full object-cover border border-slate-700 bg-slate-800"
+                        className="w-11 h-11 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800"
                       />
                       <div className="min-w-0 flex-1">
-                        <h4 className="font-bold text-sm text-slate-100 truncate">{friend.fullName || friend.username}</h4>
-                        <p className="text-xs text-slate-400 font-mono">@{friend.username}</p>
+                        <h4 className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate">
+                          {friend.fullName || friend.username}
+                        </h4>
+                        <p className="text-[10px] text-slate-500 font-mono">@{friend.username}</p>
                         <div className="mt-1">
                           <RankBadge rankTier={friend.rankTier} size="sm" showLevel={false} />
                         </div>
@@ -673,7 +710,7 @@ export default function UserProfilePage() {
                     </Link>
                   ))
                 ) : (
-                  <div className="col-span-full text-center py-12 bg-slate-900 rounded-2xl border border-dashed border-slate-800 text-slate-400 text-xs shadow-sm">
+                  <div className="col-span-full text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 text-xs shadow-xs">
                     No connected friends yet. Send a friend request to connect!
                   </div>
                 )}
@@ -683,33 +720,39 @@ export default function UserProfilePage() {
         )}
 
         {activeTab === "badges" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center gap-4 shadow-sm">
-              <div className="text-3xl p-3 bg-emerald-950/80 border border-emerald-800/60 rounded-2xl">🌱</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-5 rounded-2xl flex items-center gap-4 shadow-sm">
+              <div className="text-3xl p-3 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl shrink-0">
+                🌱
+              </div>
               <div>
-                <h4 className="font-bold text-sm text-slate-100">Explorer Novice</h4>
-                <p className="text-xs text-slate-400 mt-0.5">Joined the North East Connect platform.</p>
-                <span className="text-[11px] text-emerald-400 font-bold mt-1 inline-block">✓ Unlocked</span>
+                <h4 className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100">Explorer Novice</h4>
+                <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Joined the North East Connect platform.</p>
+                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold mt-1 inline-block">✓ Unlocked</span>
               </div>
             </div>
 
-            <div className={`bg-slate-900 border ${profile.commentsCount > 0 ? "border-slate-800" : "border-slate-800 opacity-50"} p-5 rounded-2xl flex items-center gap-4 shadow-sm`}>
-              <div className="text-3xl p-3 bg-cyan-950/80 border border-cyan-800/60 rounded-2xl">💬</div>
+            <div className={`bg-white dark:bg-slate-900 border ${profile.commentsCount > 0 ? "border-slate-200 dark:border-slate-800" : "border-slate-200 dark:border-slate-800 opacity-60"} p-4 sm:p-5 rounded-2xl flex items-center gap-4 shadow-sm`}>
+              <div className="text-3xl p-3 bg-cyan-50 dark:bg-cyan-950/80 border border-cyan-200 dark:border-cyan-800/60 rounded-2xl shrink-0">
+                💬
+              </div>
               <div>
-                <h4 className="font-bold text-sm text-slate-100">Active Voice</h4>
-                <p className="text-xs text-slate-400 mt-0.5">Posted a comment on news, culture, or directory.</p>
-                <span className="text-[11px] text-cyan-400 font-bold mt-1 inline-block">
+                <h4 className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100">Active Voice</h4>
+                <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Posted a comment on news, culture, or directory.</p>
+                <span className="text-[11px] text-cyan-600 dark:text-cyan-400 font-bold mt-1 inline-block">
                   {profile.commentsCount > 0 ? "✓ Unlocked" : "🔒 In Progress"}
                 </span>
               </div>
             </div>
 
-            <div className={`bg-slate-900 border ${profile.friendsCount > 0 ? "border-slate-800" : "border-slate-800 opacity-50"} p-5 rounded-2xl flex items-center gap-4 shadow-sm`}>
-              <div className="text-3xl p-3 bg-purple-950/80 border border-purple-800/60 rounded-2xl">🤝</div>
+            <div className={`bg-white dark:bg-slate-900 border ${profile.friendsCount > 0 ? "border-slate-200 dark:border-slate-800" : "border-slate-200 dark:border-slate-800 opacity-60"} p-4 sm:p-5 rounded-2xl flex items-center gap-4 shadow-sm`}>
+              <div className="text-3xl p-3 bg-purple-50 dark:bg-purple-950/80 border border-purple-200 dark:border-purple-800/60 rounded-2xl shrink-0">
+                🤝
+              </div>
               <div>
-                <h4 className="font-bold text-sm text-slate-100">Social Connector</h4>
-                <p className="text-xs text-slate-400 mt-0.5">Connected with fellow regional explorers.</p>
-                <span className="text-[11px] text-purple-400 font-bold mt-1 inline-block">
+                <h4 className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100">Social Connector</h4>
+                <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">Connected with fellow regional explorers.</p>
+                <span className="text-[11px] text-purple-600 dark:text-purple-400 font-bold mt-1 inline-block">
                   {profile.friendsCount > 0 ? "✓ Unlocked" : "🔒 In Progress"}
                 </span>
               </div>

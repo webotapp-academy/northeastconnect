@@ -6,7 +6,9 @@ import { usePathname, useRouter } from "next/navigation";
 import AuthModal from "@/components/auth/AuthModal";
 import RankBadge from "@/components/profile/RankBadge";
 import NotificationDropdown from "@/components/notifications/NotificationDropdown";
+import MessengerDropdown from "@/components/messenger/MessengerDropdown";
 import ThemeToggle from "@/components/theme/ThemeToggle";
+import InviteFriendsModal from "@/components/profile/InviteFriendsModal";
 
 const NAV_ITEMS = [
   { label: "Community", href: "/", exact: true },
@@ -31,6 +33,7 @@ export default function Navbar() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authTab, setAuthTab] = useState<"login" | "register">("login");
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
   const [navSearchQuery, setNavSearchQuery] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -198,8 +201,10 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Theme Toggle (System / Light / Dark) */}
-            <ThemeToggle />
+            {/* Theme Toggle (Desktop only; on mobile it is in the profile dropdown/drawer) */}
+            <div className="hidden md:flex items-center">
+              <ThemeToggle />
+            </div>
 
             {currentUser ? (
               <div className="flex items-center gap-1 sm:gap-2">
@@ -207,6 +212,9 @@ export default function Navbar() {
                   currentUser={currentUser}
                   onNotificationUpdate={fetchMe}
                 />
+
+                {/* Messenger / Friends Chat Icon */}
+                <MessengerDropdown currentUser={currentUser} />
 
                 {/* Profile Pill */}
                 <div className="relative" ref={dropdownRef}>
@@ -242,7 +250,7 @@ export default function Navbar() {
 
                   {/* Dropdown Menu */}
                   {profileDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 py-1.5 z-50 text-slate-800 dark:text-slate-200 animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div className="absolute right-0 mt-2 w-60 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 py-1.5 z-50 text-slate-800 dark:text-slate-200 animate-in fade-in slide-in-from-top-1 duration-150">
                       <div className="px-3.5 py-2.5 border-b border-slate-100 dark:border-slate-800">
                         <p className="font-semibold text-xs text-slate-900 dark:text-slate-100">
                           {currentUser.fullName || currentUser.username}
@@ -268,6 +276,33 @@ export default function Navbar() {
                           <span>👤</span>
                           <span>Profile & Wall</span>
                         </Link>
+
+                        {/* Invite Friends Action */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setProfileDropdownOpen(false);
+                            setInviteModalOpen(true);
+                          }}
+                          className="w-full text-left flex items-center justify-between px-3.5 py-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition cursor-pointer"
+                        >
+                          <span className="flex items-center gap-2">
+                            <span>✉️</span>
+                            <span>Invite Your Friends</span>
+                          </span>
+                          <span className="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded-full font-mono">+50 XP</span>
+                        </button>
+
+                        {/* Create Community Action */}
+                        <Link
+                          href="/create-community"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
+                        >
+                          <span>🌱</span>
+                          <span>Create Your Community</span>
+                        </Link>
+
                         <Link
                           href="/profile/my-businesses"
                           onClick={() => setProfileDropdownOpen(false)}
@@ -311,6 +346,12 @@ export default function Navbar() {
                             Admin Dashboard
                           </Link>
                         )}
+                      </div>
+
+                      {/* Theme Toggle inside Dropdown */}
+                      <div className="border-t border-slate-100 dark:border-slate-800 px-3.5 py-2 flex items-center justify-between">
+                        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Theme</span>
+                        <ThemeToggle />
                       </div>
 
                       <div className="border-t border-slate-100 dark:border-slate-800 pt-1">
@@ -449,12 +490,36 @@ export default function Navbar() {
                 </Link>
               ))}
 
+              <Link
+                href="/create-community"
+                onClick={() => setMobileOpen(false)}
+                className="py-2 px-3 rounded-xl text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 flex items-center gap-2"
+              >
+                <span>🌱</span>
+                <span>Create Community / Adda</span>
+              </Link>
+
               {currentUser && (
-                <div className="pt-2 mt-2 border-t border-slate-800 space-y-0.5">
+                <div className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-800 space-y-0.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileOpen(false);
+                      setInviteModalOpen(true);
+                    }}
+                    className="w-full py-2 px-3 text-emerald-600 dark:text-emerald-400 font-bold rounded-xl text-xs flex items-center justify-between hover:bg-emerald-50 dark:hover:bg-emerald-950/50"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span>✉️</span>
+                      <span>Invite Friends</span>
+                    </span>
+                    <span className="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded-full font-mono">+50 XP</span>
+                  </button>
+
                   <Link
                     href={`/profile/${currentUser.username}`}
                     onClick={() => setMobileOpen(false)}
-                    className="py-2 px-3 text-slate-300 hover:bg-slate-800 rounded-xl text-xs font-medium flex items-center justify-between"
+                    className="py-2 px-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-medium flex items-center justify-between"
                   >
                     <span>Profile & Wall</span>
                     <span className="text-[10px] text-slate-500">View</span>
@@ -462,7 +527,7 @@ export default function Navbar() {
                   <Link
                     href="/profile/edit"
                     onClick={() => setMobileOpen(false)}
-                    className="py-2 px-3 text-slate-300 hover:bg-slate-800 rounded-xl text-xs font-medium block"
+                    className="py-2 px-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-medium block"
                   >
                     Account Settings
                   </Link>
@@ -471,7 +536,7 @@ export default function Navbar() {
                     <Link
                       href="/admin"
                       onClick={() => setMobileOpen(false)}
-                      className="py-2 px-3 bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 rounded-xl text-xs font-semibold block"
+                      className="py-2 px-3 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 rounded-xl text-xs font-semibold block"
                     >
                       Admin Dashboard
                     </Link>
@@ -481,12 +546,18 @@ export default function Navbar() {
                       setMobileOpen(false);
                       handleLogout();
                     }}
-                    className="w-full py-2 px-3 text-rose-400 hover:bg-rose-950/30 rounded-xl text-xs font-medium text-left cursor-pointer transition"
+                    className="w-full py-2 px-3 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl text-xs font-medium text-left cursor-pointer transition"
                   >
                     Log out
                   </button>
                 </div>
               )}
+
+              {/* Theme Toggle in Mobile Drawer */}
+              <div className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between px-3 py-1">
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Theme Mode</span>
+                <ThemeToggle />
+              </div>
             </div>
           </div>
         </div>
@@ -500,6 +571,13 @@ export default function Navbar() {
         onSuccess={() => {
           fetchMe();
         }}
+      />
+
+      {/* Invite Friends Modal */}
+      <InviteFriendsModal
+        isOpen={inviteModalOpen}
+        onClose={() => setInviteModalOpen(false)}
+        currentUser={currentUser}
       />
     </>
   );

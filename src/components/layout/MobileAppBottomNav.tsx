@@ -56,15 +56,9 @@ export default function MobileAppBottomNav() {
     setCreatePostModalOpen(true);
   }
 
-  const isFeed = pathname === "/" || pathname === "/community";
-  const isExplore =
-    pathname.startsWith("/directory") ||
-    pathname.startsWith("/culture") ||
-    pathname.startsWith("/wildlife") ||
-    pathname.startsWith("/adventure") ||
-    pathname.startsWith("/search");
-  const isNewsMarket =
-    pathname.startsWith("/news") || pathname.startsWith("/marketplace");
+  const isHome = pathname === "/";
+  const isCommunity = pathname?.startsWith("/community");
+  const isNews = pathname?.startsWith("/news");
   const isProfile =
     (currentUser && pathname.startsWith(`/profile/${currentUser.username}`)) ||
     pathname === "/profile/edit";
@@ -76,11 +70,24 @@ export default function MobileAppBottomNav() {
         className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-[#0b0e14]/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 text-slate-800 dark:text-white shadow-2xl px-0.5 py-1 pb-[max(0.25rem,env(safe-area-inset-bottom))] transition-colors"
       >
         <div className="grid grid-cols-5 items-center justify-items-center w-full mx-auto">
-          {/* 1. Community / Feed */}
+          {/* 1. Home */}
           <Link
             href="/"
             className={`flex flex-col items-center justify-center w-full py-0.5 text-center transition-all ${
-              isFeed
+              isHome
+                ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium"
+            }`}
+          >
+            <span className="text-lg leading-none mb-0.5">🏠</span>
+            <span className="text-[9px] leading-tight tracking-tight whitespace-nowrap">Home</span>
+          </Link>
+
+          {/* 2. Community */}
+          <Link
+            href="/community"
+            className={`flex flex-col items-center justify-center w-full py-0.5 text-center transition-all ${
+              isCommunity
                 ? "text-emerald-600 dark:text-emerald-400 font-bold"
                 : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium"
             }`}
@@ -89,20 +96,7 @@ export default function MobileAppBottomNav() {
             <span className="text-[9px] leading-tight tracking-tight whitespace-nowrap">Community</span>
           </Link>
 
-          {/* 2. Explore Hub */}
-          <Link
-            href="/directory"
-            className={`flex flex-col items-center justify-center w-full py-0.5 text-center transition-all ${
-              isExplore
-                ? "text-emerald-600 dark:text-emerald-400 font-bold"
-                : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium"
-            }`}
-          >
-            <span className="text-lg leading-none mb-0.5">🧭</span>
-            <span className="text-[9px] leading-tight tracking-tight whitespace-nowrap">Explore</span>
-          </Link>
-
-          {/* 3. Center Create Post Action Button (Exact Mathematical Center) */}
+          {/* 3. Center Plus Button */}
           <div className="flex flex-col items-center justify-center w-full">
             <button
               onClick={handleCreatePostClick}
@@ -119,11 +113,11 @@ export default function MobileAppBottomNav() {
             </button>
           </div>
 
-          {/* 4. News & Marketplace */}
+          {/* 4. News */}
           <Link
             href="/news"
             className={`flex flex-col items-center justify-center w-full py-0.5 text-center transition-all ${
-              isNewsMarket
+              isNews
                 ? "text-emerald-600 dark:text-emerald-400 font-bold"
                 : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium"
             }`}

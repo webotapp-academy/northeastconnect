@@ -332,9 +332,22 @@ export default function CommunityDiscoveryPage() {
                       onClick={() => handleSelectSuggestion(s)}
                       className="w-full px-3.5 py-2.5 flex items-center gap-3 hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40 text-left transition cursor-pointer group"
                     >
-                      <span className="text-base shrink-0 p-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl group-hover:scale-105 transition">
-                        {s.icon || "🔍"}
-                      </span>
+                      {s.image ? (
+                        <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-slate-200 dark:border-slate-750 bg-slate-100 dark:bg-slate-800">
+                          <img
+                            src={s.image}
+                            alt={s.label}
+                            className="w-full h-full object-cover group-hover:scale-105 transition"
+                            onError={(e) => {
+                              (e.target as HTMLElement).style.display = "none";
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <span className="w-10 h-10 flex items-center justify-center text-lg shrink-0 bg-slate-100 dark:bg-slate-800 rounded-xl group-hover:scale-105 transition">
+                          {s.icon || "🔍"}
+                        </span>
+                      )}
                       <div className="min-w-0 flex-1">
                         <p className="font-extrabold text-xs text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 truncate">
                           {s.label}

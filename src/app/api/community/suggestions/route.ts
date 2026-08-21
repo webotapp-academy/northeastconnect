@@ -43,6 +43,7 @@ export async function GET(req: NextRequest) {
           category: true,
           district: true,
           city: true,
+          imageUrls: true,
         },
         take: 3,
       }),
@@ -56,6 +57,7 @@ export async function GET(req: NextRequest) {
           title: true,
           price: true,
           category: true,
+          imageUrls: true,
         },
         take: 2,
       }),
@@ -75,7 +77,9 @@ export async function GET(req: NextRequest) {
         label: u.fullName || u.username,
         subLabel: `@${u.username} • ${u.city || u.state || "Explorer"}`,
         icon: "👥",
-        avatar: u.profileImageUrl,
+        image:
+          u.profileImageUrl ||
+          `https://api.dicebear.com/7.x/bottts/svg?seed=${u.username}`,
         tab: "users",
         query: u.username,
       });
@@ -87,28 +91,33 @@ export async function GET(req: NextRequest) {
         label: a.name,
         subLabel: `${a.title} • Regional Hub`,
         icon: a.icon || "🏙️",
+        image: null,
         tab: "addas",
         query: a.name,
       });
     });
 
     businesses.forEach((b) => {
+      const firstImg = b.imageUrls ? b.imageUrls.split(",")[0].trim() : null;
       suggestions.push({
         type: "directory",
         label: b.businessName,
         subLabel: `${b.category || "Business"} • ${b.district || b.city || "Northeast"}`,
         icon: "🏪",
+        image: firstImg,
         tab: "directory",
         query: b.businessName,
       });
     });
 
     marketplace.forEach((m) => {
+      const firstImg = m.imageUrls ? m.imageUrls.split(",")[0].trim() : null;
       suggestions.push({
         type: "marketplace",
         label: m.title,
         subLabel: `₹${m.price.toLocaleString()} • ${m.category || "Item"}`,
         icon: "🛍️",
+        image: firstImg,
         tab: "marketplace",
         query: m.title,
       });

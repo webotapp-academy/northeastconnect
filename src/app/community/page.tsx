@@ -370,7 +370,20 @@ export default function CommunityDiscoveryPage() {
                   : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
-              <span>👥</span>
+              <svg
+                className="w-4 h-4 shrink-0"
+                viewBox="0 0 24 24"
+                fill={activeTab === "users" ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth={activeTab === "users" ? "1.5" : "2"}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 00-3-3.87" />
+                <path d="M16 3.13a4 4 0 010 7.75" />
+              </svg>
               <span>People</span>
               {activeTab === "users" && totalCount > 0 && (
                 <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
@@ -389,7 +402,17 @@ export default function CommunityDiscoveryPage() {
                   : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
-              <span>💬</span>
+              <svg
+                className="w-4 h-4 shrink-0"
+                viewBox="0 0 24 24"
+                fill={activeTab === "posts" ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth={activeTab === "posts" ? "1.5" : "2"}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+              </svg>
               <span>Thoughts</span>
               {activeTab === "posts" && totalCount > 0 && (
                 <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
@@ -408,7 +431,17 @@ export default function CommunityDiscoveryPage() {
                   : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
-              <span>🏙️</span>
+              <svg
+                className="w-4 h-4 shrink-0"
+                viewBox="0 0 24 24"
+                fill={activeTab === "addas" ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth={activeTab === "addas" ? "1.5" : "2"}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9h1M9 13h1M9 17h1M15 13h1M15 17h1" />
+              </svg>
               <span>Addas</span>
               {activeTab === "addas" && totalCount > 0 && (
                 <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
@@ -427,7 +460,18 @@ export default function CommunityDiscoveryPage() {
                   : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
-              <span>🏪</span>
+              <svg
+                className="w-4 h-4 shrink-0"
+                viewBox="0 0 24 24"
+                fill={activeTab === "directory" ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth={activeTab === "directory" ? "1.5" : "2"}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                <polyline points="9 22 9 12 15 12 15 22" />
+              </svg>
               <span>Businesses</span>
               {activeTab === "directory" && totalCount > 0 && (
                 <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
@@ -446,7 +490,17 @@ export default function CommunityDiscoveryPage() {
                   : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
-              <span>🛍️</span>
+              <svg
+                className="w-4 h-4 shrink-0"
+                viewBox="0 0 24 24"
+                fill={activeTab === "marketplace" ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth={activeTab === "marketplace" ? "1.5" : "2"}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0" />
+              </svg>
               <span>Marketplace</span>
               {activeTab === "marketplace" && totalCount > 0 && (
                 <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">

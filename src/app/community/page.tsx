@@ -363,7 +363,7 @@ export default function CommunityFeedPage() {
                 </div>
 
                 {/* Post Content */}
-                <p className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed mb-4">
+                <p className="text-[15px] sm:text-base font-medium leading-snug sm:leading-relaxed text-slate-100 whitespace-pre-wrap mb-4">
                   {post.content}
                 </p>
 

@@ -467,7 +467,7 @@ export default function SocialHomeFeed({
             key={i}
             href={`/profile/${handle}`}
             onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-0.5 font-bold text-indigo-600 dark:text-indigo-400 hover:underline bg-indigo-50/80 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 px-1.5 py-0.5 rounded-lg text-xs sm:text-sm border border-indigo-200/60 dark:border-indigo-800/60 transition"
+            className="inline-flex items-center gap-0.5 font-bold text-indigo-600 dark:text-indigo-400 hover:underline bg-indigo-50/80 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 px-1.5 py-0.5 rounded-lg text-sm sm:text-base border border-indigo-200/60 dark:border-indigo-800/60 transition"
           >
             <span>{token}</span>
           </Link>
@@ -483,7 +483,7 @@ export default function SocialHomeFeed({
               e.stopPropagation();
               handleSelectHashtag(tag);
             }}
-            className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer bg-emerald-50/70 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded-lg text-xs sm:text-sm border border-emerald-200/60 dark:border-emerald-800/60 transition"
+            className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer bg-emerald-50/70 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded-lg text-sm sm:text-base border border-emerald-200/60 dark:border-emerald-800/60 transition"
           >
             {token}
           </button>
@@ -498,7 +498,7 @@ export default function SocialHomeFeed({
               e.stopPropagation();
               handleSelectAdda(token);
             }}
-            className="font-bold text-teal-600 dark:text-teal-400 hover:underline cursor-pointer bg-teal-50/70 dark:bg-teal-950/50 px-1.5 py-0.5 rounded-lg font-mono text-xs sm:text-sm border border-teal-200/60 dark:border-teal-800/60 transition"
+            className="font-bold text-teal-600 dark:text-teal-400 hover:underline cursor-pointer bg-teal-50/70 dark:bg-teal-950/50 px-1.5 py-0.5 rounded-lg font-mono text-sm sm:text-base border border-teal-200/60 dark:border-teal-800/60 transition"
           >
             {token}
           </button>
@@ -1518,11 +1518,11 @@ export default function SocialHomeFeed({
                     <React.Fragment key={post.id}>
                       <article
                         id={`post-${post.id}`}
-                        className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:shadow-lg transition-all duration-200 group"
+                        className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-4 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:shadow-lg transition-all duration-200 group"
                       >
                         {/* Header: Author & Adda Metadata */}
                         <div className="flex items-center justify-between gap-3 mb-3">
-                          <div className="flex items-center gap-3 min-w-0">
+                          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                             <Link href={`/profile/${post.user.username}`} className="shrink-0">
                               <img
                                 src={
@@ -1530,33 +1530,33 @@ export default function SocialHomeFeed({
                                   `https://api.dicebear.com/7.x/bottts/svg?seed=${post.user.username}`
                                 }
                                 alt={post.user.username}
-                                className="w-10 h-10 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 group-hover:scale-105 transition"
+                                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 group-hover:scale-105 transition"
                               />
                             </Link>
 
                             <div className="min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
+                              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap text-xs sm:text-[13px]">
                                 {addaTag ? (
                                   <button
                                     onClick={() => handleSelectAdda(addaTag)}
-                                    className="font-extrabold text-xs text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+                                    className="font-black text-xs sm:text-[13px] text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
                                   >
                                     {addaTag}
                                   </button>
                                 ) : (
-                                  <span className="font-extrabold text-xs text-slate-700 dark:text-slate-300">
+                                  <span className="font-black text-xs sm:text-[13px] text-slate-800 dark:text-slate-200">
                                     n:all
                                   </span>
                                 )}
-                                <span className="text-[11px] text-slate-400">•</span>
+                                <span className="text-slate-400 text-xs">•</span>
                                 <Link
                                   href={`/profile/${post.user.username}`}
-                                  className="text-xs font-semibold text-slate-800 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-emerald-400 transition truncate"
+                                  className="font-bold text-xs sm:text-[13px] text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition truncate"
                                 >
                                   u/{post.user.username}
                                 </Link>
-                                <span className="text-[11px] text-slate-400">•</span>
-                                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                                <span className="text-slate-400 text-xs">•</span>
+                                <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
                                   {timeAgo(post.createdAt)}
                                 </span>
                               </div>
@@ -1628,7 +1628,7 @@ export default function SocialHomeFeed({
                               rows={3}
                               value={editPostContent}
                               onChange={(e) => setEditPostContent(e.target.value)}
-                              className="w-full bg-slate-50 dark:bg-slate-800 border border-emerald-500 rounded-2xl p-3 text-xs sm:text-sm text-slate-900 dark:text-slate-100 focus:outline-none"
+                              className="w-full bg-slate-50 dark:bg-slate-800 border border-emerald-500 rounded-2xl p-3 text-sm sm:text-base text-slate-900 dark:text-slate-100 focus:outline-none"
                             />
                             <div className="flex items-center justify-end gap-2">
                               <button
@@ -1649,7 +1649,7 @@ export default function SocialHomeFeed({
                             </div>
                           </div>
                         ) : (
-                          <div className="text-slate-800 dark:text-slate-200 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap mb-3.5">
+                          <div className="text-slate-900 dark:text-slate-100 text-[15px] sm:text-base font-medium leading-snug sm:leading-relaxed whitespace-pre-wrap mb-3.5 tracking-[-0.01em]">
                             {renderPostContent(post.content)}
                           </div>
                         )}
@@ -1666,7 +1666,7 @@ export default function SocialHomeFeed({
                               onClick={() =>
                                 setExpandedCommentsPostId(isCommentsOpen ? null : post.id)
                               }
-                              className={`px-3.5 py-1.5 rounded-full font-bold text-xs flex items-center gap-1.5 transition cursor-pointer ${
+                              className={`px-3.5 py-1.5 rounded-full font-bold text-xs sm:text-[13px] flex items-center gap-1.5 transition cursor-pointer ${
                                 isCommentsOpen
                                   ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60"
                                   : "bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60"
@@ -1678,7 +1678,7 @@ export default function SocialHomeFeed({
 
                             <button
                               onClick={() => handleShare(post)}
-                              className="px-3.5 py-1.5 bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full font-bold text-xs flex items-center gap-1.5 border border-slate-200 dark:border-slate-700/60 transition cursor-pointer"
+                              className="px-3.5 py-1.5 bg-slate-100/90 hover:bg-slate-200 dark:bg-slate-800/90 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-full font-bold text-xs sm:text-[13px] flex items-center gap-1.5 border border-slate-200 dark:border-slate-700/60 transition cursor-pointer"
                             >
                               <span>↗</span>
                               <span className="hidden sm:inline">Share</span>
@@ -1686,7 +1686,7 @@ export default function SocialHomeFeed({
                           </div>
 
                           <div className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">
-                            ID: #{post.id}
+                            #{post.id}
                           </div>
                         </div>
 

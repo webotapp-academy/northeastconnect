@@ -2062,7 +2062,7 @@ export default function SocialHomeFeed({
                 <Link href="/contact" className="hover:text-slate-800 dark:hover:text-slate-300">Guidelines</Link>
               </div>
               <div className="pt-2 text-[10px] text-slate-400 dark:text-slate-600">
-                North East Connect, Inc. © 2026. All rights reserved.
+                North East Connect - A Brand of Webotapp Private Limited
               </div>
             </div>
           </div>

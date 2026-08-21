@@ -35,7 +35,7 @@ export default function Footer() {
 
         {/* Copyright */}
         <div className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
-          North East Connect, Inc. &copy; {currentYear}. All rights reserved.
+          North East Connect - A Brand of Webotapp Private Limited
         </div>
       </div>
     </footer>

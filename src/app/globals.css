@@ -158,3 +158,13 @@ article table tr:hover td,
   background-color: rgba(30, 41, 59, 0.4);
 }
 
+/* Gracefully hide broken or empty images */
+img:not([src]),
+img[src=""],
+img[src="null"],
+img[src="undefined"],
+img[src="[]"] {
+  display: none !important;
+}
+
+

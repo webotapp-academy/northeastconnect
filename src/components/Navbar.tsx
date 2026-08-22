@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { label: "Community", href: "/", exact: true },
   { label: "Directory", href: "/directory" },
   { label: "Jobs", href: "/jobs" },
+  { label: "Properties", href: "/properties" },
   { label: "Marketplace", href: "/marketplace" },
   { label: "News", href: "/news" },
   { label: "Culture", href: "/culture" },
@@ -286,6 +287,30 @@ export default function Navbar() {
                           <span>Browse & Apply for Jobs</span>
                         </Link>
                         <Link
+                          href="/properties/post"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
+                        >
+                          <span>🏡</span>
+                          <span>Post a Property (Free)</span>
+                        </Link>
+                        <Link
+                          href="/properties/my-properties"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
+                        >
+                          <span>📋</span>
+                          <span>My Properties & Inquiries</span>
+                        </Link>
+                        <Link
+                          href="/properties"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
+                        >
+                          <span>🔑</span>
+                          <span>Browse Properties (Buy/Rent)</span>
+                        </Link>
+                        <Link
                           href="/marketplace/my-ads"
                           onClick={() => setProfileDropdownOpen(false)}
                           className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
@@ -521,6 +546,30 @@ export default function Navbar() {
                   >
                     <span>💼</span>
                     <span>Browse & Apply for Jobs</span>
+                  </Link>
+                  <Link
+                    href="/properties/post"
+                    onClick={() => setMobileOpen(false)}
+                    className="py-2 px-3 text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs flex items-center gap-2"
+                  >
+                    <span>🏡</span>
+                    <span>Post a Property (Free)</span>
+                  </Link>
+                  <Link
+                    href="/properties/my-properties"
+                    onClick={() => setMobileOpen(false)}
+                    className="py-2 px-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-medium flex items-center gap-2"
+                  >
+                    <span>📋</span>
+                    <span>My Properties & Leads</span>
+                  </Link>
+                  <Link
+                    href="/properties"
+                    onClick={() => setMobileOpen(false)}
+                    className="py-2 px-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-medium flex items-center gap-2"
+                  >
+                    <span>🔑</span>
+                    <span>Browse Properties (Buy/Rent)</span>
                   </Link>
                   <Link
                     href="/profile/edit"

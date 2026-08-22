@@ -472,6 +472,81 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // 7. PROPERTIES TAB
+    if (type === "properties" || type === "property" || type === "real-estate") {
+      const propertySort = (searchParams.get("propertySort") || "views").toLowerCase();
+      const propertyType = searchParams.get("propertyType") || "All Types";
+      const listingType = searchParams.get("listingType") || "All";
+
+      const where: any = {
+        status: "Active",
+      };
+
+      if (q) {
+        where.OR = [
+          { title: { contains: q, mode: "insensitive" } },
+          { description: { contains: q, mode: "insensitive" } },
+          { locality: { contains: q, mode: "insensitive" } },
+          { city: { contains: q, mode: "insensitive" } },
+          { state: { contains: q, mode: "insensitive" } },
+          { address: { contains: q, mode: "insensitive" } },
+        ];
+      }
+
+      if (state && state !== "All" && state !== "All States") {
+        where.state = { contains: state, mode: "insensitive" };
+      }
+
+      if (category && category !== "All" && !category.startsWith("All")) {
+        where.propertyType = { contains: category, mode: "insensitive" };
+      } else if (propertyType && propertyType !== "All" && propertyType !== "All Types") {
+        where.propertyType = { contains: propertyType, mode: "insensitive" };
+      }
+
+      if (listingType && listingType !== "All" && listingType !== "All Listings") {
+        where.listingType = { contains: listingType, mode: "insensitive" };
+      }
+
+      let orderBy: any = [{ viewsCount: "desc" as const }, { createdAt: "desc" as const }];
+      if (propertySort === "recent" || propertySort === "newest") {
+        orderBy = [{ createdAt: "desc" as const }];
+      } else if (propertySort === "price_asc") {
+        orderBy = [{ price: "asc" as const }];
+      } else if (propertySort === "price_desc") {
+        orderBy = [{ price: "desc" as const }];
+      }
+
+      const [properties, total] = await Promise.all([
+        db.property.findMany({
+          where,
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                fullName: true,
+                profileImageUrl: true,
+                isVerified: true,
+              },
+            },
+          },
+          orderBy,
+          skip,
+          take: limit,
+        }),
+        db.property.count({ where }),
+      ]);
+
+      return NextResponse.json({
+        status: "success",
+        type: "properties",
+        total,
+        page,
+        hasMore: skip + properties.length < total,
+        data: properties,
+      });
+    }
+
     return NextResponse.json({ status: "error", message: "Invalid type parameter" }, { status: 400 });
   } catch (error: any) {
     console.error("Community discover error:", error);

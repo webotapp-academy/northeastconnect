@@ -20,6 +20,8 @@ export default function Footer() {
           <Link href="/addas" className="hover:text-slate-900 dark:hover:text-white transition-colors">Addas</Link>
           <Link href="/news" className="hover:text-slate-900 dark:hover:text-white transition-colors">News</Link>
           <Link href="/directory" className="hover:text-slate-900 dark:hover:text-white transition-colors">Directory</Link>
+          <Link href="/jobs" className="hover:text-slate-900 dark:hover:text-white transition-colors">Jobs</Link>
+          <Link href="/properties" className="hover:text-slate-900 dark:hover:text-white transition-colors">Properties</Link>
           <Link href="/culture" className="hover:text-slate-900 dark:hover:text-white transition-colors">Culture</Link>
           <Link href="/wildlife" className="hover:text-slate-900 dark:hover:text-white transition-colors">Wildlife</Link>
           <Link href="/adventure" className="hover:text-slate-900 dark:hover:text-white transition-colors">Adventure</Link>

@@ -69,6 +69,8 @@ model User {
   directoryEditRequests  DirectoryEditRequest[]
   jobs                   Job[]
   jobApplications        JobApplication[]
+  properties             Property[]
+  propertyInquiries      PropertyInquiry[]
   sentMessages           DirectMessage[]     @relation("SentMessages")
   receivedMessages       DirectMessage[]     @relation("ReceivedMessages")
   postReactions          PostReaction[]
@@ -640,5 +642,74 @@ model DirectMessage {
   @@index([receiverId, isRead])
   @@index([createdAt])
   @@map("direct_messages")
+}
+
+model Property {
+  id              Int       @id @default(autoincrement())
+  title           String
+  description     String?   @db.Text
+  propertyType    String    @map("property_type") // Plots & Land, Apartments & Flats, Houses & Villas, Commercial, PG & Hostels, Farm Houses
+  listingType     String    @map("listing_type")  // For Sale, For Rent, Commercial Lease, PG
+  price           Decimal   @db.Decimal(15, 2)
+  priceNegotiable Boolean   @default(false) @map("price_negotiable")
+  priceUnit       String?   @default("total") @map("price_unit") // total, per_sqft, per_month, per_year
+  bedrooms        Int?      @map("bedrooms")
+  bathrooms       Int?      @map("bathrooms")
+  areaSqFt        Decimal?  @map("area_sq_ft") @db.Decimal(10, 2)
+  facing          String?   // North, South, East, West, North-East, North-West, South-East, South-West
+  furnishing      String?   @default("Unfurnished") // Furnished, Semi-Furnished, Unfurnished
+  state           String    // Assam, Meghalaya, etc.
+  city            String    // Guwahati, Shillong, etc.
+  locality        String?
+  address         String?
+  pincode         String?
+  imageUrls       String?   @map("image_urls") @db.Text
+  amenities       String?   @db.Text
+  postedBy        String?   @default("Owner") @map("posted_by") // Owner, Agent, Builder
+  contactName     String?   @map("contact_name")
+  contactPhone    String?   @map("contact_phone")
+  contactEmail    String?   @map("contact_email")
+  contactWhatsApp String?   @map("contact_whatsapp")
+  viewsCount      Int       @default(0) @map("views_count")
+  inquiriesCount  Int       @default(0) @map("inquiries_count")
+  status          String    @default("Active") // Active, Sold, Rented, Inactive
+  featured        Boolean   @default(false)
+  userId          Int       @map("user_id")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  inquiries       PropertyInquiry[]
+
+  @@index([userId])
+  @@index([propertyType])
+  @@index([listingType])
+  @@index([state])
+  @@index([city])
+  @@index([status])
+  @@index([price])
+  @@index([createdAt])
+  @@map("properties")
+}
+
+model PropertyInquiry {
+  id          Int       @id @default(autoincrement())
+  propertyId  Int       @map("property_id")
+  userId      Int?      @map("user_id")
+  name        String
+  email       String
+  phone       String
+  message     String?   @db.Text
+  inquiryType String    @default("Site Visit") @map("inquiry_type") // Site Visit, Price Negotiation, General Inquiry, Rental Booking
+  status      String    @default("New") // New, Contacted, Visited, Closed
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([propertyId])
+  @@index([userId])
+  @@index([status])
+  @@map("property_inquiries")
 }
 

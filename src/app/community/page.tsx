@@ -62,19 +62,39 @@ const JOB_TYPES = [
   "Freelance",
 ];
 
+const PROPERTY_CATEGORIES = [
+  "All Categories",
+  "Plots & Land",
+  "Apartments & Flats",
+  "Houses & Villas",
+  "Commercial Shops & Offices",
+  "PG & Hostels",
+  "Farm Houses",
+];
+
+const PROPERTY_LISTING_TYPES = [
+  "All Listings",
+  "For Sale",
+  "For Rent",
+  "Commercial Lease",
+  "PG",
+];
+
 export default function CommunityDiscoveryPage() {
-  const [activeTab, setActiveTab] = useState<"users" | "posts" | "addas" | "directory" | "marketplace" | "jobs">("users");
+  const [activeTab, setActiveTab] = useState<"users" | "posts" | "addas" | "directory" | "marketplace" | "jobs" | "properties">("users");
   const [userSortTab, setUserSortTab] = useState<"recent" | "active">("recent");
   const [businessSortTab, setBusinessSortTab] = useState<"views" | "rating" | "recent" | "claimed">("views");
   const [jobSortTab, setJobSortTab] = useState<"views" | "recent" | "salary">("views");
+  const [propertySortTab, setPropertySortTab] = useState<"views" | "recent" | "price_asc" | "price_desc">("views");
   const [selectedJobType, setSelectedJobType] = useState("All Types");
+  const [selectedPropertyListing, setSelectedPropertyListing] = useState("All Listings");
   const [selectedState, setSelectedState] = useState("All States");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
 
-  // Quick Apply Modal States
+  // Quick Apply Modal States (for Jobs)
   const [applyModalOpen, setApplyModalOpen] = useState(false);
   const [selectedJobForApply, setSelectedJobForApply] = useState<any>(null);
   const [applySubmitting, setApplySubmitting] = useState(false);
@@ -87,6 +107,18 @@ export default function CommunityDiscoveryPage() {
   const [applicantRole, setApplicantRole] = useState("");
   const [applicantResume, setApplicantResume] = useState("");
   const [applicantNote, setApplicantNote] = useState("");
+
+  // Quick Inquire Modal States (for Properties)
+  const [propertyInquireModalOpen, setPropertyInquireModalOpen] = useState(false);
+  const [selectedPropForInquire, setSelectedPropForInquire] = useState<any>(null);
+  const [propInquiryName, setPropInquiryName] = useState("");
+  const [propInquiryEmail, setPropInquiryEmail] = useState("");
+  const [propInquiryPhone, setPropInquiryPhone] = useState("");
+  const [propInquiryMessage, setPropInquiryMessage] = useState("");
+  const [propInquiryType, setPropInquiryType] = useState("Site Visit");
+  const [propInquirySubmitting, setPropInquirySubmitting] = useState(false);
+  const [propInquirySuccess, setPropInquirySuccess] = useState(false);
+  const [propInquiryError, setPropInquiryError] = useState("");
 
   // Suggestions state
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -141,7 +173,7 @@ export default function CommunityDiscoveryPage() {
   useEffect(() => {
     setPage(1);
     fetchData(1, false);
-  }, [activeTab, selectedCategory, userSortTab, businessSortTab, jobSortTab, selectedJobType, selectedState]);
+  }, [activeTab, selectedCategory, userSortTab, businessSortTab, jobSortTab, propertySortTab, selectedJobType, selectedPropertyListing, selectedState]);
 
   async function fetchSession() {
     try {
@@ -151,7 +183,12 @@ export default function CommunityDiscoveryPage() {
         setCurrentUser(data.user);
         setApplicantName(data.user.name || "");
         setApplicantEmail(data.user.email || "");
-        if (data.user.phone) setApplicantPhone(data.user.phone);
+        setPropInquiryName(data.user.name || "");
+        setPropInquiryEmail(data.user.email || "");
+        if (data.user.phone) {
+          setApplicantPhone(data.user.phone);
+          setPropInquiryPhone(data.user.phone);
+        }
       }
     } catch {}
   }
@@ -170,7 +207,9 @@ export default function CommunityDiscoveryPage() {
         userSort: userSortTab,
         businessSort: businessSortTab,
         jobSort: jobSortTab,
+        propertySort: propertySortTab,
         jobType: selectedJobType,
+        listingType: selectedPropertyListing,
         state: selectedState,
         category: selectedCategory.startsWith("All") ? "All" : selectedCategory,
         page: pageNum.toString(),
@@ -216,9 +255,10 @@ export default function CommunityDiscoveryPage() {
     }
   }
 
-  function handleTabSwitch(tab: "users" | "posts" | "addas" | "directory" | "marketplace" | "jobs") {
+  function handleTabSwitch(tab: "users" | "posts" | "addas" | "directory" | "marketplace" | "jobs" | "properties") {
     setActiveTab(tab);
     setSelectedCategory("All Categories");
+    setPage(1);
     setShowSuggestions(false);
   }
 
@@ -250,7 +290,6 @@ export default function CommunityDiscoveryPage() {
 
       const data = await res.json();
       if (data.status === "success") {
-        soundFX.playPop();
         setApplySuccess(true);
         setResults((prev) =>
           prev.map((j) =>
@@ -269,6 +308,50 @@ export default function CommunityDiscoveryPage() {
     }
   }
 
+  async function handlePropertyInquirySubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedPropForInquire) return;
+    if (!propInquiryName.trim() || !propInquiryEmail.trim() || !propInquiryPhone.trim()) {
+      setPropInquiryError("Name, email, and phone number are required.");
+      return;
+    }
+
+    try {
+      setPropInquirySubmitting(true);
+      setPropInquiryError("");
+
+      const res = await fetch(`/api/properties/${selectedPropForInquire.id}/inquire`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: propInquiryName,
+          email: propInquiryEmail,
+          phone: propInquiryPhone,
+          message: propInquiryMessage,
+          inquiryType: propInquiryType,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.status === "success") {
+        setPropInquirySuccess(true);
+        setResults((prev) =>
+          prev.map((p) =>
+            p.id === selectedPropForInquire.id
+              ? { ...p, inquiriesCount: (p.inquiriesCount || 0) + 1 }
+              : p
+          )
+        );
+      } else {
+        setPropInquiryError(data.message || "Failed to submit inquiry");
+      }
+    } catch {
+      setPropInquiryError("An unexpected error occurred. Please try again.");
+    } finally {
+      setPropInquirySubmitting(false);
+    }
+  }
+
   async function handleSendFriendRequest(targetUserId: number) {
     if (!currentUser) {
       setAuthModalOpen(true);
@@ -283,7 +366,6 @@ export default function CommunityDiscoveryPage() {
       });
       const data = await res.json();
       if (data.status === "success") {
-        soundFX.playConnect();
         setFriendRequestsSent((prev) => ({ ...prev, [targetUserId]: true }));
       } else {
         alert(data.message || "Friend request sent!");
@@ -305,6 +387,42 @@ export default function CommunityDiscoveryPage() {
     return `${minVal || maxVal} ${periodStr}`;
   }
 
+  function formatPropertyPrice(val: any, unit: string, listing: string) {
+    const num = parseFloat(val) || 0;
+    let formatted = "";
+    if (num >= 10000000) {
+      formatted = `₹${(num / 10000000).toFixed(2)} Cr`;
+    } else if (num >= 100000) {
+      formatted = `₹${(num / 100000).toFixed(2)} Lac`;
+    } else {
+      formatted = `₹${num.toLocaleString()}`;
+    }
+
+    if (listing === "For Rent" || listing === "Commercial Lease" || listing === "PG") {
+      return `${formatted} / mo`;
+    }
+    if (unit === "per_sqft") {
+      return `${formatted} / sq.ft`;
+    }
+    return formatted;
+  }
+
+  function parsePropertyImages(imgData: any): string[] {
+    if (!imgData) return [];
+    if (Array.isArray(imgData)) return imgData;
+    if (typeof imgData === "string") {
+      if (imgData.startsWith("[")) {
+        try {
+          return JSON.parse(imgData);
+        } catch {
+          return [imgData];
+        }
+      }
+      return imgData.split(",").map((s) => s.trim()).filter(Boolean);
+    }
+    return [];
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 transition-colors pb-24">
       {/* Top Header & Search Area */}
@@ -316,7 +434,7 @@ export default function CommunityDiscoveryPage() {
               Discover People, Thoughts & Places
             </h1>
             <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed hidden sm:block">
-              Filter local explorers, community thoughts, regional adda hubs, verified businesses, jobs, and marketplace ads.
+              Filter local explorers, community thoughts, regional adda hubs, verified businesses, jobs, properties, and marketplace ads.
             </p>
           </div>
 
@@ -343,6 +461,8 @@ export default function CommunityDiscoveryPage() {
                       ? "Search hotels, tours, cafes, stores..."
                       : activeTab === "jobs"
                       ? "Search job titles, skills, companies..."
+                      : activeTab === "properties"
+                      ? "Search plots, villas, flats, commercial space..."
                       : "Search marketplace items, cars, gadgets..."
                   }
                   className="flex-1 min-w-0 bg-transparent px-2 py-1.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
@@ -535,13 +655,32 @@ export default function CommunityDiscoveryPage() {
                 </span>
               )}
             </button>
+
+            {/* 7. Properties Tab */}
+            <button
+              type="button"
+              onClick={() => handleTabSwitch("properties")}
+              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 active:scale-95 ${
+                activeTab === "properties"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200/90 dark:border-slate-700/80 shadow-2xs"
+              }`}
+            >
+              <span>🏡</span>
+              <span>Properties</span>
+              {activeTab === "properties" && totalCount > 0 && (
+                <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
+                  {totalCount}
+                </span>
+              )}
+            </button>
           </div>
 
           {/* Straight Line Dropdown Filter Bar */}
-          {(activeTab === "directory" || activeTab === "marketplace" || activeTab === "users" || activeTab === "jobs") && (
+          {(activeTab === "directory" || activeTab === "marketplace" || activeTab === "users" || activeTab === "jobs" || activeTab === "properties") && (
             <div className="flex items-center flex-wrap sm:flex-nowrap gap-2 sm:gap-2.5 mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-800/80 animate-in fade-in duration-150">
-              {/* State Dropdown (For Directory, Marketplace & Jobs) */}
-              {(activeTab === "directory" || activeTab === "marketplace" || activeTab === "jobs") && (
+              {/* State Dropdown (For Directory, Marketplace, Jobs & Properties) */}
+              {(activeTab === "directory" || activeTab === "marketplace" || activeTab === "jobs" || activeTab === "properties") && (
                 <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[140px]">
                   <select
                     value={selectedState}
@@ -620,6 +759,46 @@ export default function CommunityDiscoveryPage() {
                 </div>
               )}
 
+              {/* Category Dropdown (For Properties) */}
+              {activeTab === "properties" && (
+                <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[160px]">
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
+                  >
+                    {PROPERTY_CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+                        {cat === "All Categories" ? "🏷️ All Property Types" : `🏷️ ${cat}`}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[10px]">
+                    ▼
+                  </span>
+                </div>
+              )}
+
+              {/* Listing Type Dropdown (For Properties: Buy / Rent / Lease) */}
+              {activeTab === "properties" && (
+                <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[130px]">
+                  <select
+                    value={selectedPropertyListing}
+                    onChange={(e) => setSelectedPropertyListing(e.target.value)}
+                    className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
+                  >
+                    {PROPERTY_LISTING_TYPES.map((lt) => (
+                      <option key={lt} value={lt} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+                        {lt === "All Listings" ? "🔑 All Listings" : `🔑 ${lt}`}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[10px]">
+                    ▼
+                  </span>
+                </div>
+              )}
+
               {/* Job Type Dropdown (For Jobs) */}
               {activeTab === "jobs" && (
                 <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[130px]">
@@ -677,6 +856,25 @@ export default function CommunityDiscoveryPage() {
                 </div>
               )}
 
+              {/* Sort Order Dropdown (For Properties) */}
+              {activeTab === "properties" && (
+                <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[160px]">
+                  <select
+                    value={propertySortTab}
+                    onChange={(e) => setPropertySortTab(e.target.value as any)}
+                    className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
+                  >
+                    <option value="views" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">🔥 Sort: Most Viewed</option>
+                    <option value="recent" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">⏱️ Sort: Newest Added</option>
+                    <option value="price_asc" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">💰 Price: Low to High</option>
+                    <option value="price_desc" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">💎 Price: High to Low</option>
+                  </select>
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[10px]">
+                    ▼
+                  </span>
+                </div>
+              )}
+
               {/* Sort Order Dropdown (For Users) */}
               {activeTab === "users" && (
                 <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[180px]">
@@ -705,16 +903,29 @@ export default function CommunityDiscoveryPage() {
                 </Link>
               )}
 
+              {/* Post Property Shortcut for Properties Tab */}
+              {activeTab === "properties" && (
+                <Link
+                  href="/properties/post"
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow-xs shrink-0 flex items-center gap-1 active:scale-95"
+                >
+                  <span>➕</span>
+                  <span>Post Property</span>
+                </Link>
+              )}
+
               {/* Reset Filters CTA if any filter is active */}
-              {(selectedState !== "All States" || selectedCategory !== "All Categories" || (activeTab === "directory" && businessSortTab !== "views") || (activeTab === "jobs" && (jobSortTab !== "views" || selectedJobType !== "All Types")) || (activeTab === "users" && userSortTab !== "recent") || searchQuery) && (
+              {(selectedState !== "All States" || selectedCategory !== "All Categories" || (activeTab === "directory" && businessSortTab !== "views") || (activeTab === "jobs" && (jobSortTab !== "views" || selectedJobType !== "All Types")) || (activeTab === "properties" && (propertySortTab !== "views" || selectedPropertyListing !== "All Listings")) || (activeTab === "users" && userSortTab !== "recent") || searchQuery) && (
                 <button
                   type="button"
                   onClick={() => {
                     setSelectedState("All States");
                     setSelectedCategory("All Categories");
                     setSelectedJobType("All Types");
+                    setSelectedPropertyListing("All Listings");
                     setBusinessSortTab("views");
                     setJobSortTab("views");
+                    setPropertySortTab("views");
                     setUserSortTab("recent");
                     setSearchQuery("");
                   }}
@@ -753,6 +964,7 @@ export default function CommunityDiscoveryPage() {
                 setSelectedCategory("All Categories");
                 setSelectedState("All States");
                 setSelectedJobType("All Types");
+                setSelectedPropertyListing("All Listings");
               }}
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold"
             >
@@ -877,35 +1089,35 @@ export default function CommunityDiscoveryPage() {
               </div>
             )}
 
-            {/* 2. THOUGHTS / POSTS GRID */}
+            {/* 2. POSTS / THOUGHTS GRID */}
             {activeTab === "posts" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
                 {results.map((post) => (
                   <div
                     key={post.id}
-                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition"
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-5 hover:border-emerald-500/50 hover:shadow-md transition flex flex-col justify-between"
                   >
                     <div>
-                      <div className="flex items-center gap-2.5 mb-2.5">
-                        <Link href={`/profile/${post.user?.username || ""}`}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <Link href={`/profile/${post.user?.username}`} className="shrink-0">
                           <img
                             src={
                               post.user?.profileImageUrl ||
                               `https://api.dicebear.com/7.x/bottts/svg?seed=${post.user?.username || "user"}`
                             }
                             alt={post.user?.username}
-                            className="w-9 h-9 rounded-xl object-cover border border-emerald-500 shrink-0"
+                            className="w-10 h-10 rounded-xl object-cover"
                           />
                         </Link>
                         <div className="min-w-0 flex-1">
                           <Link
-                            href={`/profile/${post.user?.username || ""}`}
-                            className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 hover:underline truncate block"
+                            href={`/profile/${post.user?.username}`}
+                            className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 hover:underline block truncate"
                           >
-                            {post.user?.fullName || post.user?.username || "Explorer"}
+                            {post.user?.fullName || post.user?.username}
                           </Link>
-                          <p className="text-[10px] text-slate-400 font-mono">
-                            {new Date(post.createdAt).toLocaleDateString()}
+                          <p className="text-[10px] sm:text-[11px] text-slate-400 font-mono truncate">
+                            @{post.user?.username} • {new Date(post.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -915,15 +1127,16 @@ export default function CommunityDiscoveryPage() {
                       </p>
                     </div>
 
-                    <div className="pt-2 sm:pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                      <span className="text-[11px] text-slate-400 font-mono">
-                        💬 {post.commentsCount || 0} comments • ❤️ {post.likesCount || 0}
-                      </span>
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">
+                      <div className="flex items-center gap-3">
+                        <span>❤️ {post.likesCount || 0}</span>
+                        <span>💬 {post.commentsCount || 0}</span>
+                      </div>
                       <Link
-                        href={`/post/${post.id}`}
-                        className="text-emerald-600 dark:text-emerald-400 hover:underline font-bold"
+                        href={`/community?post=${post.id}`}
+                        className="text-emerald-600 dark:text-emerald-400 hover:underline font-bold text-xs"
                       >
-                        Join Discussion &rarr;
+                        Read Discussion &rarr;
                       </Link>
                     </div>
                   </div>
@@ -931,148 +1144,165 @@ export default function CommunityDiscoveryPage() {
               </div>
             )}
 
-            {/* 3. ADDAS GRID */}
+            {/* 3. ADDAS / HUBS GRID */}
             {activeTab === "addas" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-4">
                 {results.map((adda) => (
-                  <Link
+                  <div
                     key={adda.slug}
-                    href={`/addas/${adda.slug}`}
-                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-5 hover:border-emerald-500/50 hover:shadow-md transition flex flex-col justify-between"
                   >
                     <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-2xl">{adda.icon || "🏛️"}</span>
-                        <h3 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 transition">
-                          {adda.name}
-                        </h3>
+                      <div className="flex items-center gap-3 mb-2.5">
+                        <span className="text-3xl">{adda.emoji || "🏛️"}</span>
+                        <div>
+                          <h3 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100">
+                            {adda.name} Adda
+                          </h3>
+                          <span className="text-[10px] sm:text-[11px] text-emerald-600 font-bold">
+                            {adda.state}
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed mb-2">
-                        {adda.description}
+                      <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 line-clamp-2 mb-3">
+                        {adda.tagline || adda.description || "Join fellow regional explorers in this hub."}
                       </p>
                     </div>
-                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
-                      <span>📍 {adda.state}</span>
-                      <span className="text-emerald-600 font-bold">Explore Hub &rarr;</span>
+
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                      <span className="text-[10px] text-slate-400">
+                        {adda.totalMembers ? `${adda.totalMembers.toLocaleString()} members` : "Active Hub"}
+                      </span>
+                      <Link
+                        href={`/addas/${adda.slug}`}
+                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow-xs"
+                      >
+                        Enter Adda &rarr;
+                      </Link>
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             )}
 
             {/* 4. BUSINESSES / DIRECTORY GRID */}
             {activeTab === "directory" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-                {results.map((biz) => (
-                  <div
-                    key={biz.id}
-                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
-                  >
-                    <div>
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 rounded-full text-[10px] font-extrabold">
-                          {biz.category || "Business"}
-                        </span>
-                        {biz.viewsCount !== undefined && biz.viewsCount > 0 && (
-                          <span className="text-[10px] text-amber-500 font-mono font-bold">
-                            🔥 {biz.viewsCount} views
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-4">
+                {results.map((biz) => {
+                  const images = biz.imageUrls ? biz.imageUrls.split(",").filter(Boolean) : [];
+                  const firstImg = images[0];
+
+                  return (
+                    <div
+                      key={biz.id}
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden hover:border-emerald-500/50 hover:shadow-md transition flex flex-col justify-between group"
+                    >
+                      <div>
+                        <div className="aspect-video bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
+                          {firstImg ? (
+                            <img
+                              src={firstImg}
+                              alt={biz.businessName}
+                              className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-3xl">
+                              🏢
+                            </div>
+                          )}
+                          <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 backdrop-blur-xs text-white text-[10px] rounded-md font-bold">
+                            {biz.category || "Business"}
                           </span>
-                        )}
+                        </div>
+
+                        <div className="p-3.5 sm:p-4">
+                          <div className="flex items-center justify-between gap-1 mb-1">
+                            <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate flex-1">
+                              {biz.businessName}
+                            </h3>
+                            {biz.claimed && (
+                              <span className="text-emerald-500 text-xs shrink-0" title="Verified Business">
+                                ✓
+                              </span>
+                            )}
+                          </div>
+
+                          <p className="text-[10px] sm:text-[11px] text-slate-500 truncate mb-1">
+                            📍 {biz.district ? `${biz.district}, ` : ""}{biz.state}
+                          </p>
+
+                          <div className="flex items-center gap-2 text-xs text-amber-500 font-bold">
+                            <span>⭐ {biz.rating ? Number(biz.rating).toFixed(1) : "4.5"}</span>
+                            <span className="text-[10px] text-slate-400">({biz.reviewCount || 12} reviews)</span>
+                          </div>
+                        </div>
                       </div>
 
-                      <Link
-                        href={`/directory/${biz.id}`}
-                        className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100 hover:text-emerald-600 transition line-clamp-1 block mb-1"
-                      >
-                        {biz.businessName}
-                      </Link>
-
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed mb-3">
-                        {biz.description || "Verified local organization in Northeast India."}
-                      </p>
+                      <div className="p-3.5 sm:p-4 pt-0">
+                        <Link
+                          href={`/directory/${biz.id}`}
+                          className="block w-full py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 text-center rounded-xl text-xs font-bold transition"
+                        >
+                          View Details &rarr;
+                        </Link>
+                      </div>
                     </div>
-
-                    <div className="pt-2 sm:pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                      <span className="text-[11px] text-slate-400 truncate max-w-[150px]">
-                        📍 {biz.district || biz.city || "Northeast"}
-                      </span>
-                      <Link
-                        href={`/directory/${biz.id}`}
-                        className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[11px] font-bold transition shadow-xs"
-                      >
-                        View Listing &rarr;
-                      </Link>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
             {/* 5. MARKETPLACE GRID */}
             {activeTab === "marketplace" && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4">
-                {results.map((item) => {
-                  let img = item.images;
-                  if (typeof img === "string" && img.startsWith("[")) {
-                    try {
-                      img = JSON.parse(img)[0];
-                    } catch {}
-                  }
-
-                  const itemPriceFormatted =
-                    typeof item.price === "number"
-                      ? item.price.toLocaleString()
-                      : typeof item.price === "string" && !isNaN(parseFloat(item.price))
-                      ? parseFloat(item.price).toLocaleString()
-                      : item.price || 0;
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-4">
+                {results.map((ad) => {
+                  const images = ad.imageUrls ? ad.imageUrls.split(",").filter(Boolean) : [];
+                  const firstImg = images[0];
 
                   return (
                     <div
-                      key={item.id}
-                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                      key={ad.id}
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden hover:border-emerald-500/50 hover:shadow-md transition flex flex-col justify-between group"
                     >
                       <div>
-                        {img ? (
-                          <div className="w-full h-28 sm:h-36 rounded-xl sm:rounded-2xl overflow-hidden mb-2 bg-slate-100 dark:bg-slate-800">
+                        <div className="aspect-video bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
+                          {firstImg ? (
                             <img
-                              src={img}
-                              alt={item.title || "Marketplace item"}
-                              className="w-full h-full object-cover group-hover:scale-105 transition"
+                              src={firstImg}
+                              alt={ad.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
                             />
-                          </div>
-                        ) : (
-                          <div className="w-full h-28 sm:h-36 rounded-xl sm:rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl mb-2">
-                            🛍️
-                          </div>
-                        )}
-
-                        <div className="flex items-center justify-between gap-1 mb-1">
-                          <span className="text-xs sm:text-base font-black text-emerald-600 dark:text-emerald-400">
-                            ₹{itemPriceFormatted}
-                          </span>
-                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase truncate">
-                            {item.condition || "Used"}
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-3xl">
+                              🛍️
+                            </div>
+                          )}
+                          <span className="absolute top-2 left-2 px-2 py-0.5 bg-black/60 backdrop-blur-xs text-white text-[10px] rounded-md font-bold">
+                            {ad.category || "Item"}
                           </span>
                         </div>
 
-                        <Link
-                          href={`/marketplace/${item.id}`}
-                          className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 hover:underline line-clamp-2 block leading-snug"
-                        >
-                          {item.title}
-                        </Link>
-
-                        <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-1 truncate">
-                          📍 {item.locality ? `${item.locality}, ` : ""}{item.state}
-                        </p>
+                        <div className="p-3.5 sm:p-4">
+                          <span className="text-sm sm:text-base font-black text-emerald-600 dark:text-emerald-400 block mb-1">
+                            ₹{ad.price ? Number(ad.price).toLocaleString() : "Contact"}
+                          </span>
+                          <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate mb-1">
+                            {ad.title}
+                          </h3>
+                          <p className="text-[10px] sm:text-[11px] text-slate-500 truncate">
+                            📍 {ad.city ? `${ad.city}, ` : ""}{ad.state}
+                          </p>
+                        </div>
                       </div>
 
-                      <Link
-                        href={`/marketplace/${item.id}`}
-                        className="mt-2.5 w-full py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 rounded-xl text-[11px] sm:text-xs font-bold text-center block transition"
-                      >
-                        View Deal &rarr;
-                      </Link>
+                      <div className="p-3.5 sm:p-4 pt-0">
+                        <Link
+                          href={`/marketplace/${ad.id}`}
+                          className="block w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-center rounded-xl text-xs font-bold transition shadow-xs"
+                        >
+                          View Ad &rarr;
+                        </Link>
+                      </div>
                     </div>
                   );
                 })}
@@ -1081,80 +1311,66 @@ export default function CommunityDiscoveryPage() {
 
             {/* 6. JOBS GRID */}
             {activeTab === "jobs" && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
                 {results.map((job) => {
                   const salary = formatSalary(job.salaryMin, job.salaryMax, job.salaryPeriod);
-                  const skills = job.skillsRequired
-                    ? job.skillsRequired.split(",").map((s: string) => s.trim()).filter(Boolean)
-                    : [];
-
                   return (
                     <div
                       key={job.id}
-                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                      className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-4 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-lg hover:-translate-y-0.5 transition-all group"
                     >
                       <div>
-                        {/* Header: Company & Title */}
-                        <div className="flex items-start justify-between gap-3 mb-2.5">
+                        {/* Header: Title, Company & Job Type */}
+                        <div className="flex items-start justify-between gap-2 mb-2">
                           <div className="min-w-0 flex-1">
-                            <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 rounded-full text-[10px] font-extrabold mr-1.5">
-                              {job.type}
+                            <span className="inline-block px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/80 rounded-md text-[10px] font-bold mb-1.5">
+                              {job.type || "Full-time"}
                             </span>
-                            <span className="text-[11px] text-slate-400 font-medium">
-                              {job.category}
-                            </span>
-
                             <Link
                               href={`/jobs/${job.id}`}
-                              className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100 hover:text-emerald-600 transition block truncate mt-1"
+                              className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100 hover:text-emerald-600 dark:hover:text-emerald-400 transition line-clamp-1 block"
                             >
                               {job.title}
                             </Link>
-
-                            <p className="text-xs text-slate-500 font-medium truncate">
+                            <p className="text-xs font-bold text-slate-600 dark:text-slate-300 truncate">
                               🏢 {job.company || "Direct Employer"}
                             </p>
                           </div>
                         </div>
 
-                        {/* Salary & Location */}
-                        <div className="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl text-xs space-y-1 mb-2.5">
-                          <div className="flex items-center justify-between font-bold">
-                            <span className="text-slate-400 text-[11px]">Salary:</span>
-                            <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">
-                              {salary}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-                            <span>Location:</span>
-                            <span className="font-medium truncate max-w-[140px]">
-                              📍 {job.location || job.district ? `${job.location || job.district}, ` : ""}{job.state || "Northeast"}
-                            </span>
-                          </div>
+                        {/* Location & Sector */}
+                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-1 mb-2.5">
+                          <span className="truncate">📍 {job.location || job.state || "Northeast India"}</span>
+                          <span>•</span>
+                          <span className="truncate">{job.category}</span>
                         </div>
 
-                        {/* Skills */}
-                        {skills.length > 0 && (
-                          <div className="flex items-center flex-wrap gap-1 mb-3">
-                            {skills.slice(0, 3).map((sk: string, idx: number) => (
-                              <span
-                                key={idx}
-                                className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-md text-[10px] font-semibold"
-                              >
-                                {sk}
-                              </span>
-                            ))}
-                            {skills.length > 3 && (
-                              <span className="text-[10px] text-slate-400 font-semibold">
-                                +{skills.length - 3}
-                              </span>
-                            )}
+                        {/* Salary & Experience */}
+                        <div className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-xl mb-3">
+                          <div>
+                            <span className="text-[10px] text-slate-400 block font-medium">Compensation</span>
+                            <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">{salary}</span>
                           </div>
+                          {job.experienceMin !== null && job.experienceMin !== undefined && (
+                            <div className="text-right">
+                              <span className="text-[10px] text-slate-400 block font-medium">Experience</span>
+                              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                {job.experienceMin}+ Yrs
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Snippet */}
+                        {job.jobDescription && (
+                          <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed mb-3">
+                            {job.jobDescription}
+                          </p>
                         )}
                       </div>
 
-                      {/* Bottom CTA */}
-                      <div className="pt-2 sm:pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                      {/* Footer: Views/Applications & Actions */}
+                      <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between gap-2">
                         <span className="text-[11px] text-slate-400 font-mono">
                           👁️ {job.viewsCount || 0} • 📩 {job.applicationsCount || 0}
                         </span>
@@ -1184,6 +1400,154 @@ export default function CommunityDiscoveryPage() {
               </div>
             )}
 
+            {/* 7. PROPERTIES GRID */}
+            {activeTab === "properties" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
+                {results.map((prop) => {
+                  const images = parsePropertyImages(prop.imageUrls);
+                  const firstImg = images[0];
+                  const priceFormatted = formatPropertyPrice(prop.price, prop.priceUnit, prop.listingType);
+
+                  return (
+                    <div
+                      key={prop.id}
+                      className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl overflow-hidden hover:border-emerald-500/50 hover:shadow-xl hover:-translate-y-0.5 transition-all flex flex-col justify-between group"
+                    >
+                      <div>
+                        {/* Property Image & Badges */}
+                        <Link href={`/properties/${prop.id}`} className="block relative aspect-video sm:aspect-16/10 bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                          {firstImg ? (
+                            <img
+                              src={firstImg}
+                              alt={prop.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center text-3xl text-slate-400">
+                              <span>🏡</span>
+                              <span className="text-[10px] font-bold text-slate-400 mt-1">No Photo</span>
+                            </div>
+                          )}
+
+                          {/* Top Badges */}
+                          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap">
+                            <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-xs ${
+                              prop.listingType === "For Sale"
+                                ? "bg-emerald-600 text-white"
+                                : prop.listingType === "For Rent"
+                                ? "bg-blue-600 text-white"
+                                : "bg-purple-600 text-white"
+                            }`}>
+                              {prop.listingType}
+                            </span>
+                            <span className="px-2 py-0.5 bg-black/60 backdrop-blur-xs text-white rounded-full text-[10px] font-bold">
+                              {prop.propertyType}
+                            </span>
+                          </div>
+
+                          {/* Owner Tag */}
+                          <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 bg-black/70 backdrop-blur-xs text-white rounded-lg text-[10px] font-bold flex items-center gap-1">
+                            <span>👤</span>
+                            <span>{prop.postedBy || "Owner"}</span>
+                          </div>
+                        </Link>
+
+                        {/* Content Info */}
+                        <div className="p-4 sm:p-5">
+                          <div className="flex items-start justify-between gap-2 mb-1.5">
+                            <span className="text-base sm:text-lg font-black text-emerald-600 dark:text-emerald-400 tracking-tight">
+                              {priceFormatted}
+                            </span>
+                            {prop.priceNegotiable && (
+                              <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                                Negotiable
+                              </span>
+                            )}
+                          </div>
+
+                          <Link
+                            href={`/properties/${prop.id}`}
+                            className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100 hover:text-emerald-600 dark:hover:text-emerald-400 transition line-clamp-2 block leading-snug"
+                          >
+                            {prop.title}
+                          </Link>
+
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate">
+                            📍 {prop.locality ? `${prop.locality}, ` : ""}{prop.city}, {prop.state}
+                          </p>
+
+                          {/* Key Specs Pills */}
+                          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-600 dark:text-slate-300">
+                            {prop.bedrooms && (
+                              <span className="flex items-center gap-1 font-bold">
+                                <span>🛏️</span>
+                                <span>{prop.bedrooms} BHK</span>
+                              </span>
+                            )}
+                            {prop.bathrooms && (
+                              <span className="flex items-center gap-1 font-bold">
+                                <span>🚿</span>
+                                <span>{prop.bathrooms} Bath</span>
+                              </span>
+                            )}
+                            {prop.areaSqFt && (
+                              <span className="flex items-center gap-1 font-bold">
+                                <span>📐</span>
+                                <span>{parseFloat(prop.areaSqFt).toLocaleString()} sq.ft</span>
+                              </span>
+                            )}
+                            {prop.furnishing && prop.furnishing !== "Unfurnished" && (
+                              <span className="text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md font-medium truncate ml-auto">
+                                {prop.furnishing}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bottom Actions */}
+                      <div className="p-4 sm:p-5 pt-0 flex items-center justify-between gap-2">
+                        <span className="text-[11px] text-slate-400 font-mono">
+                          👁️ {prop.viewsCount || 0} views
+                        </span>
+
+                        <div className="flex items-center gap-1.5">
+                          {prop.contactWhatsApp && (
+                            <a
+                              href={`https://wa.me/${prop.contactWhatsApp.replace(/[^0-9]/g, "")}?text=Hi,%20I%20am%20interested%20in%20your%20property%20listing:%20${encodeURIComponent(prop.title)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-600 rounded-xl transition"
+                              title="Chat on WhatsApp"
+                            >
+                              💬
+                            </a>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedPropForInquire(prop);
+                              setPropertyInquireModalOpen(true);
+                            }}
+                            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-xs transition active:scale-95 cursor-pointer"
+                          >
+                            ⚡ Inquire
+                          </button>
+                          <Link
+                            href={`/properties/${prop.id}`}
+                            className="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition"
+                          >
+                            Details &rarr;
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             {/* Pagination / Load More */}
             {hasMore && (
               <div className="mt-6 sm:mt-8 text-center">
@@ -1201,7 +1565,7 @@ export default function CommunityDiscoveryPage() {
         )}
       </div>
 
-      {/* Quick Apply Modal */}
+      {/* Quick Apply Modal (For Jobs) */}
       {applyModalOpen && selectedJobForApply && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative">
@@ -1369,6 +1733,160 @@ export default function CommunityDiscoveryPage() {
                       className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-xl font-bold shadow-xs cursor-pointer active:scale-95"
                     >
                       {applySubmitting ? "Submitting..." : "Submit Application 🚀"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Quick Inquire Modal (For Properties) */}
+      {propertyInquireModalOpen && selectedPropForInquire && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => {
+                setPropertyInquireModalOpen(false);
+                setPropInquirySuccess(false);
+              }}
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-bold p-1"
+            >
+              ✕
+            </button>
+
+            {propInquirySuccess ? (
+              <div className="py-6 text-center">
+                <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center text-2xl mx-auto mb-3">
+                  ✓
+                </div>
+                <h3 className="text-lg font-black text-slate-900 dark:text-white mb-1">
+                  Inquiry Delivered!
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mb-6">
+                  Your message has been sent to the owner of <strong>{selectedPropForInquire.title}</strong>.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPropertyInquireModalOpen(false);
+                    setPropInquirySuccess(false);
+                  }}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="mb-5">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    Property Inquiry / Site Visit
+                  </span>
+                  <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white line-clamp-1">
+                    {selectedPropForInquire.title}
+                  </h2>
+                  <p className="text-xs text-slate-500">
+                    {formatPropertyPrice(selectedPropForInquire.price, selectedPropForInquire.priceUnit, selectedPropForInquire.listingType)} • {selectedPropForInquire.city}, {selectedPropForInquire.state}
+                  </p>
+                </div>
+
+                {propInquiryError && (
+                  <div className="p-3 mb-4 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 rounded-xl text-xs font-medium">
+                    {propInquiryError}
+                  </div>
+                )}
+
+                <form onSubmit={handlePropertyInquirySubmit} className="space-y-3 text-xs">
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Inquiry Type
+                    </label>
+                    <select
+                      value={propInquiryType}
+                      onChange={(e) => setPropInquiryType(e.target.value)}
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 font-medium focus:outline-none focus:border-emerald-500"
+                    >
+                      <option value="Site Visit">🗓️ Request Site Visit</option>
+                      <option value="Price Negotiation">💰 Price Negotiation / Best Offer</option>
+                      <option value="Rental Booking">🔑 Rental / Booking Inquiry</option>
+                      <option value="General Inquiry">ℹ️ General Property Information</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Your Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={propInquiryName}
+                      onChange={(e) => setPropInquiryName(e.target.value)}
+                      placeholder="e.g. Partha Pratim Sharma"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={propInquiryEmail}
+                        onChange={(e) => setPropInquiryEmail(e.target.value)}
+                        placeholder="you@email.com"
+                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Mobile / WhatsApp *
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        value={propInquiryPhone}
+                        onChange={(e) => setPropInquiryPhone(e.target.value)}
+                        placeholder="+91 98765 43210"
+                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Message / Preferred Visiting Time
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={propInquiryMessage}
+                      onChange={(e) => setPropInquiryMessage(e.target.value)}
+                      placeholder="Hi, I am interested in viewing this property this weekend..."
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div className="pt-2 flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPropertyInquireModalOpen(false)}
+                      className="px-4 py-2 text-slate-600 dark:text-slate-400 font-bold"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={propInquirySubmitting}
+                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-xl font-bold shadow-xs cursor-pointer active:scale-95"
+                    >
+                      {propInquirySubmitting ? "Sending..." : "Send Inquiry 🚀"}
                     </button>
                   </div>
                 </form>

@@ -368,6 +368,14 @@ export default function UserProfilePage() {
                   {isOwnProfile ? (
                     <>
                       <Link
+                        href="/dashboard"
+                        className="px-3 sm:px-3.5 py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 active:scale-95"
+                        title="Go to full Member Dashboard"
+                      >
+                        <span>📊</span>
+                        <span>Dashboard</span>
+                      </Link>
+                      <Link
                         href="/profile/my-businesses"
                         className="px-3 sm:px-3.5 py-1.5 sm:py-2 bg-emerald-50 dark:bg-emerald-600/15 hover:bg-emerald-100 dark:hover:bg-emerald-600/25 text-emerald-700 dark:text-emerald-400 text-xs font-bold rounded-xl border border-emerald-200 dark:border-emerald-500/30 transition flex items-center gap-1.5 shadow-xs"
                         title="View customer leads & business traffic"

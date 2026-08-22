@@ -201,9 +201,10 @@ export default function Navbar() {
 
                   {/* Dropdown Menu */}
                   {profileDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-60 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 py-1.5 z-50 text-slate-800 dark:text-slate-200 animate-in fade-in slide-in-from-top-1 duration-150">
-                      <div className="px-3.5 py-2.5 border-b border-slate-100 dark:border-slate-800">
-                        <p className="font-semibold text-xs text-slate-900 dark:text-slate-100">
+                    <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 z-50 text-slate-800 dark:text-slate-200 animate-in fade-in slide-in-from-top-1 duration-150">
+                      {/* User Header */}
+                      <div className="px-3 pt-2 pb-2.5">
+                        <p className="font-bold text-xs text-slate-900 dark:text-slate-100">
                           {currentUser.fullName || currentUser.username}
                         </p>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono truncate">
@@ -218,14 +219,30 @@ export default function Navbar() {
                         </div>
                       </div>
 
-                      <div className="py-1">
+                      {/* Highlighted Dashboard Hero Button */}
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setProfileDropdownOpen(false)}
+                        className="flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-md shadow-emerald-950/20 transition active:scale-95 group mb-1.5"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-base bg-white/20 p-1 rounded-xl">📊</span>
+                          <div>
+                            <span className="block leading-tight text-white">Member Dashboard</span>
+                            <span className="text-[10px] text-emerald-100 font-normal">Manage Jobs, Properties, Leads</span>
+                          </div>
+                        </div>
+                        <span className="text-xs text-white/80 group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+                      </Link>
+
+                      <div className="py-1 border-t border-slate-100 dark:border-slate-800/80 space-y-0.5">
                         <Link
                           href={`/profile/${currentUser.username}`}
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
+                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition"
                         >
-                          <span>👤</span>
-                          <span>Profile & Wall</span>
+                          <span className="text-sm">👤</span>
+                          <span>Profile &amp; Wall</span>
                         </Link>
 
                         {/* Invite Friends Action */}
@@ -235,104 +252,41 @@ export default function Navbar() {
                             setProfileDropdownOpen(false);
                             setInviteModalOpen(true);
                           }}
-                          className="w-full text-left flex items-center justify-between px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition cursor-pointer font-medium"
+                          className="w-full text-left flex items-center justify-between px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition cursor-pointer"
                         >
-                          <span className="flex items-center gap-2">
-                            <span>✉️</span>
+                          <span className="flex items-center gap-2.5">
+                            <span className="text-sm">✉️</span>
                             <span>Invite Your Friends</span>
                           </span>
-                          <span className="text-[10px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-full font-mono">+50 XP</span>
+                          <span className="text-[10px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-full font-mono font-bold">+50 XP</span>
                         </button>
 
                         {/* Create Community Action */}
                         <Link
                           href="/create-community"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
+                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition"
                         >
-                          <span>🌱</span>
-                          <span>Create Your Community</span>
+                          <span className="text-sm">🌱</span>
+                          <span>Create Community / Adda</span>
                         </Link>
 
                         <Link
-                          href="/profile/my-businesses"
+                          href="/leaderboard"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
+                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition"
                         >
-                          <span>🏢</span>
-                          <span>My Businesses & Leads</span>
+                          <span className="text-sm">🏆</span>
+                          <span>Explorer Leaderboard</span>
                         </Link>
-                        <Link
-                          href="/jobs/post"
-                          onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
-                        >
-                          <span>➕</span>
-                          <span>Post a Job Opening</span>
-                        </Link>
-                        <Link
-                          href="/jobs/my-jobs"
-                          onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
-                        >
-                          <span>👥</span>
-                          <span>Employer Hub (View Candidates)</span>
-                        </Link>
-                        <Link
-                          href="/jobs"
-                          onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
-                        >
-                          <span>💼</span>
-                          <span>Browse & Apply for Jobs</span>
-                        </Link>
-                        <Link
-                          href="/properties/post"
-                          onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
-                        >
-                          <span>🏡</span>
-                          <span>Post a Property (Free)</span>
-                        </Link>
-                        <Link
-                          href="/properties/my-properties"
-                          onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
-                        >
-                          <span>📋</span>
-                          <span>My Properties & Inquiries</span>
-                        </Link>
-                        <Link
-                          href="/properties"
-                          onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
-                        >
-                          <span>🔑</span>
-                          <span>Browse Properties (Buy/Rent)</span>
-                        </Link>
-                        <Link
-                          href="/marketplace/my-ads"
-                          onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
-                        >
-                          <span>🛍️</span>
-                          <span>My Marketplace Ads & Leads</span>
-                        </Link>
+
                         <Link
                           href="/profile/edit"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
+                          className="flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition"
                         >
-                          <span>⚙️</span>
+                          <span className="text-sm">⚙️</span>
                           <span>Account Settings</span>
-                        </Link>
-                        <Link
-                          href="/leaderboard"
-                          onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
-                        >
-                          <span>🏆</span>
-                          <span>Explorer Leaderboard</span>
                         </Link>
 
                         {((currentUser.role || "").toLowerCase() === "admin" ||
@@ -340,23 +294,24 @@ export default function Navbar() {
                           <Link
                             href="/admin"
                             onClick={() => setProfileDropdownOpen(false)}
-                            className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border-y border-emerald-200 dark:border-emerald-800/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition"
+                            className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition"
                           >
-                            Admin Dashboard
+                            <span>🛡️</span>
+                            <span>Admin Dashboard</span>
                           </Link>
                         )}
                       </div>
 
                       {/* Theme Toggle inside Dropdown */}
-                      <div className="border-t border-slate-100 dark:border-slate-800 px-3.5 py-2 flex items-center justify-between">
+                      <div className="border-t border-slate-100 dark:border-slate-800/80 px-3 py-2 flex items-center justify-between">
                         <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Theme</span>
                         <ThemeToggle />
                       </div>
 
-                      <div className="border-t border-slate-100 dark:border-slate-800 pt-1">
+                      <div className="border-t border-slate-100 dark:border-slate-800/80 pt-1">
                         <button
                           onClick={handleLogout}
-                          className="w-full text-left px-3.5 py-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition cursor-pointer"
+                          className="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl transition cursor-pointer"
                         >
                           Log out
                         </button>
@@ -499,7 +454,20 @@ export default function Navbar() {
               </Link>
 
               {currentUser && (
-                <div className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-800 space-y-0.5">
+                <div className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
+                  {/* Highlighted Mobile Dashboard Hero Button */}
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs shadow-md mb-2 active:scale-95"
+                  >
+                    <span className="flex items-center gap-2">
+                      <span>📊</span>
+                      <span>Member Dashboard &amp; Hub</span>
+                    </span>
+                    <span>&rarr;</span>
+                  </Link>
+
                   <button
                     type="button"
                     onClick={() => {
@@ -512,7 +480,7 @@ export default function Navbar() {
                       <span>✉️</span>
                       <span>Invite Friends</span>
                     </span>
-                    <span className="text-[10px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-full font-mono">+50 XP</span>
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-full font-mono font-bold">+50 XP</span>
                   </button>
 
                   <Link
@@ -520,57 +488,19 @@ export default function Navbar() {
                     onClick={() => setMobileOpen(false)}
                     className="py-2 px-3 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-medium flex items-center justify-between"
                   >
-                    <span>Profile & Wall</span>
+                    <span>Profile &amp; Wall</span>
                     <span className="text-[10px] text-slate-500">View</span>
                   </Link>
+
                   <Link
-                    href="/jobs/post"
+                    href="/leaderboard"
                     onClick={() => setMobileOpen(false)}
-                    className="py-2 px-3 text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs flex items-center gap-2"
+                    className="py-2 px-3 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-medium flex items-center gap-2"
                   >
-                    <span>➕</span>
-                    <span>Post a Job Opening</span>
+                    <span>🏆</span>
+                    <span>Explorer Leaderboard</span>
                   </Link>
-                  <Link
-                    href="/jobs/my-jobs"
-                    onClick={() => setMobileOpen(false)}
-                    className="py-2 px-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-medium flex items-center gap-2"
-                  >
-                    <span>👥</span>
-                    <span>Employer Hub (View Candidates)</span>
-                  </Link>
-                  <Link
-                    href="/jobs"
-                    onClick={() => setMobileOpen(false)}
-                    className="py-2 px-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-medium flex items-center gap-2"
-                  >
-                    <span>💼</span>
-                    <span>Browse & Apply for Jobs</span>
-                  </Link>
-                  <Link
-                    href="/properties/post"
-                    onClick={() => setMobileOpen(false)}
-                    className="py-2 px-3 text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs flex items-center gap-2"
-                  >
-                    <span>🏡</span>
-                    <span>Post a Property (Free)</span>
-                  </Link>
-                  <Link
-                    href="/properties/my-properties"
-                    onClick={() => setMobileOpen(false)}
-                    className="py-2 px-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-medium flex items-center gap-2"
-                  >
-                    <span>📋</span>
-                    <span>My Properties & Leads</span>
-                  </Link>
-                  <Link
-                    href="/properties"
-                    onClick={() => setMobileOpen(false)}
-                    className="py-2 px-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-medium flex items-center gap-2"
-                  >
-                    <span>🔑</span>
-                    <span>Browse Properties (Buy/Rent)</span>
-                  </Link>
+
                   <Link
                     href="/profile/edit"
                     onClick={() => setMobileOpen(false)}

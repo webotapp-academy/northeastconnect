@@ -39,15 +39,54 @@ const MARKETPLACE_CATEGORIES = [
   "Others",
 ];
 
+const JOB_CATEGORIES = [
+  "All Categories",
+  "IT & Software",
+  "Hospitality & Tourism",
+  "Healthcare & Medical",
+  "Education & Teaching",
+  "Sales & Marketing",
+  "Banking & Finance",
+  "Logistics & Drivers",
+  "Govt & Public Sector",
+  "Others",
+];
+
+const JOB_TYPES = [
+  "All Types",
+  "Full-time",
+  "Part-time",
+  "Remote",
+  "Internship",
+  "Contract",
+  "Freelance",
+];
+
 export default function CommunityDiscoveryPage() {
-  const [activeTab, setActiveTab] = useState<"users" | "posts" | "addas" | "directory" | "marketplace">("users");
+  const [activeTab, setActiveTab] = useState<"users" | "posts" | "addas" | "directory" | "marketplace" | "jobs">("users");
   const [userSortTab, setUserSortTab] = useState<"recent" | "active">("recent");
   const [businessSortTab, setBusinessSortTab] = useState<"views" | "rating" | "recent" | "claimed">("views");
+  const [jobSortTab, setJobSortTab] = useState<"views" | "recent" | "salary">("views");
+  const [selectedJobType, setSelectedJobType] = useState("All Types");
   const [selectedState, setSelectedState] = useState("All States");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+
+  // Quick Apply Modal States
+  const [applyModalOpen, setApplyModalOpen] = useState(false);
+  const [selectedJobForApply, setSelectedJobForApply] = useState<any>(null);
+  const [applySubmitting, setApplySubmitting] = useState(false);
+  const [applySuccess, setApplySuccess] = useState(false);
+  const [applyError, setApplyError] = useState("");
+  const [applicantName, setApplicantName] = useState("");
+  const [applicantEmail, setApplicantEmail] = useState("");
+  const [applicantPhone, setApplicantPhone] = useState("");
+  const [applicantExp, setApplicantExp] = useState("");
+  const [applicantRole, setApplicantRole] = useState("");
+  const [applicantResume, setApplicantResume] = useState("");
+  const [applicantNote, setApplicantNote] = useState("");
 
   // Suggestions state
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -102,7 +141,7 @@ export default function CommunityDiscoveryPage() {
   useEffect(() => {
     setPage(1);
     fetchData(1, false);
-  }, [activeTab, selectedCategory, userSortTab, businessSortTab, selectedState]);
+  }, [activeTab, selectedCategory, userSortTab, businessSortTab, jobSortTab, selectedJobType, selectedState]);
 
   async function fetchSession() {
     try {
@@ -110,6 +149,9 @@ export default function CommunityDiscoveryPage() {
       const data = await res.json();
       if (data.status === "success" && data.user) {
         setCurrentUser(data.user);
+        setApplicantName(data.user.name || "");
+        setApplicantEmail(data.user.email || "");
+        if (data.user.phone) setApplicantPhone(data.user.phone);
       }
     } catch {}
   }
@@ -127,6 +169,8 @@ export default function CommunityDiscoveryPage() {
         q: searchQuery,
         userSort: userSortTab,
         businessSort: businessSortTab,
+        jobSort: jobSortTab,
+        jobType: selectedJobType,
         state: selectedState,
         category: selectedCategory.startsWith("All") ? "All" : selectedCategory,
         page: pageNum.toString(),
@@ -154,7 +198,6 @@ export default function CommunityDiscoveryPage() {
     }
   }
 
-  // No sound needed for searching enter
   function handleSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
     setShowSuggestions(false);
@@ -173,15 +216,61 @@ export default function CommunityDiscoveryPage() {
     }
   }
 
-  function handleTabSwitch(tab: "users" | "posts" | "addas" | "directory" | "marketplace") {
+  function handleTabSwitch(tab: "users" | "posts" | "addas" | "directory" | "marketplace" | "jobs") {
     soundFX.playPop();
     setActiveTab(tab);
     setSelectedCategory("All Categories");
     setShowSuggestions(false);
   }
 
-  async function handleSendFriendRequest(targetUserId: number, targetUsername: string, e?: React.MouseEvent) {
-    if (e) e.stopPropagation();
+  async function handleQuickApplySubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedJobForApply) return;
+    if (!applicantName.trim() || !applicantEmail.trim() || !applicantPhone.trim()) {
+      setApplyError("Full name, email, and phone number are required.");
+      return;
+    }
+
+    try {
+      setApplySubmitting(true);
+      setApplyError("");
+
+      const res = await fetch(`/api/jobs/${selectedJobForApply.id}/apply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: applicantName,
+          email: applicantEmail,
+          phone: applicantPhone,
+          experience: applicantExp,
+          currentRole: applicantRole,
+          resumeUrl: applicantResume,
+          coverNote: applicantNote,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.status === "success") {
+        soundFX.playPop();
+        setApplySuccess(true);
+        setResults((prev) =>
+          prev.map((j) =>
+            j.id === selectedJobForApply.id
+              ? { ...j, applicationsCount: (j.applicationsCount || 0) + 1 }
+              : j
+          )
+        );
+      } else {
+        setApplyError(data.message || "Failed to submit application");
+      }
+    } catch {
+      setApplyError("An unexpected error occurred. Please try again.");
+    } finally {
+      setApplySubmitting(false);
+    }
+  }
+
+  async function handleSendFriendRequest(targetUserId: number) {
     if (!currentUser) {
       setAuthModalOpen(true);
       return;
@@ -205,22 +294,34 @@ export default function CommunityDiscoveryPage() {
     }
   }
 
+  function formatSalary(min: any, max: any, period: string) {
+    if (!min && !max) return "Competitive";
+    const minVal = min ? `₹${parseFloat(min).toLocaleString()}` : "";
+    const maxVal = max ? `₹${parseFloat(max).toLocaleString()}` : "";
+    const periodStr = period === "yearly" ? "/ yr" : period === "hourly" ? "/ hr" : "/ mo";
+
+    if (minVal && maxVal) {
+      return `${minVal} - ${maxVal} ${periodStr}`;
+    }
+    return `${minVal || maxVal} ${periodStr}`;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 transition-colors pb-24">
-      {/* Top Header & Search Area - Mobile Optimized */}
+      {/* Top Header & Search Area */}
       <div className="bg-gradient-to-b from-emerald-950/60 via-slate-900/90 to-transparent pt-4 sm:pt-8 pb-5 sm:pb-8 border-b border-slate-200 dark:border-slate-800/80">
         <div className="container mx-auto px-3 sm:px-6 max-w-6xl">
-          {/* Header Title (Compact on Mobile) */}
+          {/* Header Title */}
           <div className="max-w-3xl">
             <h1 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-tight">
               Discover People, Thoughts & Places
             </h1>
             <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed hidden sm:block">
-              Filter local explorers, community thoughts, regional adda hubs, verified businesses, and marketplace ads.
+              Filter local explorers, community thoughts, regional adda hubs, verified businesses, jobs, and marketplace ads.
             </p>
           </div>
 
-          {/* Unified Compact Search Form with Suggestions Dropdown */}
+          {/* Unified Compact Search Form */}
           <div ref={searchContainerRef} className="relative mt-3 sm:mt-4">
             <form onSubmit={handleSearchSubmit} className="space-y-2">
               <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/80 rounded-2xl p-1 sm:p-1.5 shadow-xs focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20 transition">
@@ -241,6 +342,8 @@ export default function CommunityDiscoveryPage() {
                       ? "Search regional hubs (e.g. Guwahati)..."
                       : activeTab === "directory"
                       ? "Search hotels, tours, cafes, stores..."
+                      : activeTab === "jobs"
+                      ? "Search job titles, skills, companies..."
                       : "Search marketplace items, cars, gadgets..."
                   }
                   className="flex-1 min-w-0 bg-transparent px-2 py-1.5 text-xs sm:text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
@@ -268,93 +371,6 @@ export default function CommunityDiscoveryPage() {
                   Search
                 </button>
               </div>
-
-              {/* Category & State Filter Bar for Businesses */}
-              {activeTab === "directory" && (
-                <div className="space-y-2">
-                  {/* State / Region Filter Pills */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0 mr-0.5">
-                      State:
-                    </span>
-                    {NORTHEAST_STATES.map((st) => {
-                      const isSelected = selectedState === st;
-                      return (
-                        <button
-                          key={st}
-                          type="button"
-                          onClick={() => {
-                            soundFX.playPop();
-                            setSelectedState(st);
-                          }}
-                          className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold transition shrink-0 cursor-pointer ${
-                            isSelected
-                              ? "bg-emerald-600 text-white shadow-xs"
-                              : "bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-500/50"
-                          }`}
-                        >
-                          {st}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Category Filter Chips */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0 mr-0.5">
-                      Category:
-                    </span>
-                    {DIRECTORY_CATEGORIES.map((cat) => {
-                      const isSelected = selectedCategory === cat;
-                      return (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={() => {
-                            soundFX.playPop();
-                            setSelectedCategory(cat);
-                          }}
-                          className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold transition shrink-0 cursor-pointer ${
-                            isSelected
-                              ? "bg-emerald-600 text-white shadow-xs"
-                              : "bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-500/50"
-                          }`}
-                        >
-                          {cat}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {activeTab === "marketplace" && (
-                <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0 mr-0.5">
-                    Category:
-                  </span>
-                  {MARKETPLACE_CATEGORIES.map((cat) => {
-                    const isSelected = selectedCategory === cat;
-                    return (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => {
-                          soundFX.playPop();
-                          setSelectedCategory(cat);
-                        }}
-                        className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold transition shrink-0 cursor-pointer ${
-                          isSelected
-                            ? "bg-emerald-600 text-white shadow-xs"
-                            : "bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
             </form>
 
             {/* Live Search Suggestions Dropdown */}
@@ -405,7 +421,7 @@ export default function CommunityDiscoveryPage() {
             )}
           </div>
 
-          {/* LinkedIn-Style Segmented Navigation Tabs: People -> Thoughts -> Addas -> Businesses -> Marketplace */}
+          {/* Segmented Navigation Tabs */}
           <div className="flex items-center gap-1.5 sm:gap-2 mt-4 overflow-x-auto pb-0.5 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden text-xs font-bold whitespace-nowrap">
             {/* 1. People */}
             <button
@@ -417,20 +433,7 @@ export default function CommunityDiscoveryPage() {
                   : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
-              <svg
-                className="w-4 h-4 shrink-0"
-                viewBox="0 0 24 24"
-                fill={activeTab === "users" ? "currentColor" : "none"}
-                stroke="currentColor"
-                strokeWidth={activeTab === "users" ? "1.5" : "2"}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 00-3-3.87" />
-                <path d="M16 3.13a4 4 0 010 7.75" />
-              </svg>
+              <span>👥</span>
               <span>People</span>
               {activeTab === "users" && totalCount > 0 && (
                 <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
@@ -449,17 +452,7 @@ export default function CommunityDiscoveryPage() {
                   : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
-              <svg
-                className="w-4 h-4 shrink-0"
-                viewBox="0 0 24 24"
-                fill={activeTab === "posts" ? "currentColor" : "none"}
-                stroke="currentColor"
-                strokeWidth={activeTab === "posts" ? "1.5" : "2"}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-              </svg>
+              <span>💭</span>
               <span>Thoughts</span>
               {activeTab === "posts" && totalCount > 0 && (
                 <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
@@ -478,17 +471,7 @@ export default function CommunityDiscoveryPage() {
                   : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
-              <svg
-                className="w-4 h-4 shrink-0"
-                viewBox="0 0 24 24"
-                fill={activeTab === "addas" ? "currentColor" : "none"}
-                stroke="currentColor"
-                strokeWidth={activeTab === "addas" ? "1.5" : "2"}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4M9 9h1M9 13h1M9 17h1M15 13h1M15 17h1" />
-              </svg>
+              <span>🏛️</span>
               <span>Addas</span>
               {activeTab === "addas" && totalCount > 0 && (
                 <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
@@ -507,18 +490,7 @@ export default function CommunityDiscoveryPage() {
                   : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
-              <svg
-                className="w-4 h-4 shrink-0"
-                viewBox="0 0 24 24"
-                fill={activeTab === "directory" ? "currentColor" : "none"}
-                stroke="currentColor"
-                strokeWidth={activeTab === "directory" ? "1.5" : "2"}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-              </svg>
+              <span>🏢</span>
               <span>Businesses</span>
               {activeTab === "directory" && totalCount > 0 && (
                 <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
@@ -537,17 +509,7 @@ export default function CommunityDiscoveryPage() {
                   : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
               }`}
             >
-              <svg
-                className="w-4 h-4 shrink-0"
-                viewBox="0 0 24 24"
-                fill={activeTab === "marketplace" ? "currentColor" : "none"}
-                stroke="currentColor"
-                strokeWidth={activeTab === "marketplace" ? "1.5" : "2"}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0" />
-              </svg>
+              <span>🛍️</span>
               <span>Marketplace</span>
               {activeTab === "marketplace" && totalCount > 0 && (
                 <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
@@ -555,94 +517,240 @@ export default function CommunityDiscoveryPage() {
                 </span>
               )}
             </button>
+
+            {/* 6. Jobs Tab */}
+            <button
+              type="button"
+              onClick={() => handleTabSwitch("jobs")}
+              className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 active:scale-95 ${
+                activeTab === "jobs"
+                  ? "bg-emerald-600 text-white shadow-xs"
+                  : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
+              }`}
+            >
+              <span>💼</span>
+              <span>Jobs</span>
+              {activeTab === "jobs" && totalCount > 0 && (
+                <span className="px-1.5 py-0.2 bg-emerald-800/90 text-white text-[10px] rounded-full">
+                  {totalCount}
+                </span>
+              )}
+            </button>
           </div>
 
-          {/* Sub-Tabs for People: Recently Joined vs Most Active (Highest Points) */}
-          {activeTab === "users" && (
-            <div className="flex items-center gap-1.5 sm:gap-2 mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-800/80 animate-in fade-in duration-150">
-              <button
-                type="button"
-                onClick={() => setUserSortTab("recent")}
-                className={`px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer select-none active:scale-95 ${
-                  userSortTab === "recent"
-                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                    : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700/60"
-                }`}
-              >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <polyline points="12 6 12 12 16 14" />
-                </svg>
-                <span>Recently Joined</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setUserSortTab("active")}
-                className={`px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer select-none active:scale-95 ${
-                  userSortTab === "active"
-                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                    : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700/60"
-                }`}
-              >
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                </svg>
-                <span>Most Active (Highest Points)</span>
-              </button>
-            </div>
-          )}
+          {/* Straight Line Dropdown Filter Bar */}
+          {(activeTab === "directory" || activeTab === "marketplace" || activeTab === "users" || activeTab === "jobs") && (
+            <div className="flex items-center flex-wrap sm:flex-nowrap gap-2 sm:gap-2.5 mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-800/80 animate-in fade-in duration-150">
+              {/* State Dropdown (For Directory, Marketplace & Jobs) */}
+              {(activeTab === "directory" || activeTab === "marketplace" || activeTab === "jobs") && (
+                <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[140px]">
+                  <select
+                    value={selectedState}
+                    onChange={(e) => {
+                      soundFX.playPop();
+                      setSelectedState(e.target.value);
+                    }}
+                    className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
+                  >
+                    {NORTHEAST_STATES.map((st) => (
+                      <option key={st} value={st} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+                        {st === "All States" ? "📍 All States" : `📍 ${st}`}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[10px]">
+                    ▼
+                  </span>
+                </div>
+              )}
 
-          {/* Sub-Tabs for Businesses: Most Viewed vs Top Rated vs Recently Added vs Verified */}
-          {activeTab === "directory" && (
-            <div className="flex items-center gap-1.5 sm:gap-2 mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-800/80 animate-in fade-in duration-150 overflow-x-auto pb-1 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              <button
-                type="button"
-                onClick={() => setBusinessSortTab("views")}
-                className={`px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer select-none active:scale-95 shrink-0 ${
-                  businessSortTab === "views"
-                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                    : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700/60"
-                }`}
-              >
-                <span>🔥</span>
-                <span>Most Viewed</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setBusinessSortTab("rating")}
-                className={`px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer select-none active:scale-95 shrink-0 ${
-                  businessSortTab === "rating"
-                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                    : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700/60"
-                }`}
-              >
-                <span>⭐</span>
-                <span>Top Rated</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setBusinessSortTab("recent")}
-                className={`px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer select-none active:scale-95 shrink-0 ${
-                  businessSortTab === "recent"
-                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                    : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700/60"
-                }`}
-              >
-                <span>✨</span>
-                <span>Recently Added</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setBusinessSortTab("claimed")}
-                className={`px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer select-none active:scale-95 shrink-0 ${
-                  businessSortTab === "claimed"
-                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                    : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700/60"
-                }`}
-              >
-                <span>✓</span>
-                <span>Verified / Claimed</span>
-              </button>
+              {/* Category Dropdown (For Directory) */}
+              {activeTab === "directory" && (
+                <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[160px]">
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => {
+                      soundFX.playPop();
+                      setSelectedCategory(e.target.value);
+                    }}
+                    className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
+                  >
+                    {DIRECTORY_CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+                        {cat === "All Categories" ? "🏷️ All Categories" : `🏷️ ${cat}`}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[10px]">
+                    ▼
+                  </span>
+                </div>
+              )}
+
+              {/* Category Dropdown (For Marketplace) */}
+              {activeTab === "marketplace" && (
+                <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[160px]">
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => {
+                      soundFX.playPop();
+                      setSelectedCategory(e.target.value);
+                    }}
+                    className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
+                  >
+                    {MARKETPLACE_CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+                        {cat === "All Categories" ? "🛍️ All Categories" : `🛍️ ${cat}`}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[10px]">
+                    ▼
+                  </span>
+                </div>
+              )}
+
+              {/* Category / Sector Dropdown (For Jobs) */}
+              {activeTab === "jobs" && (
+                <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[160px]">
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => {
+                      soundFX.playPop();
+                      setSelectedCategory(e.target.value);
+                    }}
+                    className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
+                  >
+                    {JOB_CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+                        {cat === "All Categories" ? "💼 All Sectors" : `💼 ${cat}`}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[10px]">
+                    ▼
+                  </span>
+                </div>
+              )}
+
+              {/* Job Type Dropdown (For Jobs) */}
+              {activeTab === "jobs" && (
+                <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[130px]">
+                  <select
+                    value={selectedJobType}
+                    onChange={(e) => {
+                      soundFX.playPop();
+                      setSelectedJobType(e.target.value);
+                    }}
+                    className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
+                  >
+                    {JOB_TYPES.map((t) => (
+                      <option key={t} value={t} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+                        {t === "All Types" ? "⏱️ All Types" : `⏱️ ${t}`}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[10px]">
+                    ▼
+                  </span>
+                </div>
+              )}
+
+              {/* Sort Order Dropdown (For Directory) */}
+              {activeTab === "directory" && (
+                <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[160px]">
+                  <select
+                    value={businessSortTab}
+                    onChange={(e) => {
+                      soundFX.playPop();
+                      setBusinessSortTab(e.target.value as any);
+                    }}
+                    className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
+                  >
+                    <option value="views" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">🔥 Sort: Most Viewed</option>
+                    <option value="rating" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">⭐ Sort: Top Rated</option>
+                    <option value="recent" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">✨ Sort: Recently Added</option>
+                    <option value="claimed" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">✓ Sort: Verified / Claimed</option>
+                  </select>
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[10px]">
+                    ▼
+                  </span>
+                </div>
+              )}
+
+              {/* Sort Order Dropdown (For Jobs) */}
+              {activeTab === "jobs" && (
+                <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[160px]">
+                  <select
+                    value={jobSortTab}
+                    onChange={(e) => {
+                      soundFX.playPop();
+                      setJobSortTab(e.target.value as any);
+                    }}
+                    className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
+                  >
+                    <option value="views" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">🔥 Sort: Most Viewed</option>
+                    <option value="recent" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">⏱️ Sort: Latest</option>
+                    <option value="salary" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">💰 Sort: Highest Salary</option>
+                  </select>
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[10px]">
+                    ▼
+                  </span>
+                </div>
+              )}
+
+              {/* Sort Order Dropdown (For Users) */}
+              {activeTab === "users" && (
+                <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[180px]">
+                  <select
+                    value={userSortTab}
+                    onChange={(e) => {
+                      soundFX.playPop();
+                      setUserSortTab(e.target.value as any);
+                    }}
+                    className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
+                  >
+                    <option value="recent" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">⏱️ Sort: Recently Joined</option>
+                    <option value="active" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">⚡ Sort: Most Active (Points)</option>
+                  </select>
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[10px]">
+                    ▼
+                  </span>
+                </div>
+              )}
+
+              {/* Post a Job Shortcut for Jobs Tab */}
+              {activeTab === "jobs" && (
+                <Link
+                  href="/jobs/post"
+                  className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow-xs shrink-0 flex items-center gap-1 active:scale-95"
+                >
+                  <span>➕</span>
+                  <span>Post Job</span>
+                </Link>
+              )}
+
+              {/* Reset Filters CTA if any filter is active */}
+              {(selectedState !== "All States" || selectedCategory !== "All Categories" || (activeTab === "directory" && businessSortTab !== "views") || (activeTab === "jobs" && (jobSortTab !== "views" || selectedJobType !== "All Types")) || (activeTab === "users" && userSortTab !== "recent") || searchQuery) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundFX.playPop();
+                    setSelectedState("All States");
+                    setSelectedCategory("All Categories");
+                    setSelectedJobType("All Types");
+                    setBusinessSortTab("views");
+                    setJobSortTab("views");
+                    setUserSortTab("recent");
+                    setSearchQuery("");
+                  }}
+                  className="px-2.5 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/60 rounded-xl transition cursor-pointer shrink-0 ml-auto flex items-center gap-1"
+                  title="Reset all filters"
+                >
+                  <span>✕</span>
+                  <span>Reset</span>
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -662,13 +770,15 @@ export default function CommunityDiscoveryPage() {
               No results found
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-              Try adjusting your search keyword.
+              Try adjusting your search keyword or selected filters.
             </p>
             <button
               type="button"
               onClick={() => {
                 setSearchQuery("");
                 setSelectedCategory("All Categories");
+                setSelectedState("All States");
+                setSelectedJobType("All Types");
               }}
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold"
             >
@@ -677,7 +787,7 @@ export default function CommunityDiscoveryPage() {
           </div>
         ) : (
           <>
-            {/* 1. USERS / PEOPLE GRID (Optimized Mobile Cards) */}
+            {/* 1. USERS / PEOPLE GRID */}
             {activeTab === "users" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                 {results.map((user) => {
@@ -724,7 +834,7 @@ export default function CommunityDiscoveryPage() {
                           </div>
                         </div>
 
-                        {/* Bio on desktop/tablet */}
+                        {/* Bio */}
                         {user.bio && (
                           <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 line-clamp-2 italic mb-2">
                             "{user.bio}"
@@ -750,16 +860,17 @@ export default function CommunityDiscoveryPage() {
                           </Link>
                         ) : isSent ? (
                           <button
+                            type="button"
                             disabled
                             className="flex-1 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-bold rounded-xl text-center"
                           >
-                            Requested ⏳
+                            Requested
                           </button>
                         ) : (
                           <button
                             type="button"
-                            onClick={(e) => handleSendFriendRequest(user.id, user.username, e)}
-                            className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl text-center transition cursor-pointer active:scale-95 shadow-xs"
+                            onClick={() => handleSendFriendRequest(user.id)}
+                            className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95"
                           >
                             + Connect
                           </button>
@@ -767,10 +878,9 @@ export default function CommunityDiscoveryPage() {
 
                         <Link
                           href={`/profile/${user.username}`}
-                          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl shrink-0"
-                          title="View Profile"
+                          className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl"
                         >
-                          👁️
+                          View
                         </Link>
                       </div>
                     </div>
@@ -779,214 +889,148 @@ export default function CommunityDiscoveryPage() {
               </div>
             )}
 
-            {/* 2. POSTS / DISCUSSIONS */}
+            {/* 2. THOUGHTS / POSTS GRID */}
             {activeTab === "posts" && (
-              <div className="space-y-3 sm:space-y-4 max-w-3xl mx-auto">
-                {results.map((post) => {
-                  const authorUsername = post.user?.username || "explorer";
-                  const authorAvatar =
-                    post.user?.profileImageUrl ||
-                    `https://api.dicebear.com/7.x/bottts/svg?seed=${authorUsername}`;
-
-                  return (
-                    <article
-                      key={post.id}
-                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition"
-                    >
-                      <div className="flex items-center justify-between gap-2 mb-2.5">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Link href={`/profile/${authorUsername}`} className="shrink-0">
-                            <img
-                              src={authorAvatar}
-                              alt={authorUsername}
-                              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0"
-                            />
-                          </Link>
-                          <div className="min-w-0">
-                            <Link
-                              href={`/profile/${authorUsername}`}
-                              className="font-bold text-xs text-slate-900 dark:text-slate-100 hover:underline block truncate"
-                            >
-                              u/{authorUsername}
-                            </Link>
-                            <p className="text-[9px] sm:text-[10px] text-slate-400 font-mono truncate">
-                              {post.taggedLocation || "n:community"}
-                            </p>
-                          </div>
-                        </div>
-                        {post.user && (
-                          <RankBadge
-                            rankTier={post.user.rankTier}
-                            xpPoints={post.user.xpPoints}
-                            size="sm"
-                            showLevel={false}
-                          />
-                        )}
-                      </div>
-
-                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed mb-2.5 line-clamp-3">
-                        {post.content}
-                      </p>
-
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
-                        <span className="text-slate-400 font-mono text-[10px] sm:text-[11px]">
-                          ❤️ {post.likesCount || 0} • 💬 {post.commentsCount || 0}
-                        </span>
-                        <Link
-                          href={`/community/${post.id}`}
-                          className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-xs"
-                        >
-                          View Thread &rarr;
-                        </Link>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* 3. REGIONAL ADDAS (2-Column on Mobile) */}
-            {activeTab === "addas" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">
-                {results.map((adda) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                {results.map((post) => (
                   <div
-                    key={adda.id}
-                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                    key={post.id}
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition"
                   >
                     <div>
-                      <div className="flex items-center gap-2.5 mb-1.5 sm:mb-2">
-                        <span className="text-2xl sm:text-3xl p-1.5 sm:p-2 bg-emerald-50 dark:bg-emerald-950/60 rounded-xl sm:rounded-2xl shrink-0">
-                          {adda.icon || "🏙️"}
-                        </span>
-                        <div className="min-w-0">
-                          <h3 className="font-extrabold text-xs sm:text-base text-slate-900 dark:text-slate-100 truncate">
-                            {adda.title || adda.name}
-                          </h3>
-                          <p className="text-[11px] sm:text-xs font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                            {adda.name}
+                      <div className="flex items-center gap-2.5 mb-2.5">
+                        <Link href={`/profile/${post.user?.username || ""}`}>
+                          <img
+                            src={
+                              post.user?.profileImageUrl ||
+                              `https://api.dicebear.com/7.x/bottts/svg?seed=${post.user?.username || "user"}`
+                            }
+                            alt={post.user?.username}
+                            className="w-9 h-9 rounded-xl object-cover border border-emerald-500 shrink-0"
+                          />
+                        </Link>
+                        <div className="min-w-0 flex-1">
+                          <Link
+                            href={`/profile/${post.user?.username || ""}`}
+                            className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 hover:underline truncate block"
+                          >
+                            {post.user?.fullName || post.user?.username || "Explorer"}
+                          </Link>
+                          <p className="text-[10px] text-slate-400 font-mono">
+                            {new Date(post.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
-                      <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 leading-relaxed mt-1 line-clamp-2">
-                        {adda.desc}
+
+                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 line-clamp-3 leading-relaxed mb-3">
+                        {post.content}
                       </p>
-                      <div className="flex items-center gap-2 mt-2 text-[10px] sm:text-[11px] text-slate-400">
-                        <span>📍 {adda.state}</span>
-                      </div>
                     </div>
 
-                    <Link
-                      href={adda.slug ? `/addas/${adda.slug}` : `/addas/${adda.id}`}
-                      className="mt-3 sm:mt-4 w-full py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold text-center block transition shadow-xs"
-                    >
-                      Enter Adda Wall &rarr;
-                    </Link>
+                    <div className="pt-2 sm:pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                      <span className="text-[11px] text-slate-400 font-mono">
+                        💬 {post.commentsCount || 0} comments • ❤️ {post.likesCount || 0}
+                      </span>
+                      <Link
+                        href={`/post/${post.id}`}
+                        className="text-emerald-600 dark:text-emerald-400 hover:underline font-bold"
+                      >
+                        Join Discussion &rarr;
+                      </Link>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
 
-            {/* 4. DIRECTORY / BUSINESSES (Mobile List / Desktop Grid) */}
-            {activeTab === "directory" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">
-                {results.map((biz) => {
-                  const targetUrl = biz.url || `/listing/${biz.id}`;
-                  return (
-                    <div
-                      key={biz.id}
-                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
-                    >
-                      <div>
-                        {/* Mobile Row with Image Left */}
-                        <div className="flex sm:block gap-3 mb-2 sm:mb-3">
-                          {biz.image && (
-                            <div className="w-20 h-20 sm:w-full sm:h-36 rounded-xl sm:rounded-2xl overflow-hidden shrink-0 bg-slate-100 dark:bg-slate-800">
-                              <img
-                                src={biz.image}
-                                alt={biz.businessName || "Business"}
-                                className="w-full h-full object-cover group-hover:scale-105 transition"
-                              />
-                            </div>
-                          )}
-
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-start justify-between gap-1 mb-0.5">
-                              <Link
-                                href={targetUrl}
-                                className="font-extrabold text-xs sm:text-base text-slate-900 dark:text-slate-100 hover:underline line-clamp-2 sm:line-clamp-1"
-                              >
-                                {biz.businessName}
-                              </Link>
-                              {biz.isClaimed && (
-                                <span className="shrink-0 text-emerald-500 text-xs" title="Verified Business">
-                                  ✓
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="flex items-center flex-wrap gap-1.5 mb-1.5">
-                              <span className="inline-block px-2 py-0.2 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded-full text-[9px] sm:text-[10px] font-extrabold">
-                                {biz.category || "General"}
-                              </span>
-                              {biz.isClaimed && (
-                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 rounded-full text-[9px] font-extrabold">
-                                  ✓ Verified
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                              <span>📍</span>
-                              <span className="truncate">{biz.district ? `${biz.district}, ` : ""}{biz.state}</span>
-                            </div>
-
-                            <div className="flex items-center gap-2.5 mt-1 text-[11px]">
-                              <div className="flex items-center gap-1 font-bold text-slate-600 dark:text-slate-300">
-                                <span>🔥</span>
-                                <span>{biz.viewsCount ? biz.viewsCount.toLocaleString() : 0} views</span>
-                              </div>
-
-                              {biz.rating && (
-                                <div className="flex items-center gap-0.5 font-bold text-amber-500">
-                                  <span>⭐</span>
-                                  <span>{biz.rating}</span>
-                                  {biz.reviewsCount && (
-                                    <span className="text-slate-400 font-normal text-[10px]">({biz.reviewsCount})</span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
+            {/* 3. ADDAS GRID */}
+            {activeTab === "addas" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                {results.map((adda) => (
+                  <Link
+                    key={adda.slug}
+                    href={`/addas/${adda.slug}`}
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-2xl">{adda.icon || "🏛️"}</span>
+                        <h3 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 transition">
+                          {adda.name}
+                        </h3>
                       </div>
-
-                      <div className="pt-2 sm:pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
-                        {biz.phone && (
-                          <a
-                            href={`tel:${biz.phone}`}
-                            className="flex-1 py-1.5 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 rounded-xl text-xs font-bold text-center border border-emerald-200 dark:border-emerald-800/60"
-                          >
-                            📞 Call
-                          </a>
-                        )}
-                        <Link
-                          href={targetUrl}
-                          className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold text-center shadow-xs"
-                        >
-                          View &rarr;
-                        </Link>
-                      </div>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed mb-2">
+                        {adda.description}
+                      </p>
                     </div>
-                  );
-                })}
+                    <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+                      <span>📍 {adda.state}</span>
+                      <span className="text-emerald-600 font-bold">Explore Hub &rarr;</span>
+                    </div>
+                  </Link>
+                ))}
               </div>
             )}
 
-            {/* 5. MARKETPLACE (2-Column on Mobile) */}
+            {/* 4. BUSINESSES / DIRECTORY GRID */}
+            {activeTab === "directory" && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+                {results.map((biz) => (
+                  <div
+                    key={biz.id}
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 rounded-full text-[10px] font-extrabold">
+                          {biz.category || "Business"}
+                        </span>
+                        {biz.viewsCount !== undefined && biz.viewsCount > 0 && (
+                          <span className="text-[10px] text-amber-500 font-mono font-bold">
+                            🔥 {biz.viewsCount} views
+                          </span>
+                        )}
+                      </div>
+
+                      <Link
+                        href={`/directory/${biz.id}`}
+                        className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100 hover:text-emerald-600 transition line-clamp-1 block mb-1"
+                      >
+                        {biz.businessName}
+                      </Link>
+
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed mb-3">
+                        {biz.description || "Verified local organization in Northeast India."}
+                      </p>
+                    </div>
+
+                    <div className="pt-2 sm:pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+                      <span className="text-[11px] text-slate-400 truncate max-w-[150px]">
+                        📍 {biz.district || biz.city || "Northeast"}
+                      </span>
+                      <Link
+                        href={`/directory/${biz.id}`}
+                        className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[11px] font-bold transition shadow-xs"
+                      >
+                        View Listing &rarr;
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* 5. MARKETPLACE GRID */}
             {activeTab === "marketplace" && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-4">
                 {results.map((item) => {
-                  const img = item.images ? item.images.split(",")[0] : null;
+                  let img = item.images;
+                  if (typeof img === "string" && img.startsWith("[")) {
+                    try {
+                      img = JSON.parse(img)[0];
+                    } catch {}
+                  }
+
                   const itemPriceFormatted =
                     typeof item.price === "number"
                       ? item.price.toLocaleString()
@@ -1047,6 +1091,112 @@ export default function CommunityDiscoveryPage() {
               </div>
             )}
 
+            {/* 6. JOBS GRID */}
+            {activeTab === "jobs" && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {results.map((job) => {
+                  const salary = formatSalary(job.salaryMin, job.salaryMax, job.salaryPeriod);
+                  const skills = job.skillsRequired
+                    ? job.skillsRequired.split(",").map((s: string) => s.trim()).filter(Boolean)
+                    : [];
+
+                  return (
+                    <div
+                      key={job.id}
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                    >
+                      <div>
+                        {/* Header: Company & Title */}
+                        <div className="flex items-start justify-between gap-3 mb-2.5">
+                          <div className="min-w-0 flex-1">
+                            <span className="px-2 py-0.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 rounded-full text-[10px] font-extrabold mr-1.5">
+                              {job.type}
+                            </span>
+                            <span className="text-[11px] text-slate-400 font-medium">
+                              {job.category}
+                            </span>
+
+                            <Link
+                              href={`/jobs/${job.id}`}
+                              className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100 hover:text-emerald-600 transition block truncate mt-1"
+                            >
+                              {job.title}
+                            </Link>
+
+                            <p className="text-xs text-slate-500 font-medium truncate">
+                              🏢 {job.company || "Direct Employer"}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Salary & Location */}
+                        <div className="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl text-xs space-y-1 mb-2.5">
+                          <div className="flex items-center justify-between font-bold">
+                            <span className="text-slate-400 text-[11px]">Salary:</span>
+                            <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">
+                              {salary}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                            <span>Location:</span>
+                            <span className="font-medium truncate max-w-[140px]">
+                              📍 {job.location || job.district ? `${job.location || job.district}, ` : ""}{job.state || "Northeast"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Skills */}
+                        {skills.length > 0 && (
+                          <div className="flex items-center flex-wrap gap-1 mb-3">
+                            {skills.slice(0, 3).map((sk: string, idx: number) => (
+                              <span
+                                key={idx}
+                                className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-md text-[10px] font-semibold"
+                              >
+                                {sk}
+                              </span>
+                            ))}
+                            {skills.length > 3 && (
+                              <span className="text-[10px] text-slate-400 font-semibold">
+                                +{skills.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Bottom CTA */}
+                      <div className="pt-2 sm:pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+                        <span className="text-[11px] text-slate-400 font-mono">
+                          👁️ {job.viewsCount || 0} • 📩 {job.applicationsCount || 0}
+                        </span>
+
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              soundFX.playPop();
+                              setSelectedJobForApply(job);
+                              setApplyModalOpen(true);
+                            }}
+                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold shadow-xs transition active:scale-95 cursor-pointer"
+                          >
+                            ⚡ Apply
+                          </button>
+                          <Link
+                            href={`/jobs/${job.id}`}
+                            className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition"
+                          >
+                            Details &rarr;
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             {/* Pagination / Load More */}
             {hasMore && (
               <div className="mt-6 sm:mt-8 text-center">
@@ -1063,6 +1213,183 @@ export default function CommunityDiscoveryPage() {
           </>
         )}
       </div>
+
+      {/* Quick Apply Modal */}
+      {applyModalOpen && selectedJobForApply && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => {
+                setApplyModalOpen(false);
+                setApplySuccess(false);
+              }}
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-bold p-1"
+            >
+              ✕
+            </button>
+
+            {applySuccess ? (
+              <div className="py-6 text-center">
+                <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center text-2xl mx-auto mb-3">
+                  ✓
+                </div>
+                <h3 className="text-lg font-black text-slate-900 dark:text-white mb-1">
+                  Application Submitted!
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mb-6">
+                  Your application has been received for <strong>{selectedJobForApply.title}</strong>.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setApplyModalOpen(false);
+                    setApplySuccess(false);
+                  }}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="mb-5">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    Apply for Position
+                  </span>
+                  <h2 className="text-lg font-black text-slate-900 dark:text-white">
+                    {selectedJobForApply.title}
+                  </h2>
+                  <p className="text-xs text-slate-500">at {selectedJobForApply.company || "Hiring Employer"}</p>
+                </div>
+
+                {applyError && (
+                  <div className="p-3 mb-4 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 rounded-xl text-xs font-medium">
+                    {applyError}
+                  </div>
+                )}
+
+                <form onSubmit={handleQuickApplySubmit} className="space-y-3 text-xs">
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={applicantName}
+                      onChange={(e) => setApplicantName(e.target.value)}
+                      placeholder="e.g. Partha Pratim Sharma"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={applicantEmail}
+                        onChange={(e) => setApplicantEmail(e.target.value)}
+                        placeholder="you@email.com"
+                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Mobile Phone *
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        value={applicantPhone}
+                        onChange={(e) => setApplicantPhone(e.target.value)}
+                        placeholder="+91 98765 43210"
+                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Experience
+                      </label>
+                      <input
+                        type="text"
+                        value={applicantExp}
+                        onChange={(e) => setApplicantExp(e.target.value)}
+                        placeholder="e.g. 2 Years"
+                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Current Role
+                      </label>
+                      <input
+                        type="text"
+                        value={applicantRole}
+                        onChange={(e) => setApplicantRole(e.target.value)}
+                        placeholder="e.g. Engineer / Manager"
+                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Resume / Portfolio Link
+                    </label>
+                    <input
+                      type="url"
+                      value={applicantResume}
+                      onChange={(e) => setApplicantResume(e.target.value)}
+                      placeholder="https://drive.google.com/... or https://linkedin.com/in/..."
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Cover Note
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={applicantNote}
+                      onChange={(e) => setApplicantNote(e.target.value)}
+                      placeholder="Brief note to the employer..."
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div className="pt-2 flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setApplyModalOpen(false)}
+                      className="px-4 py-2 text-slate-600 dark:text-slate-400 font-bold"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={applySubmitting}
+                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-xl font-bold shadow-xs cursor-pointer active:scale-95"
+                    >
+                      {applySubmitting ? "Submitting..." : "Submit Application 🚀"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <AuthModal
         isOpen={authModalOpen}

@@ -398,6 +398,80 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // 6. JOBS TAB
+    if (type === "jobs") {
+      const jobSort = (searchParams.get("jobSort") || "views").toLowerCase();
+      const jobType = searchParams.get("jobType") || "All Types";
+      const where: any = {
+        status: "Open",
+      };
+
+      if (q) {
+        where.OR = [
+          { title: { contains: q, mode: "insensitive" } },
+          { company: { contains: q, mode: "insensitive" } },
+          { skillsRequired: { contains: q, mode: "insensitive" } },
+          { jobDescription: { contains: q, mode: "insensitive" } },
+          { location: { contains: q, mode: "insensitive" } },
+          { district: { contains: q, mode: "insensitive" } },
+        ];
+      }
+
+      if (state && state !== "All" && state !== "All States") {
+        where.OR = [
+          ...(where.OR || []),
+          { state: { contains: state, mode: "insensitive" } },
+          { location: { contains: state, mode: "insensitive" } },
+          { district: { contains: state, mode: "insensitive" } },
+        ];
+      }
+
+      if (category && category !== "All" && !category.startsWith("All")) {
+        where.category = { contains: category, mode: "insensitive" };
+      }
+
+      if (jobType && jobType !== "All" && jobType !== "All Types") {
+        where.type = { contains: jobType, mode: "insensitive" };
+      }
+
+      let orderBy: any = [{ viewsCount: "desc" as const }, { createdAt: "desc" as const }];
+      if (jobSort === "recent") {
+        orderBy = [{ createdAt: "desc" as const }];
+      } else if (jobSort === "salary") {
+        orderBy = [{ salaryMax: "desc" as const }, { salaryMin: "desc" as const }];
+      }
+
+      const [jobs, total] = await Promise.all([
+        db.job.findMany({
+          where,
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                fullName: true,
+                profileImageUrl: true,
+                isVerified: true,
+              },
+            },
+          },
+          orderBy,
+          skip,
+          take: limit,
+        }),
+        db.job.count({ where }),
+      ]);
+
+      return NextResponse.json({
+        status: "success",
+        type: "jobs",
+        total,
+        page,
+        hasMore: skip + jobs.length < total,
+        data: jobs,
+      });
+    }
+
     return NextResponse.json({ status: "error", message: "Invalid type parameter" }, { status: 400 });
   } catch (error: any) {
     console.error("Community discover error:", error);

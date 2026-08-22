@@ -308,14 +308,14 @@ export default function CommunityDiscoveryPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 transition-colors pb-24">
       {/* Top Header & Search Area */}
-      <div className="bg-gradient-to-b from-emerald-950/60 via-slate-900/90 to-transparent pt-4 sm:pt-8 pb-5 sm:pb-8 border-b border-slate-200 dark:border-slate-800/80">
+      <div className="bg-gradient-to-b from-emerald-50/60 via-slate-50/80 to-white dark:from-emerald-950/40 dark:via-[#0c121e] dark:to-[#090d16] pt-4 sm:pt-8 pb-5 sm:pb-8 border-b border-slate-200/80 dark:border-slate-800/80 shadow-xs">
         <div className="container mx-auto px-3 sm:px-6 max-w-6xl">
           {/* Header Title */}
           <div className="max-w-3xl">
             <h1 className="text-xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-tight">
               Discover People, Thoughts & Places
             </h1>
-            <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed hidden sm:block">
+            <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed hidden sm:block">
               Filter local explorers, community thoughts, regional adda hubs, verified businesses, jobs, and marketplace ads.
             </p>
           </div>
@@ -323,7 +323,7 @@ export default function CommunityDiscoveryPage() {
           {/* Unified Compact Search Form */}
           <div ref={searchContainerRef} className="relative mt-3 sm:mt-4">
             <form onSubmit={handleSearchSubmit} className="space-y-2">
-              <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700/80 rounded-2xl p-1 sm:p-1.5 shadow-xs focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20 transition">
+              <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-2xl p-1 sm:p-1.5 shadow-xs focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20 transition">
                 <span className="pl-2.5 text-slate-400 text-sm">🔍</span>
                 <input
                   type="text"
@@ -429,7 +429,7 @@ export default function CommunityDiscoveryPage() {
               className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 active:scale-95 ${
                 activeTab === "users"
                   ? "bg-emerald-600 text-white shadow-xs"
-                  : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
+                  : "bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200/90 dark:border-slate-700/80 shadow-2xs"
               }`}
             >
               <span>👥</span>
@@ -448,7 +448,7 @@ export default function CommunityDiscoveryPage() {
               className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 active:scale-95 ${
                 activeTab === "posts"
                   ? "bg-emerald-600 text-white shadow-xs"
-                  : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
+                  : "bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200/90 dark:border-slate-700/80 shadow-2xs"
               }`}
             >
               <span>💭</span>
@@ -467,7 +467,7 @@ export default function CommunityDiscoveryPage() {
               className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 active:scale-95 ${
                 activeTab === "addas"
                   ? "bg-emerald-600 text-white shadow-xs"
-                  : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
+                  : "bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200/90 dark:border-slate-700/80 shadow-2xs"
               }`}
             >
               <span>🏛️</span>
@@ -486,7 +486,7 @@ export default function CommunityDiscoveryPage() {
               className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 active:scale-95 ${
                 activeTab === "directory"
                   ? "bg-emerald-600 text-white shadow-xs"
-                  : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
+                  : "bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200/90 dark:border-slate-700/80 shadow-2xs"
               }`}
             >
               <span>🏢</span>
@@ -505,7 +505,7 @@ export default function CommunityDiscoveryPage() {
               className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 active:scale-95 ${
                 activeTab === "marketplace"
                   ? "bg-emerald-600 text-white shadow-xs"
-                  : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
+                  : "bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200/90 dark:border-slate-700/80 shadow-2xs"
               }`}
             >
               <span>🛍️</span>
@@ -524,7 +524,7 @@ export default function CommunityDiscoveryPage() {
               className={`px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition cursor-pointer flex items-center gap-1.5 shrink-0 active:scale-95 ${
                 activeTab === "jobs"
                   ? "bg-emerald-600 text-white shadow-xs"
-                  : "bg-white/90 dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80"
+                  : "bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 border border-slate-200/90 dark:border-slate-700/80 shadow-2xs"
               }`}
             >
               <span>💼</span>

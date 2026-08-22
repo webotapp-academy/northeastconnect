@@ -176,7 +176,7 @@ export async function GET(req: NextRequest) {
       ]);
 
       const formatted = businesses.map((b) => {
-        const slug = b.businessName
+        const slug = (b.businessName || "")
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/(^-|-$)/g, "");
@@ -186,7 +186,7 @@ export async function GET(req: NextRequest) {
           phone: b.contactNumber,
           image: firstImg,
           state: b.district || b.city || "Northeast India",
-          url: `/listing/${slug}-${b.id}`,
+          url: slug ? `/listing/${slug}-${b.id}` : `/listing/${b.id}`,
         };
       });
 
@@ -329,10 +329,12 @@ export async function GET(req: NextRequest) {
 
       const formatted = posts.map((p) => ({
         ...p,
-        user: {
-          ...p.user,
-          rankInfo: getRankFromXp(p.user.xpPoints || 0),
-        },
+        user: p.user
+          ? {
+              ...p.user,
+              rankInfo: getRankFromXp(p.user.xpPoints || 0),
+            }
+          : null,
       }));
 
       return NextResponse.json({

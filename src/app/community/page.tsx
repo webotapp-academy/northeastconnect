@@ -683,60 +683,66 @@ export default function CommunityDiscoveryPage() {
             {/* 2. POSTS / DISCUSSIONS */}
             {activeTab === "posts" && (
               <div className="space-y-3 sm:space-y-4 max-w-3xl mx-auto">
-                {results.map((post) => (
-                  <article
-                    key={post.id}
-                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition"
-                  >
-                    <div className="flex items-center justify-between gap-2 mb-2.5">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Link href={`/profile/${post.user.username}`} className="shrink-0">
-                          <img
-                            src={
-                              post.user.profileImageUrl ||
-                              `https://api.dicebear.com/7.x/bottts/svg?seed=${post.user.username}`
-                            }
-                            alt={post.user.username}
-                            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0"
-                          />
-                        </Link>
-                        <div className="min-w-0">
-                          <Link
-                            href={`/profile/${post.user.username}`}
-                            className="font-bold text-xs text-slate-900 dark:text-slate-100 hover:underline block truncate"
-                          >
-                            u/{post.user.username}
+                {results.map((post) => {
+                  const authorUsername = post.user?.username || "explorer";
+                  const authorAvatar =
+                    post.user?.profileImageUrl ||
+                    `https://api.dicebear.com/7.x/bottts/svg?seed=${authorUsername}`;
+
+                  return (
+                    <article
+                      key={post.id}
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition"
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-2.5">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Link href={`/profile/${authorUsername}`} className="shrink-0">
+                            <img
+                              src={authorAvatar}
+                              alt={authorUsername}
+                              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0"
+                            />
                           </Link>
-                          <p className="text-[9px] sm:text-[10px] text-slate-400 font-mono truncate">
-                            {post.taggedLocation || "n:community"}
-                          </p>
+                          <div className="min-w-0">
+                            <Link
+                              href={`/profile/${authorUsername}`}
+                              className="font-bold text-xs text-slate-900 dark:text-slate-100 hover:underline block truncate"
+                            >
+                              u/{authorUsername}
+                            </Link>
+                            <p className="text-[9px] sm:text-[10px] text-slate-400 font-mono truncate">
+                              {post.taggedLocation || "n:community"}
+                            </p>
+                          </div>
                         </div>
+                        {post.user && (
+                          <RankBadge
+                            rankTier={post.user.rankTier}
+                            xpPoints={post.user.xpPoints}
+                            size="sm"
+                            showLevel={false}
+                          />
+                        )}
                       </div>
-                      <RankBadge
-                        rankTier={post.user.rankTier}
-                        xpPoints={post.user.xpPoints}
-                        size="sm"
-                        showLevel={false}
-                      />
-                    </div>
 
-                    <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed mb-2.5 line-clamp-3">
-                      {post.content}
-                    </p>
+                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed mb-2.5 line-clamp-3">
+                        {post.content}
+                      </p>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
-                      <span className="text-slate-400 font-mono text-[10px] sm:text-[11px]">
-                        ❤️ {post.likesCount || 0} • 💬 {post.commentsCount || 0}
-                      </span>
-                      <Link
-                        href={`/community/${post.id}`}
-                        className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-xs"
-                      >
-                        View Thread &rarr;
-                      </Link>
-                    </div>
-                  </article>
-                ))}
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+                        <span className="text-slate-400 font-mono text-[10px] sm:text-[11px]">
+                          ❤️ {post.likesCount || 0} • 💬 {post.commentsCount || 0}
+                        </span>
+                        <Link
+                          href={`/community/${post.id}`}
+                          className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline text-xs"
+                        >
+                          View Thread &rarr;
+                        </Link>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             )}
 
@@ -771,7 +777,7 @@ export default function CommunityDiscoveryPage() {
                     </div>
 
                     <Link
-                      href={`/addas/${adda.id}`}
+                      href={adda.slug ? `/addas/${adda.slug}` : `/addas/${adda.id}`}
                       className="mt-3 sm:mt-4 w-full py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold text-center block transition shadow-xs"
                     >
                       Enter Adda Wall &rarr;
@@ -784,79 +790,82 @@ export default function CommunityDiscoveryPage() {
             {/* 4. DIRECTORY / BUSINESSES (Mobile List / Desktop Grid) */}
             {activeTab === "directory" && (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">
-                {results.map((biz) => (
-                  <div
-                    key={biz.id}
-                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
-                  >
-                    <div>
-                      {/* Mobile Row with Image Left */}
-                      <div className="flex sm:block gap-3 mb-2 sm:mb-3">
-                        {biz.image && (
-                          <div className="w-20 h-20 sm:w-full sm:h-36 rounded-xl sm:rounded-2xl overflow-hidden shrink-0 bg-slate-100 dark:bg-slate-800">
-                            <img
-                              src={biz.image}
-                              alt={biz.businessName}
-                              className="w-full h-full object-cover group-hover:scale-105 transition"
-                            />
-                          </div>
-                        )}
-
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-1 mb-0.5">
-                            <Link
-                              href={biz.url}
-                              className="font-extrabold text-xs sm:text-base text-slate-900 dark:text-slate-100 hover:underline line-clamp-2 sm:line-clamp-1"
-                            >
-                              {biz.businessName}
-                            </Link>
-                            {biz.isClaimed && (
-                              <span className="shrink-0 text-emerald-500 text-xs" title="Verified Business">
-                                ✓
-                              </span>
-                            )}
-                          </div>
-
-                          <span className="inline-block px-2 py-0.2 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded-full text-[9px] sm:text-[10px] font-extrabold mb-1">
-                            {biz.category}
-                          </span>
-
-                          <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
-                            <span>📍</span>
-                            <span className="truncate">{biz.district ? `${biz.district}, ` : ""}{biz.state}</span>
-                          </div>
-
-                          {biz.rating && (
-                            <div className="flex items-center gap-1 text-[11px] font-bold text-amber-500 mt-0.5">
-                              <span>⭐</span>
-                              <span>{biz.rating}</span>
-                              {biz.reviewsCount && (
-                                <span className="text-slate-400 font-normal">({biz.reviewsCount})</span>
-                              )}
+                {results.map((biz) => {
+                  const targetUrl = biz.url || `/listing/${biz.id}`;
+                  return (
+                    <div
+                      key={biz.id}
+                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                    >
+                      <div>
+                        {/* Mobile Row with Image Left */}
+                        <div className="flex sm:block gap-3 mb-2 sm:mb-3">
+                          {biz.image && (
+                            <div className="w-20 h-20 sm:w-full sm:h-36 rounded-xl sm:rounded-2xl overflow-hidden shrink-0 bg-slate-100 dark:bg-slate-800">
+                              <img
+                                src={biz.image}
+                                alt={biz.businessName || "Business"}
+                                className="w-full h-full object-cover group-hover:scale-105 transition"
+                              />
                             </div>
                           )}
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-1 mb-0.5">
+                              <Link
+                                href={targetUrl}
+                                className="font-extrabold text-xs sm:text-base text-slate-900 dark:text-slate-100 hover:underline line-clamp-2 sm:line-clamp-1"
+                              >
+                                {biz.businessName}
+                              </Link>
+                              {biz.isClaimed && (
+                                <span className="shrink-0 text-emerald-500 text-xs" title="Verified Business">
+                                  ✓
+                                </span>
+                              )}
+                            </div>
+
+                            <span className="inline-block px-2 py-0.2 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded-full text-[9px] sm:text-[10px] font-extrabold mb-1">
+                              {biz.category || "General"}
+                            </span>
+
+                            <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+                              <span>📍</span>
+                              <span className="truncate">{biz.district ? `${biz.district}, ` : ""}{biz.state}</span>
+                            </div>
+
+                            {biz.rating && (
+                              <div className="flex items-center gap-1 text-[11px] font-bold text-amber-500 mt-0.5">
+                                <span>⭐</span>
+                                <span>{biz.rating}</span>
+                                {biz.reviewsCount && (
+                                  <span className="text-slate-400 font-normal">({biz.reviewsCount})</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="pt-2 sm:pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
-                      {biz.phone && (
-                        <a
-                          href={`tel:${biz.phone}`}
-                          className="flex-1 py-1.5 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 rounded-xl text-xs font-bold text-center border border-emerald-200 dark:border-emerald-800/60"
+                      <div className="pt-2 sm:pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                        {biz.phone && (
+                          <a
+                            href={`tel:${biz.phone}`}
+                            className="flex-1 py-1.5 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-300 rounded-xl text-xs font-bold text-center border border-emerald-200 dark:border-emerald-800/60"
+                          >
+                            📞 Call
+                          </a>
+                        )}
+                        <Link
+                          href={targetUrl}
+                          className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold text-center shadow-xs"
                         >
-                          📞 Call
-                        </a>
-                      )}
-                      <Link
-                        href={biz.url}
-                        className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold text-center shadow-xs"
-                      >
-                        View &rarr;
-                      </Link>
+                          View &rarr;
+                        </Link>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
@@ -865,6 +874,13 @@ export default function CommunityDiscoveryPage() {
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4">
                 {results.map((item) => {
                   const img = item.images ? item.images.split(",")[0] : null;
+                  const itemPriceFormatted =
+                    typeof item.price === "number"
+                      ? item.price.toLocaleString()
+                      : typeof item.price === "string" && !isNaN(parseFloat(item.price))
+                      ? parseFloat(item.price).toLocaleString()
+                      : item.price || 0;
+
                   return (
                     <div
                       key={item.id}
@@ -875,7 +891,7 @@ export default function CommunityDiscoveryPage() {
                           <div className="w-full h-28 sm:h-36 rounded-xl sm:rounded-2xl overflow-hidden mb-2 bg-slate-100 dark:bg-slate-800">
                             <img
                               src={img}
-                              alt={item.title}
+                              alt={item.title || "Marketplace item"}
                               className="w-full h-full object-cover group-hover:scale-105 transition"
                             />
                           </div>
@@ -887,7 +903,7 @@ export default function CommunityDiscoveryPage() {
 
                         <div className="flex items-center justify-between gap-1 mb-1">
                           <span className="text-xs sm:text-base font-black text-emerald-600 dark:text-emerald-400">
-                            ₹{item.price.toLocaleString()}
+                            ₹{itemPriceFormatted}
                           </span>
                           <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase truncate">
                             {item.condition || "Used"}

@@ -60,6 +60,21 @@ export default function JobsDirectoryPage() {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
+  // Quick Apply Modal States
+  const [selectedJobForApply, setSelectedJobForApply] = useState<any>(null);
+  const [applyModalOpen, setApplyModalOpen] = useState(false);
+  const [applySubmitting, setApplySubmitting] = useState(false);
+  const [applySuccess, setApplySuccess] = useState(false);
+  const [applyError, setApplyError] = useState("");
+
+  const [applicantName, setApplicantName] = useState("");
+  const [applicantEmail, setApplicantEmail] = useState("");
+  const [applicantPhone, setApplicantPhone] = useState("");
+  const [applicantExp, setApplicantExp] = useState("");
+  const [applicantRole, setApplicantRole] = useState("");
+  const [applicantResume, setApplicantResume] = useState("");
+  const [applicantNote, setApplicantNote] = useState("");
+
   useEffect(() => {
     fetchSession();
   }, []);
@@ -75,8 +90,59 @@ export default function JobsDirectoryPage() {
       const data = await res.json();
       if (data.status === "success" && data.user) {
         setCurrentUser(data.user);
+        setApplicantName(data.user.name || "");
+        setApplicantEmail(data.user.email || "");
+        if (data.user.phone) setApplicantPhone(data.user.phone);
       }
     } catch {}
+  }
+
+  async function handleQuickApplySubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedJobForApply) return;
+    if (!applicantName.trim() || !applicantEmail.trim() || !applicantPhone.trim()) {
+      setApplyError("Full name, email, and phone number are required.");
+      return;
+    }
+
+    try {
+      setApplySubmitting(true);
+      setApplyError("");
+
+      const res = await fetch(`/api/jobs/${selectedJobForApply.id}/apply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: applicantName,
+          email: applicantEmail,
+          phone: applicantPhone,
+          experience: applicantExp,
+          currentRole: applicantRole,
+          resumeUrl: applicantResume,
+          coverNote: applicantNote,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.status === "success") {
+        soundFX.playPop();
+        setApplySuccess(true);
+        // Increment applications count in state
+        setJobs((prev) =>
+          prev.map((j) =>
+            j.id === selectedJobForApply.id
+              ? { ...j, applicationsCount: (j.applicationsCount || 0) + 1 }
+              : j
+          )
+        );
+      } else {
+        setApplyError(data.message || "Failed to submit application");
+      }
+    } catch (err: any) {
+      setApplyError("An unexpected error occurred. Please try again.");
+    } finally {
+      setApplySubmitting(false);
+    }
   }
 
   async function fetchJobs(pageNum: number, isLoadMore = false) {
@@ -486,13 +552,28 @@ export default function JobsDirectoryPage() {
                       <span>📩 {job.applicationsCount || 0} applied</span>
                     </div>
 
-                    <Link
-                      href={`/jobs/${job.id}`}
-                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1 active:scale-95"
-                    >
-                      <span>Apply Now</span>
-                      <span>&rarr;</span>
-                    </Link>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          soundFX.playPop();
+                          setSelectedJobForApply(job);
+                          setApplyModalOpen(true);
+                        }}
+                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold transition shadow-xs flex items-center gap-1 active:scale-95 cursor-pointer"
+                      >
+                        <span>⚡</span>
+                        <span>Apply</span>
+                      </button>
+
+                      <Link
+                        href={`/jobs/${job.id}`}
+                        className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition"
+                        title="View Full Job Details"
+                      >
+                        Details &rarr;
+                      </Link>
+                    </div>
                   </div>
                 </div>
               );
@@ -514,6 +595,183 @@ export default function JobsDirectoryPage() {
           </div>
         )}
       </div>
+
+      {/* Quick Apply Modal */}
+      {applyModalOpen && selectedJobForApply && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative">
+            <button
+              type="button"
+              onClick={() => {
+                setApplyModalOpen(false);
+                setApplySuccess(false);
+              }}
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-bold p-1"
+            >
+              ✕
+            </button>
+
+            {applySuccess ? (
+              <div className="py-6 text-center">
+                <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-950/80 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center text-2xl mx-auto mb-3">
+                  ✓
+                </div>
+                <h3 className="text-lg font-black text-slate-900 dark:text-white mb-1">
+                  Application Submitted!
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mb-6">
+                  Your profile and contact details have been successfully transmitted to the hiring team for <strong>{selectedJobForApply.title}</strong>.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setApplyModalOpen(false);
+                    setApplySuccess(false);
+                  }}
+                  className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="mb-5">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                    Apply for Position
+                  </span>
+                  <h2 className="text-lg font-black text-slate-900 dark:text-white">
+                    {selectedJobForApply.title}
+                  </h2>
+                  <p className="text-xs text-slate-500">at {selectedJobForApply.company || "Hiring Employer"}</p>
+                </div>
+
+                {applyError && (
+                  <div className="p-3 mb-4 bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 rounded-xl text-xs font-medium">
+                    {applyError}
+                  </div>
+                )}
+
+                <form onSubmit={handleQuickApplySubmit} className="space-y-3 text-xs">
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={applicantName}
+                      onChange={(e) => setApplicantName(e.target.value)}
+                      placeholder="e.g. Partha Pratim Sharma"
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Email Address *
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={applicantEmail}
+                        onChange={(e) => setApplicantEmail(e.target.value)}
+                        placeholder="you@email.com"
+                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Mobile Phone *
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        value={applicantPhone}
+                        onChange={(e) => setApplicantPhone(e.target.value)}
+                        placeholder="+91 98765 43210"
+                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Experience
+                      </label>
+                      <input
+                        type="text"
+                        value={applicantExp}
+                        onChange={(e) => setApplicantExp(e.target.value)}
+                        placeholder="e.g. 2 Years"
+                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        Current Role / Title
+                      </label>
+                      <input
+                        type="text"
+                        value={applicantRole}
+                        onChange={(e) => setApplicantRole(e.target.value)}
+                        placeholder="e.g. Developer / Manager"
+                        className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Resume Link (Google Drive / LinkedIn / Portfolio)
+                    </label>
+                    <input
+                      type="url"
+                      value={applicantResume}
+                      onChange={(e) => setApplicantResume(e.target.value)}
+                      placeholder="https://drive.google.com/... or https://linkedin.com/in/..."
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">
+                      Cover Note / Pitch
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={applicantNote}
+                      onChange={(e) => setApplicantNote(e.target.value)}
+                      placeholder="Briefly describe why you are a great fit..."
+                      className="w-full p-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 focus:outline-hidden focus:border-emerald-500"
+                    />
+                  </div>
+
+                  <div className="pt-3 flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setApplyModalOpen(false)}
+                      className="px-4 py-2 text-slate-600 dark:text-slate-400 font-bold"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={applySubmitting}
+                      className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-xl font-bold shadow-xs cursor-pointer active:scale-95"
+                    >
+                      {applySubmitting ? "Submitting Application..." : "Submit Application 🚀"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <AuthModal
         isOpen={authModalOpen}

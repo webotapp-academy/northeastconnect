@@ -22,6 +22,11 @@ export default function SingleJobDetailPage() {
   const [applySuccess, setApplySuccess] = useState(false);
   const [applyError, setApplyError] = useState("");
 
+  // Employer candidates viewer
+  const [candidateModalOpen, setCandidateModalOpen] = useState(false);
+  const [candidates, setCandidates] = useState<any[]>([]);
+  const [loadingCandidates, setLoadingCandidates] = useState(false);
+
   // Application form fields
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -70,6 +75,40 @@ export default function SingleJobDetailPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function fetchCandidates() {
+    try {
+      setLoadingCandidates(true);
+      soundFX.playPop();
+      const res = await fetch(`/api/jobs/${id}/applications`);
+      const data = await res.json();
+      if (data.status === "success") {
+        setCandidates(data.applications || []);
+        setCandidateModalOpen(true);
+      }
+    } catch (err) {
+      console.error("Failed to load candidate applications:", err);
+    } finally {
+      setLoadingCandidates(false);
+    }
+  }
+
+  async function updateCandidateStatus(appId: number, newStatus: string) {
+    try {
+      soundFX.playPop();
+      const res = await fetch(`/api/jobs/${id}/applications`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ applicationId: appId, status: newStatus }),
+      });
+      const data = await res.json();
+      if (data.status === "success") {
+        setCandidates((prev) =>
+          prev.map((c) => (c.id === appId ? { ...c, status: newStatus } : c))
+        );
+      }
+    } catch {}
   }
 
   async function handleApplySubmit(e: React.FormEvent) {
@@ -159,12 +198,50 @@ export default function SingleJobDetailPage() {
     );
   }
 
+  const isOwnerOrAdmin =
+    currentUser &&
+    (currentUser.id === job.userId ||
+      (currentUser.role || "").toLowerCase() === "admin" ||
+      (currentUser.role || "").toLowerCase() === "superadmin");
+
   const skills = job.skillsRequired
     ? job.skillsRequired.split(",").map((s: string) => s.trim()).filter(Boolean)
     : [];
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors pb-16">
+      {/* Employer Banner if logged in user is owner or admin */}
+      {isOwnerOrAdmin && (
+        <div className="bg-emerald-600 text-white py-3 px-4 shadow-md">
+          <div className="container mx-auto max-w-5xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-base">👑</span>
+              <span className="font-extrabold">
+                Employer Control: You posted this job vacancy ({job.applicationsCount || 0} applications received).
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={fetchCandidates}
+                disabled={loadingCandidates}
+                className="px-3.5 py-1.5 bg-white text-emerald-800 hover:bg-emerald-50 font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
+              >
+                {loadingCandidates ? "Loading..." : `👥 View ${job.applicationsCount || 0} Candidates`}
+              </button>
+
+              <Link
+                href="/jobs/my-jobs"
+                className="px-3 py-1.5 bg-emerald-800/80 hover:bg-emerald-900 text-white font-bold rounded-xl transition"
+              >
+                Dashboard &rarr;
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header Banner */}
       <div className="bg-linear-to-b from-emerald-900/15 via-emerald-500/5 to-transparent border-b border-slate-200 dark:border-slate-800 pt-6 sm:pt-10 pb-6 sm:pb-8">
         <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
@@ -432,17 +509,27 @@ export default function SingleJobDetailPage() {
                 )}
               </div>
 
-              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
                 <button
                   type="button"
                   onClick={() => {
                     soundFX.playPop();
                     setApplyModalOpen(true);
                   }}
-                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition text-center block shadow-xs active:scale-95"
+                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition text-center block shadow-xs active:scale-95 cursor-pointer"
                 >
-                  ⚡ Apply Now
+                  ⚡ Apply for Position
                 </button>
+
+                {isOwnerOrAdmin && (
+                  <button
+                    type="button"
+                    onClick={fetchCandidates}
+                    className="w-full py-2 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold transition cursor-pointer"
+                  >
+                    👥 View {job.applicationsCount || 0} Candidates
+                  </button>
+                )}
               </div>
             </div>
 
@@ -629,6 +716,98 @@ export default function SingleJobDetailPage() {
                 </form>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Candidate Applications Review Modal for Employer */}
+      {candidateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-2xl relative max-h-[85vh] flex flex-col">
+            <button
+              type="button"
+              onClick={() => setCandidateModalOpen(false)}
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-bold p-1"
+            >
+              ✕
+            </button>
+
+            <div className="mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                Employer Review Panel
+              </span>
+              <h2 className="text-lg font-black text-slate-900 dark:text-white">
+                Applied Candidates ({candidates.length})
+              </h2>
+              <p className="text-xs text-slate-500">for {job.title}</p>
+            </div>
+
+            <div className="overflow-y-auto space-y-3 flex-1 pr-1">
+              {candidates.length === 0 ? (
+                <div className="py-12 text-center text-slate-400 text-xs">
+                  No candidate applications received yet for this vacancy.
+                </div>
+              ) : (
+                candidates.map((app: any) => (
+                  <div
+                    key={app.id}
+                    className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl text-xs space-y-2.5"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="font-extrabold text-sm text-slate-900 dark:text-slate-100">
+                          {app.fullName}
+                        </h4>
+                        {app.currentRole && (
+                          <p className="text-slate-500 text-[11px] font-medium">{app.currentRole}</p>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <select
+                          value={app.status}
+                          onChange={(e) => updateCandidateStatus(app.id, e.target.value)}
+                          className="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[10px] font-bold text-slate-700 dark:text-slate-300"
+                        >
+                          <option value="Submitted">Submitted</option>
+                          <option value="Reviewed">Reviewed</option>
+                          <option value="Shortlisted">Shortlisted ⭐</option>
+                          <option value="Rejected">Rejected</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center flex-wrap gap-3 text-slate-600 dark:text-slate-300 text-[11px]">
+                      <span>📧 <a href={`mailto:${app.email}`} className="text-emerald-600 hover:underline font-bold">{app.email}</a></span>
+                      <span>📞 <a href={`tel:${app.phone}`} className="text-emerald-600 hover:underline font-bold">{app.phone}</a></span>
+                      <span>💬 <a href={`https://wa.me/${app.phone.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline font-bold">WhatsApp</a></span>
+                      {app.experience && <span>⏳ {app.experience}</span>}
+                    </div>
+
+                    {app.resumeUrl && (
+                      <div>
+                        <a
+                          href={app.resumeUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline font-bold text-[11px]"
+                        >
+                          <span>📄 Open Resume / Portfolio Document</span>
+                          <span>&rarr;</span>
+                        </a>
+                      </div>
+                    )}
+
+                    {app.coverNote && (
+                      <div className="bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-[11px] leading-relaxed">
+                        <span className="font-bold block text-slate-400 text-[10px] uppercase">Cover Pitch:</span>
+                        {app.coverNote}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -122,6 +122,7 @@ export async function GET(req: NextRequest) {
 
     // 2. BUSINESSES (DIRECTORY) TAB
     if (type === "directory" || type === "business") {
+      const businessSort = (searchParams.get("businessSort") || "views").toLowerCase();
       const where: any = {
         status: "Active",
       };
@@ -146,8 +147,57 @@ export async function GET(req: NextRequest) {
         ];
       }
 
-      if (category && category !== "All") {
-        where.category = { contains: category, mode: "insensitive" };
+      if (category && category !== "All" && !category.startsWith("All")) {
+        if (category.toLowerCase().includes("hotel") || category.toLowerCase().includes("resort")) {
+          where.OR = [
+            ...(where.OR || []),
+            { category: { contains: "Hotel", mode: "insensitive" } },
+            { category: { contains: "Resort", mode: "insensitive" } },
+            { category: { contains: "Homestay", mode: "insensitive" } },
+          ];
+        } else if (category.toLowerCase().includes("restaurant") || category.toLowerCase().includes("cafe")) {
+          where.OR = [
+            ...(where.OR || []),
+            { category: { contains: "Restaurant", mode: "insensitive" } },
+            { category: { contains: "Cafe", mode: "insensitive" } },
+            { category: { contains: "Bar", mode: "insensitive" } },
+          ];
+        } else if (category.toLowerCase().includes("tour") || category.toLowerCase().includes("travel")) {
+          where.OR = [
+            ...(where.OR || []),
+            { category: { contains: "Tour", mode: "insensitive" } },
+            { category: { contains: "Travel", mode: "insensitive" } },
+          ];
+        } else if (category.toLowerCase().includes("beauty") || category.toLowerCase().includes("wellness")) {
+          where.OR = [
+            ...(where.OR || []),
+            { category: { contains: "Beauty", mode: "insensitive" } },
+            { category: { contains: "Ayurved", mode: "insensitive" } },
+            { category: { contains: "Yoga", mode: "insensitive" } },
+          ];
+        } else if (category.toLowerCase().includes("health") || category.toLowerCase().includes("rehab")) {
+          where.OR = [
+            ...(where.OR || []),
+            { category: { contains: "Rehabilit", mode: "insensitive" } },
+            { category: { contains: "Hospital", mode: "insensitive" } },
+            { category: { contains: "Clinic", mode: "insensitive" } },
+          ];
+        } else {
+          where.category = { contains: category, mode: "insensitive" };
+        }
+      }
+
+      if (businessSort === "claimed") {
+        where.isClaimed = true;
+      }
+
+      let orderBy: any[] = [{ viewsCount: "desc" }, { rating: "desc" }, { createdAt: "desc" }];
+      if (businessSort === "rating") {
+        orderBy = [{ rating: "desc" }, { reviewsCount: "desc" }, { createdAt: "desc" }];
+      } else if (businessSort === "recent") {
+        orderBy = [{ createdAt: "desc" }];
+      } else if (businessSort === "claimed") {
+        orderBy = [{ viewsCount: "desc" }, { rating: "desc" }];
       }
 
       const [businesses, total] = await Promise.all([
@@ -164,11 +214,12 @@ export async function GET(req: NextRequest) {
             website: true,
             rating: true,
             reviewsCount: true,
+            viewsCount: true,
             imageUrls: true,
             isClaimed: true,
             createdAt: true,
           },
-          orderBy: [{ rating: "desc" }, { createdAt: "desc" }],
+          orderBy,
           skip,
           take: limit,
         }),

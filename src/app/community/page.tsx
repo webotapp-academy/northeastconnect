@@ -8,13 +8,25 @@ import { soundFX } from "@/lib/soundEffects";
 
 const DIRECTORY_CATEGORIES = [
   "All Categories",
-  "Hotels & Homestays",
-  "Tour Operators & Guides",
-  "Cafes & Restaurants",
-  "Handicrafts & Silk",
-  "Transport & Rentals",
-  "Hospitals & Clinics",
-  "Local Stores & Services",
+  "Hotels & Resorts",
+  "Restaurants & Cafes",
+  "Travel & Tour Operators",
+  "Beauty & Wellness",
+  "Coaching & Education",
+  "Health & Rehabilitation",
+  "Gym & Fitness",
+];
+
+const NORTHEAST_STATES = [
+  "All States",
+  "Assam",
+  "Meghalaya",
+  "Arunachal Pradesh",
+  "Nagaland",
+  "Manipur",
+  "Mizoram",
+  "Tripura",
+  "Sikkim",
 ];
 
 const MARKETPLACE_CATEGORIES = [
@@ -31,6 +43,8 @@ const MARKETPLACE_CATEGORIES = [
 export default function CommunityDiscoveryPage() {
   const [activeTab, setActiveTab] = useState<"users" | "posts" | "addas" | "directory" | "marketplace">("users");
   const [userSortTab, setUserSortTab] = useState<"recent" | "active">("recent");
+  const [businessSortTab, setBusinessSortTab] = useState<"views" | "rating" | "recent" | "claimed">("views");
+  const [selectedState, setSelectedState] = useState("All States");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -89,7 +103,7 @@ export default function CommunityDiscoveryPage() {
   useEffect(() => {
     setPage(1);
     fetchData(1, false);
-  }, [activeTab, selectedCategory, userSortTab]);
+  }, [activeTab, selectedCategory, userSortTab, businessSortTab, selectedState]);
 
   async function fetchSession() {
     try {
@@ -113,6 +127,8 @@ export default function CommunityDiscoveryPage() {
         type: activeTab,
         q: searchQuery,
         userSort: userSortTab,
+        businessSort: businessSortTab,
+        state: selectedState,
         category: selectedCategory.startsWith("All") ? "All" : selectedCategory,
         page: pageNum.toString(),
         limit: "16",
@@ -254,32 +270,62 @@ export default function CommunityDiscoveryPage() {
                 </button>
               </div>
 
-              {/* Category Filter Chips (Only for Businesses & Marketplace) */}
+              {/* Category & State Filter Bar for Businesses */}
               {activeTab === "directory" && (
-                <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0 mr-0.5">
-                    Category:
-                  </span>
-                  {DIRECTORY_CATEGORIES.map((cat) => {
-                    const isSelected = selectedCategory === cat;
-                    return (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => {
-                          soundFX.playPop();
-                          setSelectedCategory(cat);
-                        }}
-                        className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold transition shrink-0 cursor-pointer ${
-                          isSelected
-                            ? "bg-emerald-600 text-white shadow-xs"
-                            : "bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    );
-                  })}
+                <div className="space-y-2">
+                  {/* State / Region Filter Pills */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0 mr-0.5">
+                      State:
+                    </span>
+                    {NORTHEAST_STATES.map((st) => {
+                      const isSelected = selectedState === st;
+                      return (
+                        <button
+                          key={st}
+                          type="button"
+                          onClick={() => {
+                            soundFX.playPop();
+                            setSelectedState(st);
+                          }}
+                          className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold transition shrink-0 cursor-pointer ${
+                            isSelected
+                              ? "bg-emerald-600 text-white shadow-xs"
+                              : "bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-500/50"
+                          }`}
+                        >
+                          {st}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Category Filter Chips */}
+                  <div className="flex items-center gap-1.5 overflow-x-auto py-1 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0 mr-0.5">
+                      Category:
+                    </span>
+                    {DIRECTORY_CATEGORIES.map((cat) => {
+                      const isSelected = selectedCategory === cat;
+                      return (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => {
+                            soundFX.playPop();
+                            setSelectedCategory(cat);
+                          }}
+                          className={`px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold transition shrink-0 cursor-pointer ${
+                            isSelected
+                              ? "bg-emerald-600 text-white shadow-xs"
+                              : "bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-emerald-500/50"
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 
@@ -543,6 +589,60 @@ export default function CommunityDiscoveryPage() {
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
                 </svg>
                 <span>Most Active (Highest Points)</span>
+              </button>
+            </div>
+          )}
+
+          {/* Sub-Tabs for Businesses: Most Viewed vs Top Rated vs Recently Added vs Verified */}
+          {activeTab === "directory" && (
+            <div className="flex items-center gap-1.5 sm:gap-2 mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-800/80 animate-in fade-in duration-150 overflow-x-auto pb-1 no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <button
+                type="button"
+                onClick={() => setBusinessSortTab("views")}
+                className={`px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer select-none active:scale-95 shrink-0 ${
+                  businessSortTab === "views"
+                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                    : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700/60"
+                }`}
+              >
+                <span>🔥</span>
+                <span>Most Viewed</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setBusinessSortTab("rating")}
+                className={`px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer select-none active:scale-95 shrink-0 ${
+                  businessSortTab === "rating"
+                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                    : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700/60"
+                }`}
+              >
+                <span>⭐</span>
+                <span>Top Rated</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setBusinessSortTab("recent")}
+                className={`px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer select-none active:scale-95 shrink-0 ${
+                  businessSortTab === "recent"
+                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                    : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700/60"
+                }`}
+              >
+                <span>✨</span>
+                <span>Recently Added</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setBusinessSortTab("claimed")}
+                className={`px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer select-none active:scale-95 shrink-0 ${
+                  businessSortTab === "claimed"
+                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                    : "bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700/60"
+                }`}
+              >
+                <span>✓</span>
+                <span>Verified / Claimed</span>
               </button>
             </div>
           )}
@@ -825,24 +925,38 @@ export default function CommunityDiscoveryPage() {
                               )}
                             </div>
 
-                            <span className="inline-block px-2 py-0.2 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded-full text-[9px] sm:text-[10px] font-extrabold mb-1">
-                              {biz.category || "General"}
-                            </span>
+                            <div className="flex items-center flex-wrap gap-1.5 mb-1.5">
+                              <span className="inline-block px-2 py-0.2 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded-full text-[9px] sm:text-[10px] font-extrabold">
+                                {biz.category || "General"}
+                              </span>
+                              {biz.isClaimed && (
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 rounded-full text-[9px] font-extrabold">
+                                  ✓ Verified
+                                </span>
+                              )}
+                            </div>
 
                             <div className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
                               <span>📍</span>
                               <span className="truncate">{biz.district ? `${biz.district}, ` : ""}{biz.state}</span>
                             </div>
 
-                            {biz.rating && (
-                              <div className="flex items-center gap-1 text-[11px] font-bold text-amber-500 mt-0.5">
-                                <span>⭐</span>
-                                <span>{biz.rating}</span>
-                                {biz.reviewsCount && (
-                                  <span className="text-slate-400 font-normal">({biz.reviewsCount})</span>
-                                )}
+                            <div className="flex items-center gap-2.5 mt-1 text-[11px]">
+                              <div className="flex items-center gap-1 font-bold text-slate-600 dark:text-slate-300">
+                                <span>🔥</span>
+                                <span>{biz.viewsCount ? biz.viewsCount.toLocaleString() : 0} views</span>
                               </div>
-                            )}
+
+                              {biz.rating && (
+                                <div className="flex items-center gap-0.5 font-bold text-amber-500">
+                                  <span>⭐</span>
+                                  <span>{biz.rating}</span>
+                                  {biz.reviewsCount && (
+                                    <span className="text-slate-400 font-normal text-[10px]">({biz.reviewsCount})</span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>

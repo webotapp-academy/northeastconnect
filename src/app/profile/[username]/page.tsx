@@ -24,6 +24,8 @@ export default function UserProfilePage() {
   });
   const [friendsLoading, setFriendsLoading] = useState(false);
   const [friendActionLoadingId, setFriendActionLoadingId] = useState<number | null>(null);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [coverUploadError, setCoverUploadError] = useState("");
 
   useEffect(() => {
     if (username) {
@@ -55,6 +57,50 @@ export default function UserProfilePage() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleCoverPhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingCover(true);
+      setCoverUploadError("");
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "profiles");
+
+      const uploadRes = await fetch("/api/upload?folder=profiles", {
+        method: "POST",
+        body: formData,
+      });
+
+      const uploadData = await uploadRes.json();
+      if (uploadData.status !== "success" || !uploadData.urls?.[0]) {
+        throw new Error(uploadData.message || "Failed to upload image");
+      }
+
+      const newCoverUrl = uploadData.urls[0];
+
+      // Save to profile
+      const updateRes = await fetch("/api/profile/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ coverImageUrl: newCoverUrl }),
+      });
+
+      const updateData = await updateRes.json();
+      if (updateData.status === "success") {
+        setProfile((prev: any) => ({ ...prev, coverImageUrl: newCoverUrl }));
+      } else {
+        throw new Error(updateData.message || "Failed to update profile cover");
+      }
+    } catch (err: any) {
+      setCoverUploadError(err.message || "Error uploading cover photo");
+    } finally {
+      setUploadingCover(false);
     }
   }
 
@@ -118,9 +164,9 @@ export default function UserProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 text-gray-900 flex items-center justify-center pt-24">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm text-gray-500 font-medium">Loading explorer profile...</p>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm font-medium text-slate-500">Loading profile...</p>
         </div>
       </div>
     );
@@ -128,12 +174,12 @@ export default function UserProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-slate-50 text-gray-900 flex items-center justify-center p-4 pt-24">
-        <div className="text-center bg-white p-8 rounded-3xl border border-gray-200 shadow-sm max-w-md">
-          <div className="text-4xl mb-3">🔍</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">User Not Found</h2>
-          <p className="text-xs text-gray-500 mb-6">
-            The explorer @{username} does not exist or may have changed their username.
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex items-center justify-center pt-24">
+        <div className="text-center max-w-sm p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700">
+          <span className="text-4xl mb-3 block">👤</span>
+          <h2 className="text-lg font-bold mb-2">User Not Found</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">
+            The profile you are looking for does not exist or has been removed.
           </p>
           <Link
             href="/community"
@@ -155,22 +201,129 @@ export default function UserProfilePage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 pt-16 sm:pt-20 pb-16 transition-colors font-sans">
       {/* Cover Banner */}
-      <div className="relative h-48 sm:h-64 md:h-80 w-full overflow-hidden bg-gradient-to-r from-emerald-900 via-slate-800 to-indigo-950 border-b border-slate-200 dark:border-slate-800 shadow-inner">
+      <div className="relative h-56 sm:h-72 md:h-88 w-full overflow-hidden bg-slate-950 border-b border-slate-200/80 dark:border-slate-800 shadow-md group">
         {profile.coverImageUrl ? (
-          <img
-            src={profile.coverImageUrl}
-            alt="Profile Cover"
-            className="w-full h-full object-cover opacity-70"
-          />
+          <>
+            <img
+              src={profile.coverImageUrl}
+              alt="Profile Cover"
+              className="w-full h-full object-cover"
+            />
+            {/* Subtle atmospheric vignette so badges and avatar stand out crisply */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-black/30 pointer-events-none" />
+          </>
         ) : (
-          <div className="w-full h-full flex items-center justify-center relative">
-            <div className="absolute inset-0 bg-gradient-to-tr from-emerald-900/60 via-slate-900/60 to-indigo-900/60" />
-            <div className="relative z-10 text-white/20 dark:text-white/10 font-black text-5xl sm:text-7xl md:text-8xl select-none tracking-widest uppercase">
-              Northeast
+          /* High-Aesthetic Default Northeast Himalayan Landscape Artwork */
+          <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-[#06201b] via-[#091e36] to-[#1a103c]">
+            {/* Glowing Aurora Orbs */}
+            <div className="absolute -top-16 -left-16 w-96 h-96 bg-emerald-500/25 rounded-full blur-3xl pointer-events-none animate-pulse duration-1000" />
+            <div className="absolute top-1/4 right-10 w-80 h-80 bg-teal-500/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-10 right-1/4 w-96 h-96 bg-indigo-500/25 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-8 left-1/3 w-64 h-64 bg-amber-400/10 rounded-full blur-2xl pointer-events-none" />
+
+            {/* Delicate Starlight & Sky Grid */}
+            <div
+              className="absolute inset-0 opacity-15"
+              style={{
+                backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.4) 1px, transparent 0)`,
+                backgroundSize: "28px 28px",
+              }}
+            />
+
+            {/* Mountain Skyline Silhouette Vector */}
+            <svg
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              preserveAspectRatio="none"
+              viewBox="0 0 1440 360"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              {/* Distant Mountain Peak Layer */}
+              <path
+                d="M0 240 L160 160 L320 230 L480 130 L640 220 L800 110 L980 210 L1140 140 L1300 220 L1440 170 L1440 360 L0 360 Z"
+                fill="url(#distantMountainGrad)"
+                opacity="0.35"
+              />
+              {/* Mid-range Ridge Layer */}
+              <path
+                d="M0 260 L200 190 L380 250 L560 170 L740 240 L920 180 L1100 230 L1280 190 L1440 240 L1440 360 L0 360 Z"
+                fill="url(#midMountainGrad)"
+                opacity="0.55"
+              />
+              {/* Foreground Pine & Hill Contours */}
+              <path
+                d="M0 290 Q120 260 260 280 T540 270 T820 285 T1120 265 T1440 280 L1440 360 L0 360 Z"
+                fill="url(#foreMountainGrad)"
+                opacity="0.85"
+              />
+
+              <defs>
+                <linearGradient id="distantMountainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#34d399" stopOpacity="0.6" />
+                  <stop offset="100%" stopColor="#064e3b" stopOpacity="0.9" />
+                </linearGradient>
+                <linearGradient id="midMountainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#059669" stopOpacity="0.7" />
+                  <stop offset="100%" stopColor="#022c22" stopOpacity="0.95" />
+                </linearGradient>
+                <linearGradient id="foreMountainGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#047857" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="#06121e" stopOpacity="1" />
+                </linearGradient>
+              </defs>
+            </svg>
+
+            {/* Glowing Moon / Crest Silhouette */}
+            <div className="absolute top-6 left-8 sm:top-10 sm:left-14 flex items-center gap-3">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-lg sm:text-xl shadow-lg shadow-emerald-950/40">
+                🏔️
+              </div>
+              <div>
+                <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-emerald-400 drop-shadow-xs block">
+                  Eastern Himalayas
+                </span>
+                <span className="text-xs sm:text-sm font-extrabold text-white/90 drop-shadow-xs tracking-tight">
+                  North East Explorer
+                </span>
+              </div>
             </div>
+
+            {/* Atmospheric subtle location pill if present */}
+            {(profile.state || profile.city) && (
+              <div className="hidden sm:flex items-center gap-1.5 absolute top-10 right-14 px-3 py-1 bg-black/40 backdrop-blur-md border border-white/15 rounded-full text-[11px] font-bold text-slate-200">
+                <span className="text-emerald-400">📍</span>
+                <span>{profile.city ? `${profile.city}, ` : ""}{profile.state}</span>
+              </div>
+            )}
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-50 dark:from-[#090d16] via-transparent to-transparent opacity-80" />
+
+        {/* Owner Quick Upload / Change Cover Action */}
+        {isOwnProfile && (
+          <div className="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 z-20">
+            <label className="px-3 sm:px-4 py-1.5 sm:py-2 bg-black/60 hover:bg-black/80 backdrop-blur-md text-white text-xs font-bold rounded-2xl border border-white/20 shadow-lg cursor-pointer transition flex items-center gap-1.5 active:scale-95">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleCoverPhotoUpload}
+                disabled={uploadingCover}
+                className="hidden"
+              />
+              <span>{uploadingCover ? "⏳" : "📷"}</span>
+              <span>{uploadingCover ? "Uploading..." : profile.coverImageUrl ? "Change Cover" : "Add Cover Photo"}</span>
+            </label>
+          </div>
+        )}
+
+        {/* Error toast if upload fails */}
+        {coverUploadError && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-rose-600/90 backdrop-blur-md text-white text-xs font-bold rounded-xl shadow-xl z-20">
+            {coverUploadError}
+          </div>
+        )}
+
+        {/* Clean bottom fade into card */}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-50/90 dark:from-[#090d16]/90 to-transparent pointer-events-none" />
       </div>
 
       {/* Main Container */}

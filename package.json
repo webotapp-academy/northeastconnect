@@ -1,6 +1,6 @@
 {
   "name": "northeastconnect",
-  "version": "0.8.9",
+  "version": "0.9.0",
   "private": true,
   "scripts": {
     "dev": "prisma generate && next dev -p 3012",

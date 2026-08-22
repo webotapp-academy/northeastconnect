@@ -234,20 +234,20 @@ export default function Navbar() {
                             setProfileDropdownOpen(false);
                             setInviteModalOpen(true);
                           }}
-                          className="w-full text-left flex items-center justify-between px-3.5 py-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition cursor-pointer"
+                          className="w-full text-left flex items-center justify-between px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition cursor-pointer font-medium"
                         >
                           <span className="flex items-center gap-2">
                             <span>✉️</span>
                             <span>Invite Your Friends</span>
                           </span>
-                          <span className="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded-full font-mono">+50 XP</span>
+                          <span className="text-[10px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-full font-mono">+50 XP</span>
                         </button>
 
                         {/* Create Community Action */}
                         <Link
                           href="/create-community"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
+                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
                         >
                           <span>🌱</span>
                           <span>Create Your Community</span>
@@ -256,7 +256,7 @@ export default function Navbar() {
                         <Link
                           href="/profile/my-businesses"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
+                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
                         >
                           <span>🏢</span>
                           <span>My Businesses & Leads</span>
@@ -264,7 +264,7 @@ export default function Navbar() {
                         <Link
                           href="/jobs/post"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/60 transition"
+                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
                         >
                           <span>➕</span>
                           <span>Post a Job Opening</span>
@@ -272,7 +272,7 @@ export default function Navbar() {
                         <Link
                           href="/jobs/my-jobs"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
+                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
                         >
                           <span>👥</span>
                           <span>Employer Hub (View Candidates)</span>
@@ -280,7 +280,7 @@ export default function Navbar() {
                         <Link
                           href="/jobs"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
+                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
                         >
                           <span>💼</span>
                           <span>Browse & Apply for Jobs</span>
@@ -288,7 +288,7 @@ export default function Navbar() {
                         <Link
                           href="/marketplace/my-ads"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
+                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
                         >
                           <span>🛍️</span>
                           <span>My Marketplace Ads & Leads</span>
@@ -296,7 +296,7 @@ export default function Navbar() {
                         <Link
                           href="/profile/edit"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
+                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
                         >
                           <span>⚙️</span>
                           <span>Account Settings</span>
@@ -304,7 +304,7 @@ export default function Navbar() {
                         <Link
                           href="/leaderboard"
                           onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
+                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition font-medium"
                         >
                           <span>🏆</span>
                           <span>Explorer Leaderboard</span>
@@ -481,19 +481,19 @@ export default function Navbar() {
                       setMobileOpen(false);
                       setInviteModalOpen(true);
                     }}
-                    className="w-full py-2 px-3 text-emerald-600 dark:text-emerald-400 font-bold rounded-xl text-xs flex items-center justify-between hover:bg-emerald-50 dark:hover:bg-emerald-950/50"
+                    className="w-full py-2 px-3 text-slate-700 dark:text-slate-200 font-medium rounded-xl text-xs flex items-center justify-between hover:bg-slate-100 dark:hover:bg-slate-800"
                   >
                     <span className="flex items-center gap-2">
                       <span>✉️</span>
                       <span>Invite Friends</span>
                     </span>
-                    <span className="text-[10px] bg-emerald-500/20 px-1.5 py-0.5 rounded-full font-mono">+50 XP</span>
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-full font-mono">+50 XP</span>
                   </button>
 
                   <Link
                     href={`/profile/${currentUser.username}`}
                     onClick={() => setMobileOpen(false)}
-                    className="py-2 px-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-medium flex items-center justify-between"
+                    className="py-2 px-3 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-medium flex items-center justify-between"
                   >
                     <span>Profile & Wall</span>
                     <span className="text-[10px] text-slate-500">View</span>
@@ -501,7 +501,7 @@ export default function Navbar() {
                   <Link
                     href="/jobs/post"
                     onClick={() => setMobileOpen(false)}
-                    className="py-2 px-3 text-emerald-600 dark:text-emerald-400 font-bold hover:bg-emerald-50 dark:hover:bg-emerald-950/50 rounded-xl text-xs flex items-center gap-2"
+                    className="py-2 px-3 text-slate-700 dark:text-slate-200 font-medium hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs flex items-center gap-2"
                   >
                     <span>➕</span>
                     <span>Post a Job Opening</span>

@@ -761,74 +761,88 @@ export default function CommunityDiscoveryPage() {
           </div>
         ) : (
           <>
-            {/* 1. USERS / PEOPLE GRID */}
+            {/* 1. USERS / PEOPLE GRID (Modern Profile Cards) */}
             {activeTab === "users" && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-5">
                 {results.map((user) => {
                   const isSent = friendRequestsSent[user.id] || user.hasSentRequest;
+                  const displayName = user.fullName || user.username;
+
                   return (
                     <div
                       key={user.id}
-                      className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 flex flex-col justify-between hover:border-emerald-500/50 hover:shadow-md transition group"
+                      className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl p-4 sm:p-5 flex flex-col justify-between hover:border-emerald-500/40 hover:shadow-lg hover:-translate-y-0.5 transition-all group relative overflow-hidden"
                     >
-                      <div>
-                        {/* Top: Avatar, Name, Rank */}
-                        <div className="flex items-start gap-3 mb-2.5">
-                          <Link href={`/profile/${user.username}`} className="shrink-0">
-                            <img
-                              src={
-                                user.profileImageUrl ||
-                                `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`
-                              }
-                              alt={user.username}
-                              className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl object-cover border border-emerald-500 group-hover:scale-105 transition shrink-0"
-                            />
-                          </Link>
+                      {/* Decorative subtle background header glow */}
+                      <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-emerald-500/10 via-emerald-500/5 to-transparent pointer-events-none" />
 
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between gap-1">
-                              <Link
-                                href={`/profile/${user.username}`}
-                                className="font-extrabold text-xs sm:text-sm text-slate-900 dark:text-slate-100 hover:underline truncate block"
-                              >
-                                {user.fullName || user.username}
-                              </Link>
-                              <RankBadge
-                                rankTier={user.rankTier}
-                                xpPoints={user.xpPoints}
-                                size="sm"
-                                showLevel={false}
-                              />
-                            </div>
-                            <p className="text-[11px] text-slate-500 font-mono">@{user.username}</p>
-                            <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                              <span>📍</span>
-                              <span className="truncate">{user.city ? `${user.city}, ` : ""}{user.state || "Northeast India"}</span>
-                            </div>
-                          </div>
+                      <div className="relative z-10 flex flex-col items-center text-center">
+                        {/* Centered Avatar with Ring */}
+                        <Link href={`/profile/${user.username}`} className="relative mb-3 group/avatar">
+                          <img
+                            src={
+                              user.profileImageUrl ||
+                              `https://api.dicebear.com/7.x/bottts/svg?seed=${user.username}`
+                            }
+                            alt={user.username}
+                            className="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl object-cover border-2 border-white dark:border-slate-800 shadow-md group-hover/avatar:scale-105 transition-transform"
+                          />
+                          {user.isVerified && (
+                            <span className="absolute -bottom-1 -right-1 bg-emerald-500 text-white rounded-full p-0.5 text-[10px] shadow-xs" title="Verified Member">
+                              ✓
+                            </span>
+                          )}
+                        </Link>
+
+                        {/* Name & Username */}
+                        <Link
+                          href={`/profile/${user.username}`}
+                          className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100 hover:text-emerald-600 dark:hover:text-emerald-400 transition truncate max-w-full block"
+                          title={displayName}
+                        >
+                          {displayName}
+                        </Link>
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500 font-mono mt-0.5 truncate max-w-full">
+                          @{user.username}
+                        </p>
+
+                        {/* Rank Badge & XP */}
+                        <div className="my-2.5 flex items-center justify-center">
+                          <RankBadge
+                            rankTier={user.rankTier}
+                            xpPoints={user.xpPoints}
+                            size="sm"
+                            showLevel={false}
+                          />
                         </div>
 
-                        {/* Bio */}
+                        {/* Location */}
+                        <div className="flex items-center justify-center gap-1 text-xs text-slate-500 dark:text-slate-400 truncate max-w-full">
+                          <span className="text-[11px]">📍</span>
+                          <span className="truncate">{user.city ? `${user.city}, ` : ""}{user.state || "Northeast India"}</span>
+                        </div>
+
+                        {/* Bio snippet if available */}
                         {user.bio && (
-                          <p className="text-[11px] sm:text-xs text-slate-600 dark:text-slate-400 line-clamp-2 italic mb-2">
+                          <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 italic mt-2 text-center px-1">
                             "{user.bio}"
                           </p>
                         )}
                       </div>
 
-                      {/* Bottom Action Bar */}
-                      <div className="pt-2 sm:pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                      {/* Bottom Action Buttons */}
+                      <div className="pt-3.5 mt-3.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center gap-2 relative z-10">
                         {user.isMe ? (
                           <Link
                             href="/profile/edit"
-                            className="flex-1 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl text-center"
+                            className="flex-1 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-200 text-xs font-bold rounded-xl text-center transition"
                           >
                             Edit Profile
                           </Link>
                         ) : user.isFriend ? (
                           <Link
                             href={`/profile/${user.username}`}
-                            className="flex-1 py-1.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800 text-xs font-bold rounded-xl text-center"
+                            className="flex-1 py-2 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-xs font-bold rounded-xl text-center transition"
                           >
                             Connected ✓
                           </Link>
@@ -836,7 +850,7 @@ export default function CommunityDiscoveryPage() {
                           <button
                             type="button"
                             disabled
-                            className="flex-1 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-bold rounded-xl text-center"
+                            className="flex-1 py-2 bg-slate-100 dark:bg-slate-800/60 text-slate-400 text-xs font-bold rounded-xl text-center"
                           >
                             Requested
                           </button>
@@ -844,7 +858,7 @@ export default function CommunityDiscoveryPage() {
                           <button
                             type="button"
                             onClick={() => handleSendFriendRequest(user.id)}
-                            className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95"
+                            className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
                           >
                             + Connect
                           </button>
@@ -852,7 +866,7 @@ export default function CommunityDiscoveryPage() {
 
                         <Link
                           href={`/profile/${user.username}`}
-                          className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl"
+                          className="px-3.5 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl text-center transition"
                         >
                           View
                         </Link>

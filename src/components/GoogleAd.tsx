@@ -106,22 +106,27 @@ export default function GoogleAd({
 
         {/* Native Spotlight when AdSense is unfilled / local */}
         {adStatus === "unfilled" && (
-          <div className="py-3.5 px-4 bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 text-left animate-in fade-in duration-200">
-            <div>
-              <div className="flex items-center gap-1.5 text-xs font-black text-slate-900 dark:text-slate-100">
-                <span>🌿</span>
-                <span>Promote Your Local Business or Homestay</span>
+          <div className="py-4 px-4 sm:px-5 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-teal-500/10 dark:from-emerald-950/60 dark:via-slate-900 dark:to-teal-950/40 border border-emerald-500/20 dark:border-emerald-700/40 rounded-2xl flex flex-col gap-3 text-left animate-in fade-in duration-200">
+            <div className="flex items-start gap-2.5">
+              <span className="text-xl shrink-0 mt-0.5">🌿</span>
+              <div className="min-w-0 flex-1">
+                <h4 className="text-sm font-extrabold text-slate-900 dark:text-slate-100 tracking-tight leading-snug">
+                  Promote Your Business
+                </h4>
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                  Reach thousands of active explorers, visitors, and buyers across all 8 Northeast states.
+                </p>
               </div>
-              <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
-                Reach thousands of active explorers and buyers across the 8 Northeast states.
-              </p>
             </div>
-            <Link
-              href="/directory"
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-full shadow-xs shrink-0 transition"
-            >
-              Promote Your Business &rarr;
-            </Link>
+
+            <div className="pt-1 flex items-center justify-end">
+              <Link
+                href="/contact"
+                className="w-full sm:w-auto px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl shadow-xs text-center transition active:scale-95 cursor-pointer"
+              >
+                Promote Your Business &rarr;
+              </Link>
+            </div>
           </div>
         )}
       </div>

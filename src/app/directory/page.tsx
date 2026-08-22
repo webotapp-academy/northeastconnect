@@ -415,9 +415,7 @@ export default async function DirectoryPage({ searchParams }: PageProps) {
           {/* Right Sidebar Widgets */}
           <div className="lg:col-span-4 space-y-4">
             {/* Ad Widget */}
-            <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">
-              <GoogleAd format="rectangle" responsive={true} />
-            </div>
+            <GoogleAd format="rectangle" responsive={true} />
 
             {/* Popular Categories Card (Glossy) */}
             <div className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)]">

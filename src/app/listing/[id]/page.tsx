@@ -4,6 +4,8 @@ import Link from "next/link";
 import CommentSection from "@/components/comments/CommentSection";
 import DirectoryClaimButton from "@/components/directory/DirectoryClaimButton";
 import BusinessEnquiryButton from "@/components/directory/BusinessEnquiryButton";
+import { findAddasForContent } from "@/lib/addas";
+import RelatedAddasLinks from "@/components/common/RelatedAddasLinks";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -132,6 +134,14 @@ export default async function ListingDetailPage({ params }: PageProps) {
   const latitude = business.latitude ? Number(business.latitude) : 26.1445;
   const longitude = business.longitude ? Number(business.longitude) : 91.7362;
 
+  const relatedAddas = findAddasForContent({
+    title: business.businessName,
+    tags: business.category,
+    location: business.address,
+    city: business.city,
+    district: business.district,
+  }).slice(0, 2);
+
   const jsonLdBusiness = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -140,6 +150,11 @@ export default async function ListingDetailPage({ params }: PageProps) {
     telephone: business.contactNumber || undefined,
     email: business.email || undefined,
     url: business.website || undefined,
+    brand: {
+      "@type": "Organization",
+      name: "North East Connect",
+      url: siteUrl,
+    },
     address: {
       "@type": "PostalAddress",
       streetAddress: business.address || undefined,
@@ -219,6 +234,8 @@ export default async function ListingDetailPage({ params }: PageProps) {
           <h1 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-slate-100 leading-tight tracking-tight">
             {business.businessName}
           </h1>
+
+          <RelatedAddasLinks addas={relatedAddas} />
         </div>
 
         {/* 1. Main 2-Column Grid (Glossy Cards) */}

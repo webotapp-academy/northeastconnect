@@ -1,6 +1,20 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
+export async function GET(request: Request, props: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await props.params;
+    const numericId = parseInt(id, 10);
+    const item = await db.lead.findUnique({ where: { id: numericId } });
+    if (!item) {
+      return NextResponse.json({ status: "error", message: "Lead not found" }, { status: 404 });
+    }
+    return NextResponse.json({ status: "success", item });
+  } catch (error: any) {
+    return NextResponse.json({ status: "error", message: error?.message }, { status: 500 });
+  }
+}
+
 export async function PUT(request: Request, props: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await props.params;

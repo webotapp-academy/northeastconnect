@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { generateSitemapXml, SitemapEntry } from "@/lib/sitemapHelper";
+import { isProfileIndexable } from "@/lib/profileIndexing";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 1800;
@@ -11,10 +12,21 @@ export async function GET() {
   try {
     const users = await db.user.findMany({
       where: { status: "Active" },
-      select: { username: true, createdAt: true },
+      select: {
+        username: true,
+        createdAt: true,
+        bio: true,
+        profileImageUrl: true,
+        _count: { select: { communityPosts: true, comments: true } },
+      },
       orderBy: { createdAt: "desc" },
       take: 10000,
     });
+
+    // Only list profiles that are actually indexable (see src/app/profile/[username]/layout.tsx
+    // for the matching noindex threshold) — a thin, near-empty profile in the sitemap just
+    // dilutes the site's average content-quality signal without adding ranking value.
+    const indexableUsers = users.filter(isProfileIndexable);
 
     const entries: SitemapEntry[] = [
       {
@@ -23,7 +35,7 @@ export async function GET() {
         changeFrequency: "daily",
         priority: 0.8,
       },
-      ...users.map((user) => ({
+      ...indexableUsers.map((user) => ({
         url: `${baseUrl}/profile/${encodeURIComponent(user.username)}`,
         lastModified: user.createdAt,
         changeFrequency: "weekly" as const,

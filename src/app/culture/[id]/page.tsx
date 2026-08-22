@@ -2,6 +2,8 @@ import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import CommentSection from "@/components/comments/CommentSection";
+import { findAddasForContent } from "@/lib/addas";
+import RelatedAddasLinks from "@/components/common/RelatedAddasLinks";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -82,6 +84,13 @@ export default async function CultureDetailPage({ params }: PageProps) {
     take: 3,
   });
 
+  const relatedAddas = findAddasForContent({
+    title: culture.name,
+    tags: culture.type,
+    location: culture.location,
+    district: culture.district,
+  }).slice(0, 2);
+
   const rawImages = culture.imageUrls ? culture.imageUrls.split(",") : [];
   const imageList = rawImages.map(formatImageSrc).filter(Boolean);
   const mainImage = imageList[0] || "https://images.unsplash.com/photo-1698515959329-878121b965aa?w=900&auto=format&fit=crop&q=60";
@@ -117,6 +126,7 @@ export default async function CultureDetailPage({ params }: PageProps) {
           <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-100 leading-tight tracking-tight">
             {culture.name}
           </h1>
+          <RelatedAddasLinks addas={relatedAddas} />
         </div>
 
         {/* 2-Column Details Layout */}

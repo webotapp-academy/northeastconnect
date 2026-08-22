@@ -324,6 +324,25 @@ export default function ExploreAddasPage() {
               Join local city groups, wildlife hubs, tribal culture addas, and passionate topic communities across the 8 sister states of Northeast India.
             </p>
 
+            {/* State community hubs */}
+            <div className="flex flex-wrap gap-1.5 mt-3">
+              {NE_STATES.filter((st) => st.name !== "All States").map((st) => (
+                <Link
+                  key={st.name}
+                  href={`/addas/state/${st.name.toLowerCase().replace(/\s+/g, "-")}`}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition"
+                >
+                  <span>{st.icon}</span> {st.name} Community
+                </Link>
+              ))}
+              <Link
+                href="/addas/groups"
+                className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+              >
+                <span>💬</span> WhatsApp &amp; Telegram Groups
+              </Link>
+            </div>
+
             {/* Search Input */}
             <div className="mt-5 relative max-w-xl">
               <input
@@ -449,7 +468,7 @@ export default function ExploreAddasPage() {
 
                       {isJoined ? (
                         <Link
-                          href={`/?adda=${encodeURIComponent(adda.name)}`}
+                          href={`/addas/${adda.id}`}
                           className="px-4 py-1.5 rounded-full text-xs font-bold transition cursor-pointer shadow-xs shrink-0 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40"
                         >
                           View
@@ -488,7 +507,7 @@ export default function ExploreAddasPage() {
                       {adda.tag}
                     </span>
                     <Link
-                      href={`/?adda=${encodeURIComponent(adda.name)}`}
+                      href={`/addas/${adda.id}`}
                       className="px-3.5 py-1.5 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 rounded-full text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                     >
                       <span>Visit Feed</span>

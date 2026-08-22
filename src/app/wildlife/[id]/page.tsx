@@ -2,6 +2,8 @@ import { db } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import CommentSection from "@/components/comments/CommentSection";
+import { findAddasForContent } from "@/lib/addas";
+import RelatedAddasLinks from "@/components/common/RelatedAddasLinks";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -66,6 +68,12 @@ export default async function WildlifeDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const relatedAddas = findAddasForContent({
+    title: park.name,
+    location: park.location,
+    district: park.district,
+  }).slice(0, 2);
+
   let images: string[] = ["/assets/images/hero.jpg"];
   if (park.imageUrls) {
     try {
@@ -119,6 +127,7 @@ export default async function WildlifeDetailPage({ params }: PageProps) {
           <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-100 leading-tight tracking-tight">
             {park.name}
           </h1>
+          <RelatedAddasLinks addas={relatedAddas} />
         </div>
 
         <div className="bg-slate-900 rounded-2xl sm:rounded-3xl shadow-sm p-6 sm:p-8 border border-slate-800 space-y-8">

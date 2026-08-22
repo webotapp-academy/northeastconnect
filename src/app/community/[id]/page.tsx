@@ -16,6 +16,8 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://northeastconnect.in";
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   const postId = parseInt(id, 10);
@@ -118,6 +120,33 @@ export default async function SingleCommunityPostPage({ params }: PageProps) {
     (a) => a.id === cleanAdda || a.name.toLowerCase() === addaName.toLowerCase()
   );
 
+  const jsonLdDiscussion = {
+    "@context": "https://schema.org",
+    "@type": "DiscussionForumPosting",
+    headline: post.content.slice(0, 110),
+    text: post.content,
+    url: `${siteUrl}/community/${post.id}`,
+    datePublished: post.createdAt.toISOString(),
+    dateModified: post.updatedAt.toISOString(),
+    author: {
+      "@type": "Person",
+      name: post.user.fullName || `@${post.user.username}`,
+      url: `${siteUrl}/profile/${post.user.username}`,
+    },
+    interactionStatistic: [
+      { "@type": "InteractionCounter", interactionType: "https://schema.org/LikeAction", userInteractionCount: post.likesCount },
+      { "@type": "InteractionCounter", interactionType: "https://schema.org/CommentAction", userInteractionCount: commentCount },
+    ],
+    publisher: {
+      "@type": "Organization",
+      name: "North East Connect",
+      logo: { "@type": "ImageObject", url: `${siteUrl}/assets/images/logo.png` },
+    },
+    isPartOf: addaDef
+      ? { "@type": "CollectionPage", name: addaDef.title, url: `${siteUrl}/addas/${addaDef.id}` }
+      : { "@type": "WebSite", name: "North East Connect", url: siteUrl },
+  };
+
   // Helper to render hashtags and mentions
   function renderContent(content: string) {
     const tokens = content.split(/(#[a-zA-Z0-9_]+|n:[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+)/g);
@@ -148,10 +177,11 @@ export default async function SingleCommunityPostPage({ params }: PageProps) {
       }
       if (token.startsWith("n:")) {
         const aName = token.slice(2);
+        const matched = MASTER_ADDAS.find((a) => a.id === aName.toLowerCase() || a.name.toLowerCase() === token.toLowerCase());
         return (
           <Link
             key={i}
-            href={`/?adda=n:${aName}`}
+            href={matched ? `/addas/${matched.id}` : `/?adda=n:${aName}`}
             className="inline-flex items-center font-extrabold text-teal-600 dark:text-teal-400 hover:underline bg-teal-50/80 dark:bg-teal-950/60 px-1.5 py-0.5 rounded-lg text-sm transition mx-0.5"
           >
             {token}
@@ -173,6 +203,7 @@ export default async function SingleCommunityPostPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 pt-4 sm:pt-6 pb-24 px-3 sm:px-6 transition-colors">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdDiscussion) }} />
       <div className="container mx-auto max-w-5xl">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 mb-4 overflow-x-auto whitespace-nowrap py-1">
@@ -185,7 +216,7 @@ export default async function SingleCommunityPostPage({ params }: PageProps) {
           </Link>
           <span>/</span>
           <Link
-            href={`/?adda=${encodeURIComponent(addaName)}`}
+            href={addaDef ? `/addas/${addaDef.id}` : `/?adda=${encodeURIComponent(addaName)}`}
             className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
           >
             {addaName}
@@ -217,7 +248,7 @@ export default async function SingleCommunityPostPage({ params }: PageProps) {
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <Link
-                        href={`/?adda=${encodeURIComponent(addaName)}`}
+                        href={addaDef ? `/addas/${addaDef.id}` : `/?adda=${encodeURIComponent(addaName)}`}
                         className="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-400 hover:underline"
                       >
                         {addaName}
@@ -369,7 +400,7 @@ export default async function SingleCommunityPostPage({ params }: PageProps) {
                 {addaDef?.desc || "Regional community hub for local discussions, road trips, culture, and events."}
               </p>
               <Link
-                href={`/?adda=${encodeURIComponent(addaName)}`}
+                href={addaDef ? `/addas/${addaDef.id}` : `/?adda=${encodeURIComponent(addaName)}`}
                 className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold text-center block transition shadow-xs"
               >
                 View all in {addaName} &rarr;

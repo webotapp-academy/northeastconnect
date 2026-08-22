@@ -771,7 +771,7 @@ export default function CommunityDiscoveryPage() {
                     </div>
 
                     <Link
-                      href={`/?adda=${encodeURIComponent(adda.name)}`}
+                      href={`/addas/${adda.id}`}
                       className="mt-3 sm:mt-4 w-full py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold text-center block transition shadow-xs"
                     >
                       Enter Adda Wall &rarr;

@@ -18,6 +18,7 @@ export async function GET() {
     { route: "/wildlife", priority: 0.8, changeFrequency: "weekly" as const },
     { route: "/adventure", priority: 0.8, changeFrequency: "weekly" as const },
     { route: "/directory", priority: 0.8, changeFrequency: "daily" as const },
+    { route: "/things-to-do-in-guwahati", priority: 0.9, changeFrequency: "weekly" as const },
     { route: "/contact", priority: 0.5, changeFrequency: "monthly" as const },
     { route: "/post-ads", priority: 0.7, changeFrequency: "monthly" as const },
   ];

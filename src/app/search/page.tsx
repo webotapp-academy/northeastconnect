@@ -660,7 +660,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
                 {popularAddas.map((comm) => (
                   <Link
                     key={comm.name}
-                    href={`/?adda=${encodeURIComponent(comm.name)}`}
+                    href={`/addas/${comm.name.replace(/^n:/, "")}`}
                     className="flex items-center justify-between gap-3 p-2 rounded-2xl hover:bg-slate-100/80 dark:hover:bg-slate-800/60 transition group"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">

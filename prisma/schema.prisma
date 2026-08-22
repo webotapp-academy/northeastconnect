@@ -67,6 +67,8 @@ model User {
   directories            Directory[]
   businessClaims         BusinessClaimRequest[]
   directoryEditRequests  DirectoryEditRequest[]
+  jobs                   Job[]
+  jobApplications        JobApplication[]
   sentMessages           DirectMessage[]     @relation("SentMessages")
   receivedMessages       DirectMessage[]     @relation("ReceivedMessages")
   postReactions          PostReaction[]
@@ -315,11 +317,13 @@ model Job {
   title               String
   company             String?
   category            String
-  type                String
+  type                String    // Full-time, Part-time, Remote, Internship, Contract, Freelance
   location            String?
   district            String?
+  state               String?
   salaryMin           Decimal?  @map("salary_min") @db.Decimal(10, 2)
   salaryMax           Decimal?  @map("salary_max") @db.Decimal(10, 2)
+  salaryPeriod        String?   @default("monthly") @map("salary_period") // monthly, yearly, hourly, negotiable
   experienceMin       Int?      @map("experience_min")
   experienceMax       Int?      @map("experience_max")
   skillsRequired      String?   @map("skills_required") @db.Text
@@ -328,14 +332,48 @@ model Job {
   qualifications      String?   @db.Text
   applicationDeadline DateTime? @map("application_deadline")
   contactEmail        String?   @map("contact_email")
+  contactPhone        String?   @map("contact_phone")
+  howToApply          String?   @map("how_to_apply") @db.Text
+  companyLogo         String?   @map("company_logo") @db.Text
   viewsCount          Int?      @default(0) @map("views_count")
   applicationsCount   Int?      @default(0) @map("applications_count")
-  status              String?   @default("Open")
+  userId              Int?      @map("user_id")
+  status              String?   @default("Open") // Open, Closed, Paused
   createdAt           DateTime? @default(now()) @map("created_at")
+  updatedAt           DateTime? @updatedAt @map("updated_at")
+
+  user                User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  applications        JobApplication[]
 
   @@index([title])
   @@index([location])
+  @@index([category])
+  @@index([type])
+  @@index([userId])
   @@map("jobs")
+}
+
+model JobApplication {
+  id           Int       @id @default(autoincrement())
+  jobId        Int       @map("job_id")
+  userId       Int?      @map("user_id")
+  fullName     String    @map("full_name")
+  email        String
+  phone        String
+  experience   String?
+  currentRole  String?   @map("current_role")
+  resumeUrl    String?   @map("resume_url") @db.Text
+  portfolioUrl String?   @map("portfolio_url") @db.Text
+  coverNote    String?   @map("cover_note") @db.Text
+  status       String    @default("Submitted") // Submitted, Shortlisted, Reviewed, Rejected
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  job          Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user         User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([jobId])
+  @@index([userId])
+  @@map("job_applications")
 }
 
 model Lead {

@@ -26,12 +26,12 @@ const CATEGORIES = [
   { id: "Vehicles & Bikes", name: "Vehicles & Bikes", icon: "🚗" },
   { id: "Mobiles & Electronics", name: "Electronics & Tech", icon: "📱" },
   { id: "Properties & Rent", name: "Property & Rentals", icon: "🏠" },
-  { id: "Jobs & Services", name: "Jobs & Local Services", icon: "💼" },
   { id: "Handlooms & Crafts", name: "Handlooms & Crafts", icon: "🧣" },
   { id: "Tea & Agro Products", name: "Assam Tea & Agro", icon: "🍵" },
   { id: "Furniture & Decor", name: "Furniture & Decor", icon: "🛋️" },
   { id: "Pets & Livestock", name: "Pets & Farm Animals", icon: "🐾" },
   { id: "Fashion & Lifestyle", name: "Fashion & Clothes", icon: "👗" },
+  { id: "Home & Local Services", name: "Home & Local Services", icon: "🔧" },
   { id: "Books & Hobbies", name: "Books & Hobbies", icon: "📚" },
 ];
 

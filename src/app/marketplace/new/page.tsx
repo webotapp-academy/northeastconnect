@@ -15,12 +15,12 @@ const CATEGORIES = [
   "Vehicles & Bikes",
   "Mobiles & Electronics",
   "Properties & Rent",
-  "Jobs & Services",
   "Handlooms & Crafts",
   "Tea & Agro Products",
   "Furniture & Decor",
   "Pets & Livestock",
   "Fashion & Lifestyle",
+  "Home & Local Services",
   "Books & Hobbies",
   "Others",
 ];

@@ -13,8 +13,9 @@ import InviteFriendsModal from "@/components/profile/InviteFriendsModal";
 const NAV_ITEMS = [
   { label: "Community", href: "/", exact: true },
   { label: "Directory", href: "/directory" },
-  { label: "News", href: "/news" },
+  { label: "Jobs", href: "/jobs" },
   { label: "Marketplace", href: "/marketplace" },
+  { label: "News", href: "/news" },
   { label: "Culture", href: "/culture" },
   { label: "Wildlife", href: "/wildlife" },
   { label: "Adventure", href: "/adventure" },
@@ -261,6 +262,14 @@ export default function Navbar() {
                           <span>My Businesses & Leads</span>
                         </Link>
                         <Link
+                          href="/jobs"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
+                        >
+                          <span>💼</span>
+                          <span>Jobs (Post & Apply)</span>
+                        </Link>
+                        <Link
                           href="/marketplace/my-ads"
                           onClick={() => setProfileDropdownOpen(false)}
                           className="flex items-center gap-2 px-3.5 py-1.5 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition"
@@ -472,6 +481,14 @@ export default function Navbar() {
                   >
                     <span>Profile & Wall</span>
                     <span className="text-[10px] text-slate-500">View</span>
+                  </Link>
+                  <Link
+                    href="/jobs"
+                    onClick={() => setMobileOpen(false)}
+                    className="py-2 px-3 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-medium flex items-center gap-2"
+                  >
+                    <span>💼</span>
+                    <span>Jobs (Post & Apply)</span>
                   </Link>
                   <Link
                     href="/profile/edit"

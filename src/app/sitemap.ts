@@ -13,6 +13,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/marketplace",
     "/marketplace/new",
     "/community",
+    "/jobs",
+    "/jobs/post",
     "/leaderboard",
     "/wildlife",
     "/culture",
@@ -25,8 +27,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ].map((route) => ({
     url: `${baseUrl}${route}`,
     lastModified: new Date(),
-    changeFrequency: route === "" || route === "/marketplace" || route === "/community" ? "hourly" : "daily",
-    priority: route === "" ? 1.0 : route === "/marketplace" || route === "/community" ? 0.9 : 0.8,
+    changeFrequency: route === "" || route === "/marketplace" || route === "/jobs" || route === "/community" ? "hourly" : "daily",
+    priority: route === "" ? 1.0 : route === "/marketplace" || route === "/jobs" || route === "/community" ? 0.9 : 0.8,
   }));
 
   // Fetch dynamic routes from database

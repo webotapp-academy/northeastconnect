@@ -36,7 +36,6 @@ const MARKETPLACE_CATEGORIES = [
   "Electronics",
   "Handicrafts & Traditional",
   "Services",
-  "Jobs",
   "Others",
 ];
 

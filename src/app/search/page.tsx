@@ -278,18 +278,53 @@ export default async function SearchPage({ searchParams }: PageProps) {
                 <span>Community Feed</span>
               </Link>
               <Link
+                href="/community?tab=users"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
+              >
+                <span className="text-base">👥</span>
+                <span>People &amp; Explorers</span>
+              </Link>
+              <Link
+                href="/community?tab=posts"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
+              >
+                <span className="text-base">💭</span>
+                <span>Community Thoughts</span>
+              </Link>
+              <Link
                 href="/addas"
                 className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
               >
-                <span className="text-base">💬</span>
+                <span className="text-base">🏛️</span>
                 <span>Northeast Addas</span>
+              </Link>
+              <Link
+                href="/jobs"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
+              >
+                <span className="text-base">💼</span>
+                <span>Jobs &amp; Careers</span>
+              </Link>
+              <Link
+                href="/properties"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
+              >
+                <span className="text-base">🏡</span>
+                <span>Properties (Buy &amp; Rent)</span>
               </Link>
               <Link
                 href="/directory"
                 className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
               >
-                <span className="text-base">📇</span>
+                <span className="text-base">🏢</span>
                 <span>Verified Directory</span>
+              </Link>
+              <Link
+                href="/marketplace"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
+              >
+                <span className="text-base">🛍️</span>
+                <span>Marketplace Ads</span>
               </Link>
               <Link
                 href="/news"
@@ -297,13 +332,6 @@ export default async function SearchPage({ searchParams }: PageProps) {
               >
                 <span className="text-base">📰</span>
                 <span>Regional News</span>
-              </Link>
-              <Link
-                href="/marketplace"
-                className="flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-emerald-600 dark:hover:text-emerald-400 transition"
-              >
-                <span className="text-base">🛒</span>
-                <span>Marketplace Ads</span>
               </Link>
               <Link
                 href="/culture"

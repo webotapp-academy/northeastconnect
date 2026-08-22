@@ -217,7 +217,6 @@ export default function CommunityDiscoveryPage() {
   }
 
   function handleTabSwitch(tab: "users" | "posts" | "addas" | "directory" | "marketplace" | "jobs") {
-    soundFX.playPop();
     setActiveTab(tab);
     setSelectedCategory("All Categories");
     setShowSuggestions(false);
@@ -546,10 +545,7 @@ export default function CommunityDiscoveryPage() {
                 <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[140px]">
                   <select
                     value={selectedState}
-                    onChange={(e) => {
-                      soundFX.playPop();
-                      setSelectedState(e.target.value);
-                    }}
+                    onChange={(e) => setSelectedState(e.target.value)}
                     className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
                   >
                     {NORTHEAST_STATES.map((st) => (
@@ -569,10 +565,7 @@ export default function CommunityDiscoveryPage() {
                 <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[160px]">
                   <select
                     value={selectedCategory}
-                    onChange={(e) => {
-                      soundFX.playPop();
-                      setSelectedCategory(e.target.value);
-                    }}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
                     className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
                   >
                     {DIRECTORY_CATEGORIES.map((cat) => (
@@ -592,10 +585,7 @@ export default function CommunityDiscoveryPage() {
                 <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[160px]">
                   <select
                     value={selectedCategory}
-                    onChange={(e) => {
-                      soundFX.playPop();
-                      setSelectedCategory(e.target.value);
-                    }}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
                     className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
                   >
                     {MARKETPLACE_CATEGORIES.map((cat) => (
@@ -615,10 +605,7 @@ export default function CommunityDiscoveryPage() {
                 <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[160px]">
                   <select
                     value={selectedCategory}
-                    onChange={(e) => {
-                      soundFX.playPop();
-                      setSelectedCategory(e.target.value);
-                    }}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
                     className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
                   >
                     {JOB_CATEGORIES.map((cat) => (
@@ -638,10 +625,7 @@ export default function CommunityDiscoveryPage() {
                 <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[130px]">
                   <select
                     value={selectedJobType}
-                    onChange={(e) => {
-                      soundFX.playPop();
-                      setSelectedJobType(e.target.value);
-                    }}
+                    onChange={(e) => setSelectedJobType(e.target.value)}
                     className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
                   >
                     {JOB_TYPES.map((t) => (
@@ -661,10 +645,7 @@ export default function CommunityDiscoveryPage() {
                 <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[160px]">
                   <select
                     value={businessSortTab}
-                    onChange={(e) => {
-                      soundFX.playPop();
-                      setBusinessSortTab(e.target.value as any);
-                    }}
+                    onChange={(e) => setBusinessSortTab(e.target.value as any)}
                     className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
                   >
                     <option value="views" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">🔥 Sort: Most Viewed</option>
@@ -683,10 +664,7 @@ export default function CommunityDiscoveryPage() {
                 <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[160px]">
                   <select
                     value={jobSortTab}
-                    onChange={(e) => {
-                      soundFX.playPop();
-                      setJobSortTab(e.target.value as any);
-                    }}
+                    onChange={(e) => setJobSortTab(e.target.value as any)}
                     className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
                   >
                     <option value="views" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">🔥 Sort: Most Viewed</option>
@@ -704,10 +682,7 @@ export default function CommunityDiscoveryPage() {
                 <div className="relative shrink-0 flex-1 sm:flex-initial min-w-[180px]">
                   <select
                     value={userSortTab}
-                    onChange={(e) => {
-                      soundFX.playPop();
-                      setUserSortTab(e.target.value as any);
-                    }}
+                    onChange={(e) => setUserSortTab(e.target.value as any)}
                     className="w-full appearance-none pl-3 pr-7 py-1.5 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 rounded-xl text-xs font-bold shadow-xs hover:border-emerald-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 cursor-pointer transition"
                   >
                     <option value="recent" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">⏱️ Sort: Recently Joined</option>
@@ -735,7 +710,6 @@ export default function CommunityDiscoveryPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    soundFX.playPop();
                     setSelectedState("All States");
                     setSelectedCategory("All Categories");
                     setSelectedJobType("All Types");
@@ -1175,7 +1149,6 @@ export default function CommunityDiscoveryPage() {
                           <button
                             type="button"
                             onClick={() => {
-                              soundFX.playPop();
                               setSelectedJobForApply(job);
                               setApplyModalOpen(true);
                             }}

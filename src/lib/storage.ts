@@ -1,7 +1,7 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import sharp, { OutputInfo } from "sharp";
-import { writeFile, mkdir } from "fs/promises";
+import { writeFile, mkdir, readFile } from "fs/promises";
 import path from "path";
 import { existsSync } from "fs";
 import https from "https";
@@ -186,8 +186,8 @@ export async function uploadMediaFile(
 }
 
 /**
- * Downloads a remote image URL, compresses it to WebP, and uploads to Cloudflare R2 / storage.
- * If already an R2 URL or local asset, leaves it as is.
+ * Downloads a remote image URL or reads a local image path, compresses it to WebP, and uploads to Cloudflare R2.
+ * If already an R2 URL, leaves it as is.
  */
 export async function uploadRemoteImageToR2(
   imageUrl: string,
@@ -196,10 +196,31 @@ export async function uploadRemoteImageToR2(
   if (!imageUrl || !imageUrl.trim()) return imageUrl;
   const trimmed = imageUrl.trim();
 
-  // If already hosted on R2 or local uploads, don't re-download
+  // If already hosted on R2, don't re-upload
   const r2Domain = process.env.R2_PUBLIC_DOMAIN || "";
   if (r2Domain && trimmed.includes(r2Domain)) return trimmed;
-  if (trimmed.startsWith("/uploads/") || trimmed.startsWith("/assets/")) return trimmed;
+
+  // If local file path (/assets/images/... or /uploads/...), upload to R2
+  if (trimmed.startsWith("/") || trimmed.startsWith("assets/") || trimmed.startsWith("uploads/")) {
+    const localRelPath = trimmed.replace(/^\//, "");
+    const localFullPath = path.join(process.cwd(), "public", localRelPath);
+    if (existsSync(localFullPath)) {
+      try {
+        const fileBuffer = await readFile(localFullPath);
+        const filename = path.basename(localFullPath);
+        const result = await uploadMediaFile(fileBuffer, filename, {
+          folder: options?.folder || "news",
+          maxWidth: options?.maxWidth || 1920,
+          quality: options?.quality || 82,
+        });
+        return result.url;
+      } catch (err) {
+        console.warn(`Failed to upload local file ${localFullPath} to R2:`, err);
+        return trimmed;
+      }
+    }
+    return trimmed;
+  }
 
   if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
     return trimmed;
@@ -241,4 +262,5 @@ export async function uploadRemoteImageToR2(
     return trimmed;
   }
 }
+
 

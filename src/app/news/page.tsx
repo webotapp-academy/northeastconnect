@@ -20,11 +20,20 @@ interface PageProps {
   searchParams: Promise<{ page?: string; state?: string }>;
 }
 
-function formatImageSrc(imgStr: string): string {
-  if (!imgStr) return "";
+function formatImageSrc(imgStr: string | null | undefined): string | null {
+  if (!imgStr) return null;
   const trimmed = imgStr.trim();
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) return trimmed;
-  if (trimmed.startsWith("/")) return trimmed;
+  if (
+    trimmed === "" ||
+    trimmed === "null" ||
+    trimmed === "undefined" ||
+    trimmed === "[]" ||
+    trimmed === "{}"
+  )
+    return null;
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("/"))
+    return trimmed;
+  if (!/\.(jpg|jpeg|png|webp|gif|svg|avif)($|\?)/i.test(trimmed)) return null;
   return `/assets/images/${trimmed}`;
 }
 
@@ -127,10 +136,8 @@ export default async function NewsPage({ searchParams }: PageProps) {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {newsList.map((n) => {
             const articleHref = `/news/${encodeURIComponent(n.url || String(n.id))}`;
-            const images = n.imageUrls ? n.imageUrls.split(",") : [];
-            const mainImage = images[0]
-              ? formatImageSrc(images[0])
-              : "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800&auto=format&fit=crop&q=60";
+            const images = n.imageUrls ? n.imageUrls.split(",").map((u) => u.trim()).filter(Boolean) : [];
+            const mainImage = images[0] ? formatImageSrc(images[0]) : null;
 
             return (
               <article
@@ -138,26 +145,49 @@ export default async function NewsPage({ searchParams }: PageProps) {
                 className="bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-white/60 dark:border-slate-800/80 rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:shadow-lg transition-all duration-200 flex flex-col justify-between group"
               >
                 <div>
-                  <Link href={articleHref} className="block relative h-48 sm:h-52 bg-slate-100 dark:bg-slate-950 overflow-hidden">
-                    <img
-                      src={mainImage}
-                      alt={n.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <span className="absolute top-3 left-3 px-2.5 py-1 bg-slate-900/80 backdrop-blur-xs text-[10px] font-bold text-white border border-slate-700/60 rounded-md shadow-xs uppercase tracking-wider">
-                      {n.category || "General"}
-                    </span>
-                  </Link>
+                  {/* Render Image ONLY if mainImage is present and valid */}
+                  {mainImage && (
+                    <Link href={articleHref} className="block relative h-48 sm:h-52 bg-slate-100 dark:bg-slate-950 overflow-hidden">
+                      <img
+                        src={mainImage}
+                        alt={n.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <span className="absolute top-3 left-3 px-2.5 py-1 bg-slate-900/80 backdrop-blur-xs text-[10px] font-bold text-white border border-slate-700/60 rounded-md shadow-xs uppercase tracking-wider">
+                        {n.category || "General"}
+                      </span>
+                    </Link>
+                  )}
+
                   <div className="p-5 space-y-2">
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                      {n.publishedDate
-                        ? new Date(n.publishedDate).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })
-                        : "Recent"}
-                    </div>
+                    {/* Header with category and date if no image */}
+                    {!mainImage ? (
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <span className="px-2.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 border border-slate-200 dark:border-slate-700/80 rounded-md uppercase tracking-wider">
+                          {n.category || "General"}
+                        </span>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                          {n.publishedDate
+                            ? new Date(n.publishedDate).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                              })
+                            : "Recent"}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                        {n.publishedDate
+                          ? new Date(n.publishedDate).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            })
+                          : "Recent"}
+                      </div>
+                    )}
+
                     <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-2 leading-snug">
                       <Link href={articleHref}>{n.title}</Link>
                     </h2>

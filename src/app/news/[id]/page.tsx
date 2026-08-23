@@ -12,8 +12,8 @@ interface PageProps {
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://northeastconnect.in";
 
-function formatImageSrc(imgStr: string): string {
-  if (!imgStr) return "";
+function formatImageSrc(imgStr: string | null | undefined): string | null {
+  if (!imgStr) return null;
   const trimmed = imgStr.trim();
   if (
     trimmed === "" ||
@@ -22,10 +22,10 @@ function formatImageSrc(imgStr: string): string {
     trimmed === "[]" ||
     trimmed === "{}"
   )
-    return "";
+    return null;
   if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("/"))
     return trimmed;
-  if (!/\.(jpg|jpeg|png|webp|gif|svg|avif)($|\?)/i.test(trimmed)) return "";
+  if (!/\.(jpg|jpeg|png|webp|gif|svg|avif)($|\?)/i.test(trimmed)) return null;
   return `/assets/images/${trimmed}`;
 }
 
@@ -64,10 +64,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const description = stripHtml(article.content).slice(0, 160);
   const rawImages = article.imageUrls ? article.imageUrls.split(",") : [];
-  const imageList = rawImages
+  const imageList: string[] = rawImages
     .map(formatImageSrc)
-    .filter((img) => Boolean(img) && !img.includes("null") && !img.includes("undefined"));
-  const mainImage = imageList.length > 0 ? imageList[0] : `${siteUrl}/assets/images/hero.jpg`;
+    .filter((img): img is string => typeof img === "string" && img.length > 0 && !img.includes("null") && !img.includes("undefined"));
+  const mainImage = imageList.length > 0 ? imageList[0] : null;
   const canonicalPath = `/news/${article.url || article.id}`;
   const keywords = article.tags ? article.tags.split(",").map((t) => t.trim()).filter(Boolean) : undefined;
 
@@ -89,13 +89,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       authors: [article.author || "Editorial Team"],
       section: article.category || "News",
       tags: keywords,
-      images: [{ url: mainImage, width: 1200, height: 630, alt: article.title }],
+      images: mainImage ? [{ url: mainImage, width: 1200, height: 630, alt: article.title }] : undefined,
     },
     twitter: {
-      card: "summary_large_image",
+      card: mainImage ? "summary_large_image" : "summary",
       title: article.title,
       description,
-      images: [mainImage],
+      images: mainImage ? [mainImage] : undefined,
     },
   };
 }
@@ -127,9 +127,9 @@ export default async function NewsDetailPage({ params }: PageProps) {
   });
 
   const rawImages = article.imageUrls ? article.imageUrls.split(",") : [];
-  const imageList = rawImages
+  const imageList: string[] = rawImages
     .map(formatImageSrc)
-    .filter((img) => Boolean(img) && !img.includes("null") && !img.includes("undefined"));
+    .filter((img): img is string => typeof img === "string" && img.length > 0 && !img.includes("null") && !img.includes("undefined"));
   const mainImage = imageList.length > 0 ? imageList[0] : null;
   const galleryImages = imageList.slice(1);
 
@@ -175,7 +175,7 @@ export default async function NewsDetailPage({ params }: PageProps) {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: article.title,
-    image: [mainImage],
+    image: mainImage ? [mainImage] : undefined,
     datePublished: article.publishedDate ? new Date(article.publishedDate).toISOString() : new Date().toISOString(),
     author: [{ "@type": "Person", name: article.author || "Editorial Team" }],
     publisher: {

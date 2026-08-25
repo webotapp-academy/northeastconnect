@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { generateSitemapXml, SitemapEntry } from "@/lib/sitemapHelper";
+import { generateNewsSitemapXml, generateSitemapXml, NewsSitemapEntry, SitemapEntry } from "@/lib/sitemapHelper";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 1800;
+
+// Google News only wants the last 48 hours worth of <news:news> entries in this sitemap —
+// anything older is still listed as a plain <url> for regular indexing, just without the block.
+const NEWS_WINDOW_MS = 48 * 60 * 60 * 1000;
 
 export async function GET() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://northeastconnect.in";
@@ -11,12 +15,14 @@ export async function GET() {
   try {
     const news = await db.news.findMany({
       where: { status: "Published" },
-      select: { id: true, url: true, publishedDate: true, createdAt: true },
+      select: { id: true, title: true, url: true, publishedDate: true, createdAt: true },
       orderBy: { publishedDate: "desc" },
       take: 5000,
     });
 
-    const entries: SitemapEntry[] = [
+    const cutoff = Date.now() - NEWS_WINDOW_MS;
+
+    const archiveEntries: SitemapEntry[] = [
       {
         url: `${baseUrl}/news`,
         lastModified: new Date(),
@@ -34,7 +40,21 @@ export async function GET() {
       }),
     ];
 
-    const xml = generateSitemapXml(entries);
+    const newsEntries: NewsSitemapEntry[] = news
+      .filter((item) => {
+        const pub = item.publishedDate || item.createdAt;
+        return pub && new Date(pub).getTime() >= cutoff;
+      })
+      .map((item) => {
+        const slugOrId = item.url || item.id;
+        return {
+          url: `${baseUrl}/news/${encodeURIComponent(String(slugOrId))}`,
+          title: item.title,
+          publicationDate: item.publishedDate || item.createdAt || new Date(),
+        };
+      });
+
+    const xml = generateNewsSitemapXml(newsEntries, archiveEntries);
 
     return new NextResponse(xml, {
       status: 200,

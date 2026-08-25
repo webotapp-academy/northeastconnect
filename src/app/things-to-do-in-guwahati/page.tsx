@@ -8,7 +8,7 @@ export const revalidate = 300;
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://northeastconnect.in";
 
 export const metadata: Metadata = {
-  title: "Things to Do in Guwahati — Adventure, Culture, Food & Places | North East Connect",
+  title: "Things to Do in Guwahati — Adventure, Culture, Food & Places",
   description:
     "The real Guwahati guide: adventure activities, cultural sites, cafes and local businesses, wildlife day trips, and the live Guwahati community — all in one place on North East Connect.",
   keywords: [

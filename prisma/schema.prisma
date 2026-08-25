@@ -221,6 +221,7 @@ model News {
   viewsCount    Int?      @default(0) @map("views_count")
   status        String?   @default("Published")
   createdAt     DateTime? @default(now()) @map("created_at")
+  updatedAt     DateTime? @updatedAt @map("updated_at")
 
   @@index([title])
   @@map("news")

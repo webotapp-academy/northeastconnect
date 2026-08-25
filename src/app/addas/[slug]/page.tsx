@@ -26,7 +26,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const adda = getAdda(slug);
-  if (!adda) return { title: "Adda Not Found | North East Connect" };
+  if (!adda) return { title: "Adda Not Found" };
 
   const title = `${adda.state === "All States" ? adda.title : `${adda.title}, ${adda.state}`} Community & Local Adda — Meet People, Events, Groups`;
   const description = `${adda.desc} Join ${adda.name} on North East Connect to meet people, share local events, and follow ${adda.title.toLowerCase()} discussions from ${adda.state === "All States" ? "across Northeast India" : adda.state}.`;

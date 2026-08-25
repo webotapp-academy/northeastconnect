@@ -28,11 +28,18 @@ export default function Footer() {
           <Link href="/marketplace" className="hover:text-slate-900 dark:hover:text-white transition-colors">Marketplace</Link>
         </div>
 
+        {/* About / Editorial Links */}
+        <div className="flex flex-wrap items-center justify-center gap-x-4 sm:gap-x-6 gap-y-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+          <Link href="/about" className="hover:text-slate-800 dark:hover:text-slate-200 transition-colors">About</Link>
+          <Link href="/authors" className="hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Authors</Link>
+          <Link href="/editorial-policy" className="hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Editorial Policy</Link>
+          <Link href="/contact" className="hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Contact</Link>
+        </div>
+
         {/* Legal Links */}
         <div className="flex flex-wrap items-center justify-center gap-x-4 sm:gap-x-6 gap-y-1.5 text-[11px] text-slate-500 dark:text-slate-400">
-          <Link href="/contact" className="hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Privacy Policy</Link>
-          <Link href="/contact" className="hover:text-slate-800 dark:hover:text-slate-200 transition-colors">User Agreement</Link>
-          <Link href="/contact" className="hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Guidelines</Link>
+          <Link href="/privacy-policy" className="hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Privacy Policy</Link>
+          <Link href="/terms" className="hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Terms of Use</Link>
         </div>
 
         {/* Copyright */}

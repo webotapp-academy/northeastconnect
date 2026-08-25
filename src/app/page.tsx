@@ -173,12 +173,19 @@ export default async function Home() {
   });
 
   return (
-    <SocialHomeFeed
-      initialPosts={initialPosts}
-      latestNews={latestNews}
-      featuredDirectory={featuredDirectory}
-      topExplorers={topExplorers}
-      marketplaceDeals={marketplaceDeals}
-    />
+    <>
+      {/* Visually hidden — the feed below is entirely client-rendered widgets with no
+          marketing hero, so this is the page's only real <h1>. */}
+      <h1 className="sr-only">
+        Northeast India Community, News &amp; Business Directory — North East Connect
+      </h1>
+      <SocialHomeFeed
+        initialPosts={initialPosts}
+        latestNews={latestNews}
+        featuredDirectory={featuredDirectory}
+        topExplorers={topExplorers}
+        marketplaceDeals={marketplaceDeals}
+      />
+    </>
   );
 }

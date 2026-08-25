@@ -36,7 +36,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const adda = getAdda(slug);
-  if (!adda) return { title: "Events Not Found | North East Connect" };
+  if (!adda) return { title: "Events Not Found" };
 
   const place = adda.title.split(" ")[0];
   const title = `${place} Events — What's Happening in ${place}`;

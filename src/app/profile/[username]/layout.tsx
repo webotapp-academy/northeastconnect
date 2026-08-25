@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
   });
 
   if (!user) {
-    return { title: "Profile Not Found | North East Connect", robots: { index: false, follow: false } };
+    return { title: "Profile Not Found", robots: { index: false, follow: false } };
   }
 
   const displayName = user.fullName || `@${user.username}`;
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
     : `${displayName}'s profile on North East Connect${location ? ` — ${location}` : ""}. Follow their posts and activity in the Assam & Northeast India community.`;
 
   return {
-    title: `${displayName} (@${user.username}) | North East Connect`,
+    title: `${displayName} (@${user.username})`,
     description,
     openGraph: {
       title: `${displayName} on North East Connect`,

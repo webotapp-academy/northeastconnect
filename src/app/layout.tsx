@@ -11,8 +11,6 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://northeastconnect.in
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export const metadata: Metadata = {
@@ -32,7 +30,7 @@ export const metadata: Metadata = {
     "Assam News",
     "Majuli Island Culture",
   ],
-  authors: [{ name: "North East Connect Community" }],
+  authors: [{ name: "Paban Bhuyan", url: `${siteUrl}/authors/paban-bhuyan` }],
   creator: "North East Connect",
   publisher: "North East Connect",
   openGraph: {
@@ -104,6 +102,11 @@ export default function RootLayout({
     name: "North East Connect",
     url: siteUrl,
     logo: `${siteUrl}/assets/images/logo.png`,
+    founder: {
+      "@type": "Person",
+      name: "Paban Bhuyan",
+      url: `${siteUrl}/authors/paban-bhuyan`,
+    },
     sameAs: [
       "https://facebook.com/northeastconnect",
       "https://twitter.com/northeastconnect",

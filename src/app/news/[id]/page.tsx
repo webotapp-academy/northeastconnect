@@ -5,6 +5,7 @@ import GoogleAd from "@/components/GoogleAd";
 import CommentSection from "@/components/comments/CommentSection";
 import { cache } from "react";
 import type { Metadata } from "next";
+import { getAuthorProfile } from "@/lib/authors";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -71,11 +72,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const canonicalPath = `/news/${article.url || article.id}`;
   const keywords = article.tags ? article.tags.split(",").map((t) => t.trim()).filter(Boolean) : undefined;
 
+  const authorProfile = getAuthorProfile(article.author);
+
   return {
-    title: article.title,
+    // Absolute: news headlines already run long, and the root layout's "%s | North East
+    // Connect" template would push most titles past Google's ~60-char display budget.
+    // Branding still shows via og:site_name and the NewsArticle publisher block.
+    title: { absolute: article.title },
     description,
     keywords,
-    authors: [{ name: article.author || "Editorial Team" }],
+    authors: [{ name: authorProfile.name, url: `${siteUrl}/authors/${authorProfile.slug}` }],
     alternates: {
       canonical: canonicalPath,
     },
@@ -86,7 +92,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       url: canonicalPath,
       siteName: "North East Connect",
       publishedTime: article.publishedDate ? new Date(article.publishedDate).toISOString() : undefined,
-      authors: [article.author || "Editorial Team"],
+      modifiedTime: article.updatedAt ? new Date(article.updatedAt).toISOString() : undefined,
+      authors: [authorProfile.name],
       section: article.category || "News",
       tags: keywords,
       images: mainImage ? [{ url: mainImage, width: 1200, height: 630, alt: article.title }] : undefined,
@@ -171,13 +178,21 @@ export default async function NewsDetailPage({ params }: PageProps) {
     ? new Date(article.publishedDate).toISOString().split("T")[0]
     : new Date().toISOString().split("T")[0];
 
+  const authorProfile = getAuthorProfile(article.author);
+  const authorUrl = `${siteUrl}/authors/${authorProfile.slug}`;
+
   const jsonLdNews = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
     headline: article.title,
     image: mainImage ? [mainImage] : undefined,
     datePublished: article.publishedDate ? new Date(article.publishedDate).toISOString() : new Date().toISOString(),
-    author: [{ "@type": "Person", name: article.author || "Editorial Team" }],
+    dateModified: article.updatedAt
+      ? new Date(article.updatedAt).toISOString()
+      : article.publishedDate
+        ? new Date(article.publishedDate).toISOString()
+        : new Date().toISOString(),
+    author: [{ "@type": "Person", name: authorProfile.name, url: authorUrl, sameAs: authorProfile.sameAs }],
     publisher: {
       "@type": "Organization",
       name: "North East Connect",
@@ -246,7 +261,15 @@ export default async function NewsDetailPage({ params }: PageProps) {
             </div>
 
             <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 font-medium">
-              <span>By <strong className="text-slate-800 dark:text-slate-200">{article.author || "Editorial Team"}</strong></span>
+              <span>
+                By{" "}
+                <Link
+                  href={`/authors/${authorProfile.slug}`}
+                  className="text-slate-800 dark:text-slate-200 font-bold hover:text-emerald-600 dark:hover:text-emerald-400 transition"
+                >
+                  {authorProfile.name}
+                </Link>
+              </span>
               <span>&bull;</span>
               <span>👁 {article.viewsCount || 1} views</span>
             </div>

@@ -32,7 +32,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { state } = await params;
   const stateName = getStateName(state);
-  if (!stateName) return { title: "Community Not Found | North East Connect" };
+  if (!stateName) return { title: "Community Not Found" };
 
   const title = `${stateName} Community — Meet People, Local Addas & Events`;
   const description = `Join the ${stateName} community on North East Connect. Discover ${stateName}'s local Addas, meet people nearby, follow real conversations, and find upcoming events across ${stateName}.`;

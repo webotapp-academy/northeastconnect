@@ -131,26 +131,76 @@ export default function PostLinkPreview({ content }: PostLinkPreviewProps) {
           ? { href: targetHref }
           : { href: preview.url, target: "_blank", rel: "noopener noreferrer" };
 
+        const hasImage = Boolean(preview.image && preview.image.trim() !== "");
+
+        if (!hasImage) {
+          return (
+            <CardWrapper
+              key={idx}
+              {...(wrapperProps as any)}
+              className="flex items-start gap-3.5 p-4 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-850/70 hover:bg-slate-100/90 dark:hover:bg-slate-800/90 hover:border-emerald-500/60 dark:hover:border-emerald-500/50 hover:shadow-md transition-all duration-200 group"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl shrink-0 group-hover:scale-105 transition-transform">
+                {preview.badge?.includes("💼")
+                  ? "💼"
+                  : preview.badge?.includes("📰")
+                  ? "📰"
+                  : preview.badge?.includes("🏡")
+                  ? "🏡"
+                  : preview.badge?.includes("🏢")
+                  ? "🏢"
+                  : preview.badge?.includes("🦏")
+                  ? "🦏"
+                  : preview.badge?.includes("🎭")
+                  ? "🎭"
+                  : preview.badge?.includes("🛍️")
+                  ? "🛍️"
+                  : "🌐"}
+              </div>
+
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  <span className="truncate">{preview.domain || preview.siteName}</span>
+                  {preview.badge && (
+                    <>
+                      <span>•</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">{preview.badge}</span>
+                    </>
+                  )}
+                </div>
+
+                <h4 className="font-extrabold text-sm text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-1 leading-snug">
+                  {preview.title}
+                </h4>
+
+                {preview.description && (
+                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                    {preview.description}
+                  </p>
+                )}
+              </div>
+            </CardWrapper>
+          );
+        }
+
         return (
           <CardWrapper
             key={idx}
             {...(wrapperProps as any)}
             className="block rounded-2xl sm:rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 shadow-sm hover:border-emerald-500/60 dark:hover:border-emerald-500/50 hover:shadow-md transition-all duration-200 group"
           >
-            {preview.image && (
-              <div className="h-44 sm:h-52 w-full bg-slate-100 dark:bg-slate-950 overflow-hidden relative">
-                <img
-                  src={preview.image}
-                  alt={preview.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-                {preview.badge && (
-                  <span className="absolute top-3 left-3 px-2.5 py-1 bg-slate-900/85 backdrop-blur-xs text-[10px] font-black text-white border border-slate-700/60 rounded-md shadow-xs uppercase tracking-wider">
-                    {preview.badge}
-                  </span>
-                )}
-              </div>
-            )}
+            <div className="h-44 sm:h-52 w-full bg-slate-100 dark:bg-slate-950 overflow-hidden relative">
+              <img
+                src={preview.image!}
+                alt={preview.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              {preview.badge && (
+                <span className="absolute top-3 left-3 px-2.5 py-1 bg-slate-900/85 backdrop-blur-xs text-[10px] font-black text-white border border-slate-700/60 rounded-md shadow-xs uppercase tracking-wider">
+                  {preview.badge}
+                </span>
+              )}
+            </div>
 
             <div className="p-4 space-y-1.5 bg-slate-50/50 dark:bg-slate-850/50">
               <div className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">

@@ -48,10 +48,11 @@ export async function GET(req: NextRequest) {
               url: trimmedUrl,
               title: `${job.title} | ${job.company || "Job Vacancy"}`,
               description: job.jobDescription ? job.jobDescription.slice(0, 180) : `Hiring for ${job.type} ${job.category} in ${job.location || job.state || "Northeast India"}.`,
-              image: job.companyLogo || "https://northeastconnect.in/assets/images/hero.jpg",
+              image: job.companyLogo || null,
               siteName: "North East Connect • Jobs & Careers",
               domain: "northeastconnect.in",
               badge: "💼 Career Opening",
+              icon: "💼",
             };
           }
         }
@@ -69,15 +70,16 @@ export async function GET(req: NextRequest) {
 
           if (article) {
             const rawImages = article.imageUrls ? article.imageUrls.split(",") : [];
-            const img = rawImages[0]?.trim() || "https://northeastconnect.in/assets/images/hero.jpg";
+            const img = rawImages[0]?.trim() || null;
             previewData = {
               url: trimmedUrl,
               title: article.title,
               description: article.content ? article.content.replace(/<[^>]*>/g, " ").slice(0, 180) : "Read regional Northeast India story and updates.",
-              image: img.startsWith("http") || img.startsWith("/") ? img : `/assets/images/${img}`,
+              image: img && (img.startsWith("http") || img.startsWith("/")) ? img : img ? `/assets/images/${img}` : null,
               siteName: "North East Connect • News",
               domain: "northeastconnect.in",
               badge: "📰 News Story",
+              icon: "📰",
             };
           }
         }
@@ -92,7 +94,7 @@ export async function GET(req: NextRequest) {
             select: { id: true, title: true, propertyType: true, listingType: true, price: true, city: true, state: true, description: true, imageUrls: true },
           });
           if (prop) {
-            let img = "https://northeastconnect.in/assets/images/hero.jpg";
+            let img: string | null = null;
             if (prop.imageUrls) {
               const split = prop.imageUrls.split(",");
               if (split[0]?.trim()) img = split[0].trim();
@@ -105,6 +107,7 @@ export async function GET(req: NextRequest) {
               siteName: "North East Connect • Real Estate",
               domain: "northeastconnect.in",
               badge: "🏡 Property",
+              icon: "🏡",
             };
           }
         }
@@ -119,14 +122,20 @@ export async function GET(req: NextRequest) {
             select: { id: true, businessName: true, category: true, district: true, description: true, imageUrls: true },
           });
           if (biz) {
+            let img: string | null = null;
+            if (biz.imageUrls) {
+              const split = biz.imageUrls.split(",");
+              if (split[0]?.trim()) img = split[0].trim();
+            }
             previewData = {
               url: trimmedUrl,
               title: `${biz.businessName} - ${biz.category}`,
               description: biz.description ? biz.description.slice(0, 180) : `Verified business listing in ${biz.district}, Northeast India.`,
-              image: biz.imageUrls ? biz.imageUrls.split(",")[0]?.trim() : "https://northeastconnect.in/assets/images/hero.jpg",
+              image: img,
               siteName: "North East Connect • Verified Directory",
               domain: "northeastconnect.in",
               badge: "🏢 Directory Business",
+              icon: "🏢",
             };
           }
         }
@@ -138,14 +147,20 @@ export async function GET(req: NextRequest) {
         if (wildId) {
           const wild = await db.wildlife.findUnique({ where: { id: wildId } });
           if (wild) {
+            let img: string | null = null;
+            if (wild.imageUrls) {
+              const split = wild.imageUrls.split(",");
+              if (split[0]?.trim()) img = split[0].trim();
+            }
             previewData = {
               url: trimmedUrl,
               title: `${wild.name} | Wildlife Sanctuary`,
               description: wild.description ? wild.description.slice(0, 180) : "Explore wildlife sanctuary and eco-tourism in Northeast India.",
-              image: wild.imageUrls ? wild.imageUrls.split(",")[0]?.trim() : "https://northeastconnect.in/assets/images/hero.jpg",
+              image: img,
               siteName: "North East Connect • Wildlife Sanctuaries",
               domain: "northeastconnect.in",
               badge: "🦏 Wildlife Sanctuary",
+              icon: "🦏",
             };
           }
         }
@@ -157,14 +172,20 @@ export async function GET(req: NextRequest) {
         if (cultId) {
           const cult = await db.culture.findUnique({ where: { id: cultId } });
           if (cult) {
+            let img: string | null = null;
+            if (cult.imageUrls) {
+              const split = cult.imageUrls.split(",");
+              if (split[0]?.trim()) img = split[0].trim();
+            }
             previewData = {
               url: trimmedUrl,
               title: `${cult.name} | Cultural Heritage & Festival`,
               description: cult.description ? cult.description.slice(0, 180) : "Discover cultural heritage and traditional festivals.",
-              image: cult.imageUrls ? cult.imageUrls.split(",")[0]?.trim() : "https://northeastconnect.in/assets/images/hero.jpg",
+              image: img,
               siteName: "North East Connect • Cultural Heritage",
               domain: "northeastconnect.in",
               badge: "🎭 Culture & Heritage",
+              icon: "🎭",
             };
           }
         }
@@ -176,14 +197,20 @@ export async function GET(req: NextRequest) {
         if (marketId) {
           const item = await db.marketplaceListing.findUnique({ where: { id: marketId } });
           if (item) {
+            let img: string | null = null;
+            if (item.imageUrls) {
+              const split = item.imageUrls.split(",");
+              if (split[0]?.trim()) img = split[0].trim();
+            }
             previewData = {
               url: trimmedUrl,
               title: `${item.title} - ₹${item.price.toLocaleString()}`,
               description: item.description ? item.description.slice(0, 180) : `${item.category} in ${item.city}, ${item.state}.`,
-              image: item.imageUrls ? item.imageUrls.split(",")[0]?.trim() : "https://northeastconnect.in/assets/images/hero.jpg",
+              image: img,
               siteName: "North East Connect • Classifieds & Marketplace",
               domain: "northeastconnect.in",
               badge: "🛍️ Marketplace",
+              icon: "🛍️",
             };
           }
         }

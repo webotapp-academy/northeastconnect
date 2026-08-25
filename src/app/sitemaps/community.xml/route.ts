@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { generateSitemapXml, SitemapEntry } from "@/lib/sitemapHelper";
 import { MASTER_ADDAS } from "@/lib/addas";
+import { getCommunityPostSlugUrl } from "@/lib/slugs";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 1800;
@@ -9,11 +10,17 @@ export const revalidate = 1800;
 export async function GET() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://northeastconnect.in";
 
-  let posts: { id: number; createdAt: Date }[] = [];
+  let posts: any[] = [];
   try {
     posts = await db.communityPost.findMany({
       where: { status: "Active" },
-      select: { id: true, createdAt: true },
+      select: {
+        id: true,
+        content: true,
+        taggedLocation: true,
+        createdAt: true,
+        user: { select: { username: true } },
+      },
       orderBy: { createdAt: "desc" },
       take: 5000,
     });
@@ -84,9 +91,9 @@ export async function GET() {
       changeFrequency: "daily" as const,
       priority: 0.75,
     })),
-    // Individual Posts (real page route, not a #fragment)
+    // Individual Posts (SEO friendly slug URL)
     ...posts.map((post) => ({
-      url: `${baseUrl}/community/${post.id}`,
+      url: `${baseUrl}${getCommunityPostSlugUrl(post)}`,
       lastModified: post.createdAt,
       changeFrequency: "weekly" as const,
       priority: 0.7,

@@ -45,3 +45,28 @@ export function getJobSlugUrl(job: {
   const cleanSlug = slugify(parts).slice(0, 80).replace(/-+$/, "");
   return `/jobs/${cleanSlug || "opening"}-${job.id}`;
 }
+
+/**
+ * Returns an SEO-friendly URL for a community thought / post.
+ * e.g. "/community/some-books-entertain-you-the-alchemist-37"
+ */
+export function getCommunityPostSlugUrl(post: {
+  id: number;
+  content?: string | null;
+  taggedLocation?: string | null;
+  user?: { username?: string | null } | null;
+}): string {
+  // Strip markdown, urls, and special symbols for clean slug
+  const rawText = (post.content || "")
+    .replace(/https?:\/\/[^\s]+/g, "")
+    .replace(/[*_#~`@]+/g, "")
+    .replace(/[^\w\s]/g, " ")
+    .trim();
+
+  const words = rawText.split(/\s+/).filter(Boolean).slice(0, 8).join(" ");
+  const cleanSlug = slugify(words || post.taggedLocation || post.user?.username || "post")
+    .slice(0, 75)
+    .replace(/-+$/, "");
+
+  return `/community/${cleanSlug || "post"}-${post.id}`;
+}

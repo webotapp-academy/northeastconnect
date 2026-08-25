@@ -160,7 +160,6 @@ function parseInlineMarkdownAndHandles(
         <Link
           key={key}
           href={`/profile/${handle}`}
-          onClick={(e) => e.stopPropagation()}
           className="inline-flex items-center font-bold text-indigo-600 dark:text-indigo-400 hover:underline bg-indigo-50/80 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 px-1.5 py-0.5 rounded-lg text-xs sm:text-sm border border-indigo-200/60 dark:border-indigo-800/60 transition mx-0.5"
         >
           {part}
@@ -187,7 +186,6 @@ function parseInlineMarkdownAndHandles(
         <Link
           key={key}
           href={`/?hashtag=${encodeURIComponent(tag)}`}
-          onClick={(e) => e.stopPropagation()}
           className="inline-flex items-center font-bold text-emerald-600 dark:text-emerald-400 hover:underline bg-emerald-50/70 dark:bg-emerald-950/50 hover:bg-emerald-100 px-1.5 py-0.5 rounded-lg text-xs sm:text-sm border border-emerald-200/60 dark:border-emerald-800/60 transition mx-0.5"
         >
           {part}
@@ -218,7 +216,6 @@ function parseInlineMarkdownAndHandles(
         <Link
           key={key}
           href={matched ? `/addas/${matched.id}` : `/?adda=${encodeURIComponent(part)}`}
-          onClick={(e) => e.stopPropagation()}
           className="inline-flex items-center font-extrabold text-teal-600 dark:text-teal-400 hover:underline bg-teal-50/80 dark:bg-teal-950/60 px-1.5 py-0.5 rounded-lg font-mono text-xs sm:text-sm border border-teal-200/60 dark:border-teal-800/60 transition mx-0.5"
         >
           {part}
@@ -234,7 +231,6 @@ function parseInlineMarkdownAndHandles(
           href={part}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
           className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold break-all inline"
         >
           {part}

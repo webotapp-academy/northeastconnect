@@ -14,6 +14,7 @@ import ShareButton from "@/components/common/ShareButton";
 import { soundFX } from "@/lib/soundEffects";
 import { renderRichPostContent } from "@/lib/postFormatting";
 import PostLinkPreview from "@/components/common/PostLinkPreview";
+import { getCommunityPostSlugUrl } from "@/lib/slugs";
 
 const NE_STATES = [
   { name: "All States", icon: "🌿", tag: "All" },
@@ -1822,7 +1823,7 @@ export default function SocialHomeFeed({
                                 </Link>
                                 <span className="text-slate-400 text-xs">•</span>
                                 <Link
-                                  href={`/community/${post.id}`}
+                                  href={getCommunityPostSlugUrl(post)}
                                   className="text-xs text-slate-500 dark:text-slate-400 font-mono hover:underline hover:text-emerald-600 dark:hover:text-emerald-400 transition"
                                   title="Open full post thread in new page"
                                 >
@@ -2071,14 +2072,14 @@ export default function SocialHomeFeed({
                             </button>
 
                             <ShareButton
-                              url={`/community/${post.id}`}
+                              url={getCommunityPostSlugUrl(post)}
                               title={`Thought by @${post.user.username} on NorthEast Connect`}
                               text={post.content.slice(0, 100)}
                             />
                           </div>
 
                           <Link
-                            href={`/community/${post.id}`}
+                            href={getCommunityPostSlugUrl(post)}
                             className="text-[11px] text-slate-400 dark:text-slate-500 font-mono hover:text-emerald-600 dark:hover:text-emerald-400 hover:underline"
                             title="Open permalink"
                           >

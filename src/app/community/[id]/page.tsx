@@ -13,6 +13,7 @@ import PostReactionsBar from "@/components/community/PostReactionsBar";
 import ShareButton from "@/components/common/ShareButton";
 import { renderRichPostContent } from "@/lib/postFormatting";
 import PostLinkPreview from "@/components/common/PostLinkPreview";
+import { parseEntityId, getCommunityPostSlugUrl } from "@/lib/slugs";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -22,8 +23,8 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://northeastconnect.in
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
-  const postId = parseInt(id, 10);
-  if (isNaN(postId)) return { title: "Post Not Found | NorthEast Connect" };
+  const postId = parseEntityId(id);
+  if (!postId) return { title: "Post Not Found | NorthEast Connect" };
 
   const post = await db.communityPost.findUnique({
     where: { id: postId },
@@ -39,13 +40,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const authorName = post.user.fullName || `@${post.user.username}`;
   const excerpt = post.content.slice(0, 150).replace(/\n/g, " ");
   const addaTag = post.taggedLocation || "community";
+  const canonicalUrl = `${siteUrl}${getCommunityPostSlugUrl(post)}`;
 
   return {
     title: `${authorName} on ${addaTag}: "${excerpt}" | NorthEast Connect`,
     description: post.content.slice(0, 200),
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       title: `${authorName} on NorthEast Connect`,
       description: excerpt,
+      url: canonicalUrl,
       type: "article",
       images: post.mediaUrls ? post.mediaUrls.split(",")[0] : undefined,
     },
@@ -54,8 +60,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function SingleCommunityPostPage({ params }: PageProps) {
   const { id } = await params;
-  const postId = parseInt(id, 10);
-  if (isNaN(postId)) notFound();
+  const postId = parseEntityId(id);
+  if (!postId) notFound();
 
   const [post, currentUser] = await Promise.all([
     db.communityPost.findUnique({
@@ -122,12 +128,15 @@ export default async function SingleCommunityPostPage({ params }: PageProps) {
     (a) => a.id === cleanAdda || a.name.toLowerCase() === addaName.toLowerCase()
   );
 
+  const postSlugUrl = getCommunityPostSlugUrl(post);
+  const fullPostUrl = `${siteUrl}${postSlugUrl}`;
+
   const jsonLdDiscussion = {
     "@context": "https://schema.org",
     "@type": "DiscussionForumPosting",
     headline: post.content.slice(0, 110),
     text: post.content,
-    url: `${siteUrl}/community/${post.id}`,
+    url: fullPostUrl,
     datePublished: post.createdAt.toISOString(),
     dateModified: post.updatedAt.toISOString(),
     author: {
@@ -166,6 +175,12 @@ export default async function SingleCommunityPostPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#090d16] text-slate-900 dark:text-slate-100 pt-4 sm:pt-6 pb-24 px-3 sm:px-6 transition-colors">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdDiscussion) }} />
+      {/* Canonical Slug Sync for Browser Address Bar */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `if (typeof window !== 'undefined' && window.location.pathname === '/community/${post.id}') { window.history.replaceState(null, '', '${postSlugUrl}'); }`,
+        }}
+      />
       <div className="container mx-auto max-w-5xl">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400 mb-4 overflow-x-auto whitespace-nowrap py-1">
@@ -323,7 +338,7 @@ export default async function SingleCommunityPostPage({ params }: PageProps) {
                     💬 {commentCount} {commentCount === 1 ? "Thought" : "Thoughts"}
                   </span>
                   <ShareButton
-                    url={`/community/${post.id}`}
+                    url={postSlugUrl}
                     title={`Thought by u/${post.user.username} on NorthEast Connect`}
                     text={post.content.slice(0, 100)}
                   />
@@ -340,7 +355,7 @@ export default async function SingleCommunityPostPage({ params }: PageProps) {
                 entityType="post"
                 entityId={post.id}
                 entityTitle={`Post by @${post.user.username}`}
-                entityUrl={`/community/${post.id}`}
+                entityUrl={postSlugUrl}
                 hideHeader={true}
               />
             </div>

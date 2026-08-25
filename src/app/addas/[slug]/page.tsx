@@ -5,6 +5,7 @@ import { Metadata } from "next";
 import { db } from "@/lib/db";
 import { MASTER_ADDAS } from "@/lib/addas";
 import RankBadge from "@/components/profile/RankBadge";
+import { getCommunityPostSlugUrl } from "@/lib/slugs";
 
 export const revalidate = 60;
 
@@ -197,7 +198,7 @@ export default async function AddaHubPage({ params }: PageProps) {
                 return (
                   <Link
                     key={post.id}
-                    href={`/community/${post.id}`}
+                    href={getCommunityPostSlugUrl(post)}
                     className="block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 hover:border-emerald-400 dark:hover:border-emerald-600 transition"
                   >
                     <div className="flex items-center gap-2.5 mb-2">

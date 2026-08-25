@@ -10,8 +10,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ status: "error", message: "Unauthorized" }, { status: 401 });
     }
 
+    const whereCondition: any =
+      user.role === "Admin"
+        ? { OR: [{ userId: user.id }, { userId: null }] }
+        : { userId: user.id };
+
     const jobs = await db.job.findMany({
-      where: { userId: user.id },
+      where: whereCondition,
       include: {
         applications: {
           orderBy: { createdAt: "desc" },

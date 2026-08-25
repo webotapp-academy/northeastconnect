@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { getJobSlugUrl } from "@/lib/slugs";
 
 // GET /api/jobs — List, Search & Filter Jobs
 export async function GET(req: NextRequest) {
@@ -54,7 +55,9 @@ export async function GET(req: NextRequest) {
       orderBy = [{ salaryMax: "desc" }, { salaryMin: "desc" }, { createdAt: "desc" }];
     }
 
-    const [jobs, total] = await Promise.all([
+    const currentUser = await getCurrentUser();
+
+    const [jobs, total, userApplications] = await Promise.all([
       db.job.findMany({
         where,
         select: {
@@ -94,7 +97,30 @@ export async function GET(req: NextRequest) {
         take: limit,
       }),
       db.job.count({ where }),
+      currentUser
+        ? db.jobApplication.findMany({
+            where: {
+              OR: [
+                { userId: currentUser.id },
+                { email: { equals: currentUser.email, mode: "insensitive" } },
+              ],
+            },
+            select: { jobId: true, status: true },
+          })
+        : Promise.resolve([]),
     ]);
+
+    const appliedStatusMap: Record<number, string> = {};
+    userApplications.forEach((app) => {
+      appliedStatusMap[app.jobId] = app.status;
+    });
+
+    const enrichedJobs = jobs.map((job) => ({
+      ...job,
+      slugUrl: getJobSlugUrl(job),
+      hasApplied: !!appliedStatusMap[job.id],
+      appliedStatus: appliedStatusMap[job.id] || null,
+    }));
 
     return NextResponse.json({
       status: "success",
@@ -103,7 +129,8 @@ export async function GET(req: NextRequest) {
       limit,
       totalPages: Math.ceil(total / limit),
       hasMore: skip + jobs.length < total,
-      jobs,
+      jobs: enrichedJobs,
+      appliedJobIds: Object.keys(appliedStatusMap).map(Number),
     });
   } catch (error: any) {
     console.error("GET /api/jobs error:", error);

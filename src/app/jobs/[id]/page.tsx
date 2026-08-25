@@ -15,6 +15,11 @@ export default function SingleJobDetailPage() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Candidate application status state
+  const [hasApplied, setHasApplied] = useState(false);
+  const [myApplication, setMyApplication] = useState<any>(null);
+  const [viewAppModalOpen, setViewAppModalOpen] = useState(false);
+
   // Apply Modal state
   const [applyModalOpen, setApplyModalOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -67,6 +72,15 @@ export default function SingleJobDetailPage() {
       const data = await res.json();
       if (data.status === "success" && data.job) {
         setJob(data.job);
+        setHasApplied(Boolean(data.hasApplied));
+        setMyApplication(data.myApplication || null);
+
+        // Update URL bar to clean SEO-friendly slug URL seamlessly
+        if (data.job.slugUrl && typeof window !== "undefined") {
+          if (window.location.pathname !== data.job.slugUrl) {
+            window.history.replaceState(null, "", data.job.slugUrl);
+          }
+        }
       } else {
         setErrorMsg(data.message || "Job opening not found");
       }
@@ -141,11 +155,28 @@ export default function SingleJobDetailPage() {
       if (data.status === "success") {
         soundFX.playPop();
         setApplySuccess(true);
+        setHasApplied(true);
+        setMyApplication({
+          id: data.applicationId,
+          status: "Submitted",
+          createdAt: new Date().toISOString(),
+          fullName,
+          email,
+          phone,
+          experience,
+          currentRole,
+          resumeUrl,
+          coverNote,
+        });
         // Refresh applicant count
         setJob((prev: any) =>
           prev ? { ...prev, applicationsCount: (prev.applicationsCount || 0) + 1 } : prev
         );
       } else {
+        if (data.alreadyApplied) {
+          setHasApplied(true);
+          if (data.application) setMyApplication(data.application);
+        }
         setApplyError(data.message || "Failed to submit application");
       }
     } catch (err: any) {
@@ -319,18 +350,32 @@ export default function SingleJobDetailPage() {
 
               {/* Action Buttons */}
               <div className="flex flex-row md:flex-col items-center gap-2.5 shrink-0">
-                <button
-                  type="button"
-                  onClick={() => {
-                    soundFX.playPop();
-                    setApplyModalOpen(true);
-                  }}
-                  disabled={job.status !== "Open"}
-                  className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-2xl text-xs sm:text-sm font-extrabold transition shadow-md shadow-emerald-600/20 cursor-pointer flex items-center justify-center gap-2 active:scale-95"
-                >
-                  <span>⚡</span>
-                  <span>Apply for Position</span>
-                </button>
+                {hasApplied ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFX.playPop();
+                      setViewAppModalOpen(true);
+                    }}
+                    className="w-full sm:w-auto px-6 py-3 bg-emerald-50 dark:bg-emerald-950/80 border-2 border-emerald-500 text-emerald-800 dark:text-emerald-300 rounded-2xl text-xs sm:text-sm font-extrabold transition shadow-md shadow-emerald-500/10 cursor-pointer flex items-center justify-center gap-2 active:scale-95"
+                  >
+                    <span>✅</span>
+                    <span>Already Applied ({myApplication?.status || "Submitted"})</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFX.playPop();
+                      setApplyModalOpen(true);
+                    }}
+                    disabled={job.status !== "Open"}
+                    className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-2xl text-xs sm:text-sm font-extrabold transition shadow-md shadow-emerald-600/20 cursor-pointer flex items-center justify-center gap-2 active:scale-95"
+                  >
+                    <span>⚡</span>
+                    <span>Apply for Position</span>
+                  </button>
+                )}
 
                 {job.contactPhone && (
                   <a
@@ -348,6 +393,78 @@ export default function SingleJobDetailPage() {
 
       {/* Main Grid */}
       <div className="container mx-auto px-4 sm:px-6 max-w-5xl mt-6 sm:mt-8">
+        {/* Candidate Application Status Banner */}
+        {hasApplied && (
+          <div className="mb-6 bg-linear-to-r from-emerald-500/15 via-emerald-500/5 to-transparent border-2 border-emerald-500/30 dark:border-emerald-500/30 rounded-3xl p-5 sm:p-6 shadow-sm backdrop-blur-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-2xl shrink-0">
+                  {myApplication?.status === "Shortlisted"
+                    ? "⭐"
+                    : myApplication?.status === "Reviewed"
+                    ? "👀"
+                    : myApplication?.status === "Rejected"
+                    ? "❌"
+                    : "✅"}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-xs font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-300">
+                      Your Application
+                    </span>
+                    <span
+                      className={`px-3 py-0.5 rounded-full text-xs font-extrabold border ${
+                        myApplication?.status === "Shortlisted"
+                          ? "bg-emerald-500 text-white border-emerald-600 shadow-xs"
+                          : myApplication?.status === "Reviewed"
+                          ? "bg-blue-500 text-white border-blue-600 shadow-xs"
+                          : myApplication?.status === "Rejected"
+                          ? "bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800"
+                          : "bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800"
+                      }`}
+                    >
+                      ● Status: {myApplication?.status || "Submitted"}
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200">
+                    {myApplication?.status === "Shortlisted"
+                      ? "🎉 Congratulations! You have been shortlisted by the employer for this position."
+                      : myApplication?.status === "Reviewed"
+                      ? "The employer has opened and reviewed your submitted candidate profile."
+                      : myApplication?.status === "Rejected"
+                      ? "The employer has decided not to proceed with this application."
+                      : "You have applied for this position. The hiring team has received your application and will review your profile shortly."}
+                  </p>
+                  {myApplication?.createdAt && (
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 font-mono">
+                      Applied on{" "}
+                      {new Date(myApplication.createdAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  soundFX.playPop();
+                  setViewAppModalOpen(true);
+                }}
+                className="px-4 py-2.5 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-xs font-bold transition shadow-xs shrink-0 cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <span>📄</span>
+                <span>View Submitted Profile</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column: Job Description & Details */}
           <div className="lg:col-span-2 space-y-6">
@@ -510,16 +627,30 @@ export default function SingleJobDetailPage() {
               </div>
 
               <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    soundFX.playPop();
-                    setApplyModalOpen(true);
-                  }}
-                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition text-center block shadow-xs active:scale-95 cursor-pointer"
-                >
-                  ⚡ Apply for Position
-                </button>
+                {hasApplied ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFX.playPop();
+                      setViewAppModalOpen(true);
+                    }}
+                    className="w-full py-2.5 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-400 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-extrabold transition text-center block shadow-xs cursor-pointer active:scale-95"
+                  >
+                    ✅ Already Applied ({myApplication?.status || "Submitted"})
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      soundFX.playPop();
+                      setApplyModalOpen(true);
+                    }}
+                    disabled={job.status !== "Open"}
+                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition text-center block shadow-xs active:scale-95 cursor-pointer"
+                  >
+                    ⚡ Apply for Position
+                  </button>
+                )}
 
                 {isOwnerOrAdmin && (
                   <button
@@ -807,6 +938,170 @@ export default function SingleJobDetailPage() {
                   </div>
                 ))
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Candidate View Submitted Application Modal */}
+      {viewAppModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button
+              type="button"
+              onClick={() => setViewAppModalOpen(false)}
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-bold p-1 cursor-pointer"
+            >
+              ✕
+            </button>
+
+            <div className="mb-5 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                  Your Job Application
+                </span>
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    myApplication?.status === "Shortlisted"
+                      ? "bg-emerald-500 text-white border-emerald-600 shadow-xs"
+                      : myApplication?.status === "Reviewed"
+                      ? "bg-blue-500 text-white border-blue-600 shadow-xs"
+                      : myApplication?.status === "Rejected"
+                      ? "bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-300 dark:border-rose-800"
+                      : "bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800"
+                  }`}
+                >
+                  ● {myApplication?.status || "Submitted"}
+                </span>
+              </div>
+              <h2 className="text-lg font-black text-slate-900 dark:text-white">
+                {job.title}
+              </h2>
+              <p className="text-xs text-slate-500 font-medium">at {job.company || "Hiring Employer"}</p>
+            </div>
+
+            {/* Status explanation timeline */}
+            <div className="mb-5 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 space-y-3">
+              <h4 className="text-xs font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
+                <span>📍</span>
+                <span>Application Progress</span>
+              </h4>
+
+              <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-bold">
+                <div
+                  className={`p-2 rounded-xl border ${
+                    myApplication?.status
+                      ? "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-400 border-transparent"
+                  }`}
+                >
+                  <span className="block text-sm mb-0.5">📩</span>
+                  <span>1. Submitted</span>
+                </div>
+
+                <div
+                  className={`p-2 rounded-xl border ${
+                    myApplication?.status === "Reviewed" || myApplication?.status === "Shortlisted"
+                      ? "bg-blue-50 dark:bg-blue-950/60 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-400 border-transparent"
+                  }`}
+                >
+                  <span className="block text-sm mb-0.5">👀</span>
+                  <span>2. Under Review</span>
+                </div>
+
+                <div
+                  className={`p-2 rounded-xl border ${
+                    myApplication?.status === "Shortlisted"
+                      ? "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 font-extrabold"
+                      : myApplication?.status === "Rejected"
+                      ? "bg-rose-50 dark:bg-rose-950/60 border-rose-300 dark:border-rose-700 text-rose-700 dark:text-rose-300"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-400 border-transparent"
+                  }`}
+                >
+                  <span className="block text-sm mb-0.5">
+                    {myApplication?.status === "Rejected" ? "❌" : "⭐"}
+                  </span>
+                  <span>{myApplication?.status === "Rejected" ? "3. Closed" : "3. Decision / Shortlist"}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Submitted Info summary */}
+            <div className="space-y-3 text-xs">
+              <div>
+                <span className="text-slate-400 block font-medium">Applicant Name:</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">
+                  {myApplication?.fullName || fullName || "—"}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <span className="text-slate-400 block font-medium">Email:</span>
+                  <span className="font-bold text-slate-900 dark:text-slate-100 break-all">
+                    {myApplication?.email || email || "—"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-medium">Phone:</span>
+                  <span className="font-bold text-slate-900 dark:text-slate-100">
+                    {myApplication?.phone || phone || "—"}
+                  </span>
+                </div>
+              </div>
+
+              {myApplication?.currentRole && (
+                <div>
+                  <span className="text-slate-400 block font-medium">Current Role:</span>
+                  <span className="font-bold text-slate-900 dark:text-slate-100">
+                    {myApplication.currentRole}
+                  </span>
+                </div>
+              )}
+
+              {myApplication?.experience && (
+                <div>
+                  <span className="text-slate-400 block font-medium">Experience:</span>
+                  <span className="font-bold text-slate-900 dark:text-slate-100">
+                    {myApplication.experience}
+                  </span>
+                </div>
+              )}
+
+              {myApplication?.resumeUrl && (
+                <div>
+                  <span className="text-slate-400 block font-medium">Resume / Portfolio:</span>
+                  <a
+                    href={myApplication.resumeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline font-bold"
+                  >
+                    <span>📄 Open Attached Resume Document</span>
+                    <span>&rarr;</span>
+                  </a>
+                </div>
+              )}
+
+              {myApplication?.coverNote && (
+                <div>
+                  <span className="text-slate-400 block font-medium">Cover Note:</span>
+                  <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line text-[11px]">
+                    {myApplication.coverNote}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => setViewAppModalOpen(false)}
+                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-xs font-bold transition cursor-pointer"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

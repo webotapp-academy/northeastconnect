@@ -5,6 +5,7 @@ import Link from "next/link";
 import RankBadge from "@/components/profile/RankBadge";
 import AuthModal from "@/components/auth/AuthModal";
 import { soundFX } from "@/lib/soundEffects";
+import { getJobSlugUrl } from "@/lib/slugs";
 
 const DIRECTORY_CATEGORIES = [
   "All Categories",
@@ -1327,7 +1328,7 @@ export default function CommunityDiscoveryPage() {
                               {job.type || "Full-time"}
                             </span>
                             <Link
-                              href={`/jobs/${job.id}`}
+                              href={getJobSlugUrl(job)}
                               className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100 hover:text-emerald-600 dark:hover:text-emerald-400 transition line-clamp-1 block"
                             >
                               {job.title}
@@ -1387,7 +1388,7 @@ export default function CommunityDiscoveryPage() {
                             ⚡ Apply
                           </button>
                           <Link
-                            href={`/jobs/${job.id}`}
+                            href={getJobSlugUrl(job)}
                             className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition"
                           >
                             Details &rarr;

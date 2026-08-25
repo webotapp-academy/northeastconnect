@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import AuthModal from "@/components/auth/AuthModal";
 import { soundFX } from "@/lib/soundEffects";
+import { getJobSlugUrl } from "@/lib/slugs";
 
 const JOB_TYPES = [
   "All Types",
@@ -478,7 +479,7 @@ export default function JobsDirectoryPage() {
                             {job.company || "Hiring Organization"}
                           </p>
                           <Link
-                            href={`/jobs/${job.id}`}
+                            href={job.slugUrl || getJobSlugUrl(job)}
                             className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-slate-100 hover:text-emerald-600 dark:hover:text-emerald-400 block truncate transition"
                           >
                             {job.title}
@@ -486,9 +487,16 @@ export default function JobsDirectoryPage() {
                         </div>
                       </div>
 
-                      <span className="px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded-full text-[10px] font-extrabold shrink-0">
-                        {job.type}
-                      </span>
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <span className="px-2.5 py-0.5 bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 rounded-full text-[10px] font-extrabold">
+                          {job.type}
+                        </span>
+                        {job.hasApplied && (
+                          <span className="px-2 py-0.5 bg-emerald-500 text-white rounded-full text-[9px] font-extrabold shadow-xs">
+                            ✓ Applied
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Location & Sector */}
@@ -553,21 +561,31 @@ export default function JobsDirectoryPage() {
                     </div>
 
                     <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          soundFX.playPop();
-                          setSelectedJobForApply(job);
-                          setApplyModalOpen(true);
-                        }}
-                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold transition shadow-xs flex items-center gap-1 active:scale-95 cursor-pointer"
-                      >
-                        <span>⚡</span>
-                        <span>Apply</span>
-                      </button>
+                      {job.hasApplied ? (
+                        <Link
+                          href={job.slugUrl || getJobSlugUrl(job)}
+                          className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-bold transition flex items-center gap-1"
+                        >
+                          <span>✓</span>
+                          <span>Applied</span>
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            soundFX.playPop();
+                            setSelectedJobForApply(job);
+                            setApplyModalOpen(true);
+                          }}
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold transition shadow-xs flex items-center gap-1 active:scale-95 cursor-pointer"
+                        >
+                          <span>⚡</span>
+                          <span>Apply</span>
+                        </button>
+                      )}
 
                       <Link
-                        href={`/jobs/${job.id}`}
+                        href={job.slugUrl || getJobSlugUrl(job)}
                         className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition"
                         title="View Full Job Details"
                       >

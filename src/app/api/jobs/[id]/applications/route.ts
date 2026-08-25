@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { parseEntityId } from "@/lib/slugs";
 
 // GET /api/jobs/[id]/applications — Retrieve Candidate Applications for a Job Opening
 export async function GET(
@@ -14,8 +15,8 @@ export async function GET(
     }
 
     const params = await props.params;
-    const jobId = parseInt(params.id, 10);
-    if (isNaN(jobId)) {
+    const jobId = parseEntityId(params.id);
+    if (!jobId) {
       return NextResponse.json({ status: "error", message: "Invalid Job ID" }, { status: 400 });
     }
 
@@ -71,8 +72,8 @@ export async function PATCH(
     }
 
     const params = await props.params;
-    const jobId = parseInt(params.id, 10);
-    if (isNaN(jobId)) {
+    const jobId = parseEntityId(params.id);
+    if (!jobId) {
       return NextResponse.json({ status: "error", message: "Invalid Job ID" }, { status: 400 });
     }
 

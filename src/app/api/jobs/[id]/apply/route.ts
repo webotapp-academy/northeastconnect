@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { parseEntityId } from "@/lib/slugs";
 
 // POST /api/jobs/[id]/apply — Apply for a Job Opening
 export async function POST(
@@ -9,8 +10,8 @@ export async function POST(
 ) {
   try {
     const params = await props.params;
-    const jobId = parseInt(params.id, 10);
-    if (isNaN(jobId)) {
+    const jobId = parseEntityId(params.id);
+    if (!jobId) {
       return NextResponse.json({ status: "error", message: "Invalid Job ID" }, { status: 400 });
     }
 
@@ -46,6 +47,31 @@ export async function POST(
     if (!fullName || !email || !phone) {
       return NextResponse.json(
         { status: "error", message: "Full Name, Email, and Phone number are required to apply." },
+        { status: 400 }
+      );
+    }
+
+    // Check if candidate has already submitted an application
+    const searchConditions: any[] = [{ email: email.trim().toLowerCase() }];
+    if (user?.id) {
+      searchConditions.push({ userId: user.id });
+    }
+
+    const existingApplication = await db.jobApplication.findFirst({
+      where: {
+        jobId,
+        OR: searchConditions,
+      },
+    });
+
+    if (existingApplication) {
+      return NextResponse.json(
+        {
+          status: "error",
+          message: `You have already applied for this opening. Application status: ${existingApplication.status}`,
+          alreadyApplied: true,
+          application: existingApplication,
+        },
         { status: 400 }
       );
     }

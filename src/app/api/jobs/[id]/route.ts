@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { parseEntityId, getJobSlugUrl } from "@/lib/slugs";
 
-// GET /api/jobs/[id] — Single Job Details
+// GET /api/jobs/[id] — Single Job Details (Supports numeric ID or slug URL)
 export async function GET(
   req: NextRequest,
   props: { params: Promise<{ id: string }> }
 ) {
   try {
     const params = await props.params;
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
+    const id = parseEntityId(params.id);
+    if (!id) {
       return NextResponse.json({ status: "error", message: "Invalid Job ID" }, { status: 400 });
     }
 
@@ -35,6 +36,33 @@ export async function GET(
       return NextResponse.json({ status: "error", message: "Job not found" }, { status: 404 });
     }
 
+    // Check if the requesting user has already applied
+    const currentUser = await getCurrentUser();
+    let userApplication = null;
+    if (currentUser) {
+      userApplication = await db.jobApplication.findFirst({
+        where: {
+          jobId: id,
+          OR: [
+            { userId: currentUser.id },
+            { email: { equals: currentUser.email, mode: "insensitive" } },
+          ],
+        },
+        select: {
+          id: true,
+          status: true,
+          createdAt: true,
+          fullName: true,
+          currentRole: true,
+          resumeUrl: true,
+          coverNote: true,
+          phone: true,
+          email: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    }
+
     // Increment views count asynchronously in background
     db.job
       .update({
@@ -45,7 +73,12 @@ export async function GET(
 
     return NextResponse.json({
       status: "success",
-      job,
+      job: {
+        ...job,
+        slugUrl: getJobSlugUrl(job),
+      },
+      hasApplied: !!userApplication,
+      myApplication: userApplication,
     });
   } catch (error: any) {
     console.error("GET /api/jobs/[id] error:", error);
@@ -65,8 +98,8 @@ export async function PATCH(
     }
 
     const params = await props.params;
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
+    const id = parseEntityId(params.id);
+    if (!id) {
       return NextResponse.json({ status: "error", message: "Invalid Job ID" }, { status: 400 });
     }
 
@@ -140,8 +173,8 @@ export async function DELETE(
     }
 
     const params = await props.params;
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
+    const id = parseEntityId(params.id);
+    if (!id) {
       return NextResponse.json({ status: "error", message: "Invalid Job ID" }, { status: 400 });
     }
 

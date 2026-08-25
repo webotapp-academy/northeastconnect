@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import AuthModal from "@/components/auth/AuthModal";
 import { soundFX } from "@/lib/soundEffects";
+import { getJobSlugUrl } from "@/lib/slugs";
 
 export default function MyPostedJobsPage() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -173,7 +174,7 @@ export default function MyPostedJobsPage() {
                     </div>
 
                     <Link
-                      href={`/jobs/${job.id}`}
+                      href={getJobSlugUrl(job)}
                       className="text-base sm:text-lg font-black text-slate-900 dark:text-white hover:text-emerald-600"
                     >
                       {job.title}

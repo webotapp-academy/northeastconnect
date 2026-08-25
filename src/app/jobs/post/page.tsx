@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AuthModal from "@/components/auth/AuthModal";
 import { soundFX } from "@/lib/soundEffects";
+import { getJobSlugUrl } from "@/lib/slugs";
 
 const JOB_TYPES = [
   "Full-time",
@@ -139,7 +140,7 @@ export default function PostJobPage() {
         soundFX.playPop();
         setSuccessMsg("Job opening published successfully!");
         setTimeout(() => {
-          router.push(`/jobs/${data.job.id}`);
+          router.push(getJobSlugUrl(data.job));
         }, 1200);
       } else {
         setErrorMsg(data.message || "Failed to post job.");

@@ -33,7 +33,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Fetch dynamic routes from database
   try {
-    const [marketplace, users, culture, news, directory, wildlife, adventure] = await Promise.all([
+    const [jobs, marketplace, users, culture, news, directory, wildlife, adventure] = await Promise.all([
+      db.job.findMany({
+        where: { status: "Open" },
+        select: { id: true, title: true, company: true, location: true, district: true, state: true, updatedAt: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+        take: 2000,
+      }),
       db.marketplaceListing.findMany({
         where: { status: "Active" },
         select: { id: true, updatedAt: true, createdAt: true },
@@ -69,7 +75,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     ]);
 
-    // 1. Marketplace Listings
+    // 1. Job Vacancies & Careers
+    const jobRoutes: MetadataRoute.Sitemap = jobs.map((item) => {
+      const parts = [item.title, item.company, item.location || item.district || item.state].filter(Boolean).join(" ");
+      const slug = parts.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
+      return {
+        url: `${baseUrl}/jobs/${slug || "opening"}-${item.id}`,
+        lastModified: item.updatedAt ? new Date(item.updatedAt) : item.createdAt ? new Date(item.createdAt) : new Date(),
+        changeFrequency: "daily",
+        priority: 0.85,
+      };
+    });
+
+    // 2. Marketplace Listings
     const marketplaceRoutes: MetadataRoute.Sitemap = marketplace.map((item) => ({
       url: `${baseUrl}/marketplace/${item.id}`,
       lastModified: item.updatedAt ? new Date(item.updatedAt) : new Date(item.createdAt),
@@ -77,7 +95,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
 
-    // 2. User Profiles
+    // 3. User Profiles
     const profileRoutes: MetadataRoute.Sitemap = users.map((user) => ({
       url: `${baseUrl}/profile/${encodeURIComponent(user.username)}`,
       lastModified: user.createdAt ? new Date(user.createdAt) : new Date(),
@@ -85,7 +103,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-    // 3. Culture Heritage & Festivals
+    // 4. Culture Heritage & Festivals
     const cultureRoutes: MetadataRoute.Sitemap = culture.map((item) => {
       const slug = item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
       return {
@@ -96,7 +114,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
 
-    // 4. News Articles
+    // 5. News Articles
     const newsRoutes: MetadataRoute.Sitemap = news.map((item) => {
       const slugOrId = item.url || item.id;
       return {
@@ -107,7 +125,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
 
-    // 5. Directory Businesses
+    // 6. Directory Businesses
     const directoryRoutes: MetadataRoute.Sitemap = directory.map((item) => {
       const slug = item.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
       return {
@@ -118,7 +136,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
 
-    // 6. Wildlife Sanctuaries
+    // 7. Wildlife Sanctuaries
     const wildlifeRoutes: MetadataRoute.Sitemap = wildlife.map((item) => {
       const slug = item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
       return {
@@ -129,7 +147,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       };
     });
 
-    // 7. Adventure Spots
+    // 8. Adventure Spots
     const adventureRoutes: MetadataRoute.Sitemap = adventure.map((item) => {
       const slug = item.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
       return {
@@ -142,6 +160,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     return [
       ...staticRoutes,
+      ...jobRoutes,
       ...marketplaceRoutes,
       ...profileRoutes,
       ...cultureRoutes,

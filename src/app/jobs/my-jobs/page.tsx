@@ -191,16 +191,19 @@ export default function MyPostedJobsPage() {
                     <button
                       type="button"
                       onClick={() => setSelectedJobForApplicants(job)}
-                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
+                      className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
                     >
                       <span>📩</span>
-                      <span>View {job.applications?.length || 0} Candidates</span>
+                      <span>
+                        View {job.applications?.length || job.applicationsCount || 0}{" "}
+                        {(job.applications?.length || job.applicationsCount || 0) === 1 ? "Candidate" : "Candidates"}
+                      </span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handleToggleStatus(job.id, job.status)}
-                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition"
+                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold transition cursor-pointer"
                     >
                       {job.status === "Open" ? "Close Job" : "Re-open Job"}
                     </button>
@@ -208,7 +211,7 @@ export default function MyPostedJobsPage() {
                     <button
                       type="button"
                       onClick={() => handleDeleteJob(job.id)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 text-xs font-bold"
+                      className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 text-xs font-bold cursor-pointer"
                       title="Delete Job"
                     >
                       🗑️
@@ -219,7 +222,10 @@ export default function MyPostedJobsPage() {
                 <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center gap-4 text-xs text-slate-400 font-mono">
                   <span>👁️ {job.viewsCount || 0} total views</span>
                   <span>•</span>
-                  <span>📩 {job.applicationsCount || 0} total applicants</span>
+                  <span>
+                    📩 {job.applications?.length || job.applicationsCount || 0} total{" "}
+                    {(job.applications?.length || job.applicationsCount || 0) === 1 ? "application" : "applications"} received
+                  </span>
                 </div>
               </div>
             ))}
@@ -234,33 +240,34 @@ export default function MyPostedJobsPage() {
             <button
               type="button"
               onClick={() => setSelectedJobForApplicants(null)}
-              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-bold p-1"
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm font-bold p-1 cursor-pointer"
             >
               ✕
             </button>
 
             <div className="mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                Candidate Applications
+                Employer Review Panel
               </span>
               <h2 className="text-lg font-black text-slate-900 dark:text-white">
                 {selectedJobForApplicants.title}
               </h2>
               <p className="text-xs text-slate-500">
-                {selectedJobForApplicants.applications?.length || 0} total candidate submissions
+                {selectedJobForApplicants.applications?.length || 0} candidate{" "}
+                {selectedJobForApplicants.applications?.length === 1 ? "application" : "applications"} received
               </p>
             </div>
 
             <div className="overflow-y-auto space-y-3 flex-1 pr-1">
               {!selectedJobForApplicants.applications || selectedJobForApplicants.applications.length === 0 ? (
                 <div className="py-12 text-center text-slate-400 text-xs">
-                  No candidate applications received yet.
+                  No candidate applications received yet for this vacancy.
                 </div>
               ) : (
                 selectedJobForApplicants.applications.map((app: any) => (
                   <div
                     key={app.id}
-                    className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl text-xs space-y-2"
+                    className="p-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 rounded-2xl text-xs space-y-2.5"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -271,14 +278,45 @@ export default function MyPostedJobsPage() {
                           <p className="text-slate-500 text-[11px] font-medium">{app.currentRole}</p>
                         )}
                       </div>
-                      <span className="text-[10px] text-slate-400 font-mono">
-                        {new Date(app.createdAt).toLocaleDateString()}
-                      </span>
+
+                      <div className="flex items-center gap-1.5">
+                        <select
+                          value={app.status || "Submitted"}
+                          onChange={async (e) => {
+                            const newStatus = e.target.value;
+                            try {
+                              await fetch(`/api/jobs/${selectedJobForApplicants.id}/applications`, {
+                                method: "PATCH",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ applicationId: app.id, status: newStatus }),
+                              });
+                              // update locally
+                              setSelectedJobForApplicants((prev: any) => ({
+                                ...prev,
+                                applications: prev.applications.map((a: any) =>
+                                  a.id === app.id ? { ...a, status: newStatus } : a
+                                ),
+                              }));
+                            } catch (err) {
+                              console.error("Status update error", err);
+                            }
+                          }}
+                          className="px-2 py-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[10px] font-bold text-slate-700 dark:text-slate-300 cursor-pointer"
+                        >
+                          <option value="Submitted">Submitted</option>
+                          <option value="Reviewed">Reviewed</option>
+                          <option value="Shortlisted">Shortlisted ⭐</option>
+                          <option value="Rejected">Rejected</option>
+                        </select>
+                      </div>
                     </div>
 
                     <div className="flex items-center flex-wrap gap-3 text-slate-600 dark:text-slate-300 text-[11px]">
-                      <span>📧 <a href={`mailto:${app.email}`} className="text-emerald-600 hover:underline">{app.email}</a></span>
-                      <span>📞 <a href={`tel:${app.phone}`} className="text-emerald-600 hover:underline">{app.phone}</a></span>
+                      <span>📧 <a href={`mailto:${app.email}`} className="text-emerald-600 hover:underline font-bold">{app.email}</a></span>
+                      <span>📞 <a href={`tel:${app.phone}`} className="text-emerald-600 hover:underline font-bold">{app.phone}</a></span>
+                      {app.phone && (
+                        <span>💬 <a href={`https://wa.me/${app.phone.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline font-bold">WhatsApp</a></span>
+                      )}
                       {app.experience && <span>⏳ {app.experience}</span>}
                     </div>
 
@@ -290,7 +328,7 @@ export default function MyPostedJobsPage() {
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline font-bold text-[11px]"
                         >
-                          <span>📄 View Resume / Portfolio URL</span>
+                          <span>📄 Open Resume / Portfolio Document</span>
                           <span>&rarr;</span>
                         </a>
                       </div>
@@ -298,7 +336,7 @@ export default function MyPostedJobsPage() {
 
                     {app.coverNote && (
                       <div className="bg-white dark:bg-slate-900 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-[11px] leading-relaxed">
-                        <span className="font-bold block text-slate-400 text-[10px] uppercase">Cover Note:</span>
+                        <span className="font-bold block text-slate-400 text-[10px] uppercase">Cover Pitch:</span>
                         {app.coverNote}
                       </div>
                     )}

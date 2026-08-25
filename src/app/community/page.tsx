@@ -6,6 +6,7 @@ import RankBadge from "@/components/profile/RankBadge";
 import AuthModal from "@/components/auth/AuthModal";
 import { soundFX } from "@/lib/soundEffects";
 import { getJobSlugUrl } from "@/lib/slugs";
+import { renderRichPostContent } from "@/lib/postFormatting";
 
 const DIRECTORY_CATEGORIES = [
   "All Categories",
@@ -1123,9 +1124,9 @@ export default function CommunityDiscoveryPage() {
                         </div>
                       </div>
 
-                      <p className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 line-clamp-3 leading-relaxed mb-3">
-                        {post.content}
-                      </p>
+                      <div className="text-xs sm:text-sm text-slate-800 dark:text-slate-200 line-clamp-3 leading-relaxed mb-3 whitespace-pre-wrap">
+                        {renderRichPostContent(post.content)}
+                      </div>
                     </div>
 
                     <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-500">

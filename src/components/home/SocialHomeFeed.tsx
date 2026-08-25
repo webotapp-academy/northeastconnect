@@ -12,6 +12,8 @@ import PostReactionsBar from "@/components/community/PostReactionsBar";
 import RepostModal from "@/components/community/RepostModal";
 import ShareButton from "@/components/common/ShareButton";
 import { soundFX } from "@/lib/soundEffects";
+import { renderRichPostContent } from "@/lib/postFormatting";
+import PostLinkPreview from "@/components/common/PostLinkPreview";
 
 const NE_STATES = [
   { name: "All States", icon: "🌿", tag: "All" },
@@ -604,54 +606,9 @@ export default function SocialHomeFeed({
 
   function renderPostContent(content: string) {
     if (!content) return null;
-    const tokens = content.split(/(#[a-zA-Z0-9_]+|n:[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+)/g);
-
-    return tokens.map((token, i) => {
-      if (token.startsWith("@")) {
-        const handle = token.slice(1);
-        return (
-          <Link
-            key={i}
-            href={`/profile/${handle}`}
-            onClick={(e) => e.stopPropagation()}
-            className="inline-flex items-center gap-0.5 font-bold text-indigo-600 dark:text-indigo-400 hover:underline bg-indigo-50/80 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 px-1.5 py-0.5 rounded-lg text-sm sm:text-base border border-indigo-200/60 dark:border-indigo-800/60 transition"
-          >
-            <span>{token}</span>
-          </Link>
-        );
-      }
-      if (token.startsWith("#")) {
-        const tag = token.slice(1);
-        return (
-          <button
-            key={i}
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleSelectHashtag(tag);
-            }}
-            className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer bg-emerald-50/70 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded-lg text-sm sm:text-base border border-emerald-200/60 dark:border-emerald-800/60 transition"
-          >
-            {token}
-          </button>
-        );
-      }
-      if (token.startsWith("n:")) {
-        return (
-          <button
-            key={i}
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleSelectAdda(token);
-            }}
-            className="font-bold text-teal-600 dark:text-teal-400 hover:underline cursor-pointer bg-teal-50/70 dark:bg-teal-950/50 px-1.5 py-0.5 rounded-lg font-mono text-sm sm:text-base border border-teal-200/60 dark:border-teal-800/60 transition"
-          >
-            {token}
-          </button>
-        );
-      }
-      return token;
+    return renderRichPostContent(content, {
+      onSelectHashtag: handleSelectHashtag,
+      onSelectAdda: handleSelectAdda,
     });
   }
 
@@ -2029,6 +1986,9 @@ export default function SocialHomeFeed({
                                 )}
                               </div>
                             )}
+
+                            {/* Link Previews (Facebook-Style & YouTube) */}
+                            <PostLinkPreview content={post.content} />
                           </div>
                         )}
 

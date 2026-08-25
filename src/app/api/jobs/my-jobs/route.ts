@@ -33,9 +33,14 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
+    const enrichedJobs = jobs.map((job) => ({
+      ...job,
+      applicationsCount: job.applications?.length || 0,
+    }));
+
     return NextResponse.json({
       status: "success",
-      jobs,
+      jobs: enrichedJobs,
     });
   } catch (error: any) {
     console.error("GET /api/jobs/my-jobs error:", error);

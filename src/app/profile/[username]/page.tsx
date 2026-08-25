@@ -6,6 +6,8 @@ import { useParams } from "next/navigation";
 import RankBadge from "@/components/profile/RankBadge";
 import FriendActionButton from "@/components/profile/FriendActionButton";
 import PostMediaCarousel from "@/components/common/PostMediaCarousel";
+import { renderRichPostContent } from "@/lib/postFormatting";
+import PostLinkPreview from "@/components/common/PostLinkPreview";
 
 export default function UserProfilePage() {
   const params = useParams();
@@ -651,9 +653,10 @@ export default function UserProfilePage() {
                           })}
                         </span>
                       </div>
-                      <p className="text-slate-800 dark:text-slate-200 text-xs sm:text-sm leading-relaxed mb-3">
-                        {post.content}
-                      </p>
+                      <div className="text-slate-800 dark:text-slate-200 text-xs sm:text-sm leading-relaxed mb-3 whitespace-pre-wrap">
+                        {renderRichPostContent(post.content)}
+                      </div>
+                      <PostLinkPreview content={post.content} />
                       {post.mediaUrls && (
                         <div className="mb-3">
                           <PostMediaCarousel mediaUrls={post.mediaUrls} />

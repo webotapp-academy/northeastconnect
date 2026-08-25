@@ -11,6 +11,8 @@ import CommentSection from "@/components/comments/CommentSection";
 import PostMediaCarousel from "@/components/common/PostMediaCarousel";
 import PostReactionsBar from "@/components/community/PostReactionsBar";
 import ShareButton from "@/components/common/ShareButton";
+import { renderRichPostContent } from "@/lib/postFormatting";
+import PostLinkPreview from "@/components/common/PostLinkPreview";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -147,49 +149,9 @@ export default async function SingleCommunityPostPage({ params }: PageProps) {
       : { "@type": "WebSite", name: "North East Connect", url: siteUrl },
   };
 
-  // Helper to render hashtags and mentions
+  // Helper to render markdown formatting, hashtags and mentions
   function renderContent(content: string) {
-    const tokens = content.split(/(#[a-zA-Z0-9_]+|n:[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+)/g);
-    return tokens.map((token, i) => {
-      if (token.startsWith("@")) {
-        const handle = token.slice(1);
-        return (
-          <Link
-            key={i}
-            href={`/profile/${handle}`}
-            className="inline-flex items-center font-bold text-indigo-600 dark:text-indigo-400 hover:underline bg-indigo-50/80 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded-lg text-sm transition mx-0.5"
-          >
-            {token}
-          </Link>
-        );
-      }
-      if (token.startsWith("#")) {
-        const tag = token.slice(1);
-        return (
-          <Link
-            key={i}
-            href={`/?hashtag=${tag}`}
-            className="inline-flex items-center font-bold text-emerald-600 dark:text-emerald-400 hover:underline bg-emerald-50/80 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-lg text-sm transition mx-0.5"
-          >
-            {token}
-          </Link>
-        );
-      }
-      if (token.startsWith("n:")) {
-        const aName = token.slice(2);
-        const matched = MASTER_ADDAS.find((a) => a.id === aName.toLowerCase() || a.name.toLowerCase() === token.toLowerCase());
-        return (
-          <Link
-            key={i}
-            href={matched ? `/addas/${matched.id}` : `/?adda=n:${aName}`}
-            className="inline-flex items-center font-extrabold text-teal-600 dark:text-teal-400 hover:underline bg-teal-50/80 dark:bg-teal-950/60 px-1.5 py-0.5 rounded-lg text-sm transition mx-0.5"
-          >
-            {token}
-          </Link>
-        );
-      }
-      return token;
-    });
+    return renderRichPostContent(content);
   }
 
   function formatTimeAgo(date: Date) {
@@ -289,6 +251,9 @@ export default async function SingleCommunityPostPage({ params }: PageProps) {
               <div className="text-slate-900 dark:text-slate-100 text-base sm:text-lg font-medium leading-relaxed whitespace-pre-wrap mb-4">
                 {renderContent(post.content)}
               </div>
+
+              {/* Link Previews (Facebook-Style & YouTube) */}
+              <PostLinkPreview content={post.content} />
 
               {/* Embedded Repost Preview */}
               {post.originalPost && (

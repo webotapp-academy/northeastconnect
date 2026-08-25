@@ -61,6 +61,10 @@ function getNotificationIcon(type: string) {
       return "👑";
     case "BADGE_UNLOCKED":
       return "🏅";
+    case "JOB_APPLICATION":
+      return "💼";
+    case "LEAD_RECEIVED":
+      return "📬";
     default:
       return "🔔";
   }

@@ -225,7 +225,7 @@ export default function MyBusinessesDashboardPage() {
                       </button>
 
                       <Link
-                        href={`/listing/${biz.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${biz.id}`}
+                        href={`/listing/${(biz.businessName || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${biz.id}`}
                         target="_blank"
                         className="px-3.5 py-1.5 rounded-2xl bg-slate-100/80 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold border border-slate-200 dark:border-slate-700 transition"
                       >

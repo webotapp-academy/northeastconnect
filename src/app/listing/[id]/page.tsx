@@ -480,9 +480,10 @@ export default async function ListingDetailPage({ params }: PageProps) {
                 About the Business
               </h2>
 
-              <div className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm whitespace-pre-line space-y-4">
-                <p>{business.description}</p>
-              </div>
+              <div
+                className="text-slate-700 dark:text-slate-300 leading-relaxed text-sm space-y-4 [&_h1]:text-lg [&_h1]:sm:text-xl [&_h1]:font-bold [&_h1]:text-slate-900 [&_h1]:dark:text-slate-100 [&_h2]:text-base [&_h2]:sm:text-lg [&_h2]:font-bold [&_h2]:text-slate-900 [&_h2]:dark:text-slate-100 [&_h2]:mt-4 [&_p]:mb-3 [&_a]:text-emerald-600 [&_a]:dark:text-emerald-400 [&_a]:underline"
+                dangerouslySetInnerHTML={{ __html: business.description }}
+              />
             </div>
           )}
 

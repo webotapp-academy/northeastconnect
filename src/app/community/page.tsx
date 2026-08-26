@@ -1242,7 +1242,7 @@ export default function CommunityDiscoveryPage() {
 
                       <div className="p-3.5 sm:p-4 pt-0">
                         <Link
-                          href={`/directory/${biz.id}`}
+                          href={`/listing/${biz.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${biz.id}`}
                           className="block w-full py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 text-center rounded-xl text-xs font-bold transition"
                         >
                           View Details &rarr;

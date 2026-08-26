@@ -1748,7 +1748,7 @@ export default function SocialHomeFeed({
                           {relatedAddaDirectory.map((b) => (
                             <Link
                               key={b.id}
-                              href={`/directory/${b.id}`}
+                              href={`/listing/${b.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${b.id}`}
                               className="p-3 rounded-2xl bg-white/80 dark:bg-slate-800/80 border border-slate-200/70 dark:border-slate-700/60 hover:border-blue-500 transition group flex flex-col justify-between"
                             >
                               <div>

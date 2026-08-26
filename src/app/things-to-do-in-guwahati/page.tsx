@@ -154,7 +154,7 @@ export default async function ThingsToDoInGuwahatiPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               {directory.map((d) => (
-                <Link key={d.id} href={`/directory/${d.id}`} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden hover:border-emerald-400 dark:hover:border-emerald-600 transition">
+                <Link key={d.id} href={`/listing/${d.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}-${d.id}`} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden hover:border-emerald-400 dark:hover:border-emerald-600 transition">
                   {firstImage(d.imageUrls) && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={firstImage(d.imageUrls)!} alt={d.businessName} className="w-full h-28 object-cover" />

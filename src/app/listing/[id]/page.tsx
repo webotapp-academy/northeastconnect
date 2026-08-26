@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import CommentSection from "@/components/comments/CommentSection";
 import DirectoryClaimButton from "@/components/directory/DirectoryClaimButton";
@@ -120,6 +120,16 @@ export default async function ListingDetailPage({ params }: PageProps) {
 
   if (!business) {
     notFound();
+  }
+
+  // Canonicalize: any access that isn't already the exact {slug}-{id} form (bare numeric
+  // ID, a stale slug from a renamed business, or a request routed in via the legacy
+  // /directory/[id] page) permanently redirects to the one true URL, so this business
+  // is never reachable at two different indexable addresses.
+  const canonicalSlug = business.businessName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  const canonicalSlugId = `${canonicalSlug}-${business.id}`;
+  if (id !== canonicalSlugId) {
+    permanentRedirect(`/listing/${canonicalSlugId}`);
   }
 
   // Similar businesses in the same category and district matching legacy business-details.php

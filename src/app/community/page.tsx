@@ -1235,7 +1235,7 @@ export default function CommunityDiscoveryPage() {
 
                           <div className="flex items-center gap-2 text-xs text-amber-500 font-bold">
                             <span>⭐ {biz.rating ? Number(biz.rating).toFixed(1) : "4.5"}</span>
-                            <span className="text-[10px] text-slate-400">({biz.reviewCount || 12} reviews)</span>
+                            <span className="text-[10px] text-slate-400">({biz.reviewCount || 0} reviews)</span>
                           </div>
                         </div>
                       </div>
